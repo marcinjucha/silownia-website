@@ -30,7 +30,9 @@ export default function Home() {
       {/* Discover Section */}
       <section className="w-full bg-gray-100 py-12 dark:bg-gray-800 md:py-24 lg:py-32">
         <div className="container px-4 md:px-6">
-          <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">Discover Our Products</h2>
+          <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">
+            Discover Our Products
+          </h2>
           <p className="mt-4 text-gray-500 dark:text-gray-400 md:text-xl">
             Explore our wide range of high-quality products designed to meet your needs.
           </p>
@@ -52,7 +54,9 @@ export default function Home() {
       {/* Gallery Section */}
       <section className="w-full py-12 md:py-24 lg:py-32">
         <div className="container px-4 md:px-6">
-          <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">Product Gallery</h2>
+          <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">
+            Product Gallery
+          </h2>
           <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {[1, 2, 3, 4, 5, 6].map(item => (
               <Card key={item}>
