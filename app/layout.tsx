@@ -35,11 +35,17 @@ export default function RootLayout({
                   <Home className="h-4 w-4" />
                   <span className="sr-only">Home</span>
                 </Link>
-                <Link href="/about" className="text-sm font-medium transition-colors hover:text-primary">
+                <Link
+                  href="/about"
+                  className="text-sm font-medium transition-colors hover:text-primary"
+                >
                   <Info className="h-4 w-4" />
                   <span className="sr-only">About</span>
                 </Link>
-                <Link href="/contact" className="text-sm font-medium transition-colors hover:text-primary">
+                <Link
+                  href="/contact"
+                  className="text-sm font-medium transition-colors hover:text-primary"
+                >
                   <Phone className="h-4 w-4" />
                   <span className="sr-only">Contact</span>
                 </Link>
@@ -62,10 +68,16 @@ export default function RootLayout({
                 </p>
               </div>
               <div className="flex gap-4">
-                <Link href="/terms" className="text-sm text-gray-600 hover:underline dark:text-gray-400">
+                <Link
+                  href="/terms"
+                  className="text-sm text-gray-600 hover:underline dark:text-gray-400"
+                >
                   Terms
                 </Link>
-                <Link href="/privacy" className="text-sm text-gray-600 hover:underline dark:text-gray-400">
+                <Link
+                  href="/privacy"
+                  className="text-sm text-gray-600 hover:underline dark:text-gray-400"
+                >
                   Privacy
                 </Link>
               </div>
