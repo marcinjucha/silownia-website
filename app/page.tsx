@@ -61,7 +61,7 @@ export default function Home() {
             {[1, 2, 3, 4, 5, 6].map(item => (
               <Card key={item}>
                 <CardContent className="p-0">
-                  <img
+                  <Image
                     src={`/placeholder.svg?height=200&width=300`}
                     alt={`Gallery item ${item}`}
                     className="h-[200px] w-full object-cover"
