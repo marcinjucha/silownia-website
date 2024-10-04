@@ -1,9 +1,9 @@
-import { fetchProducts } from "@/app/purchase/_action/fetch-products"
-import ProductList from "@/app/purchase/_components/product-list"
+import { fetchCarnetList } from "@/app/purchase/_action/fetch-carnet-list"
+import CarnetList from "@/app/purchase/_components/carnet-list"
 
 export default async function PurchaseListPage() {
   console.log(process.env.TOKEN, process.env.CMS_URL)
-  const products = await fetchProducts()
+  const carnets = await fetchCarnetList()
 
-  return <ProductList />
+  return <CarnetList />
 }

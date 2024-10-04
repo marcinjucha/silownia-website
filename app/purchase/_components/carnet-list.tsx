@@ -54,7 +54,7 @@ const products = [
   },
 ]
 
-export default function ProductList() {
+export default function CarnetList() {
   const [bucket, setBucket] = React.useState<Product[]>([])
 
   const addToBucket = (product: Product) => {
