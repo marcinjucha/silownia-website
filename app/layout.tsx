@@ -49,13 +49,15 @@ export default function RootLayout({
                   <Phone className="h-4 w-4" />
                   <span className="sr-only">Contact</span>
                 </Link>
-                <Button size="sm">Buy Now</Button>
+                <Link href="/purchase">
+                  <Button size="sm">Buy Now</Button>
+                </Link>
               </nav>
             </div>
           </div>
         </header>
 
-        <main className="flex-1">{children}</main>
+        <main className="space-section container mx-auto flex-1 p-4">{children}</main>
 
         {/* Footer */}
         <footer className="w-full bg-gray-100 py-6 dark:bg-gray-800">

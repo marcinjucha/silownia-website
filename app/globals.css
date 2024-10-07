@@ -86,3 +86,9 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer utilities {
+  .space-section {
+    @apply space-y-8;
+  }
+}
