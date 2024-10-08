@@ -1,19 +1,10 @@
 import { Item } from "@radix-ui/react-accordion"
 
-export type CarnetDTO = {
+export type CarnetOptionDTO = {
   id: number
   title: string
-  description?: string
-  price?: number
-  carnetOptions?: {
-    placeholder: string
-    options: {
-      id: number
-      title: string
-      description: string
-      price: number
-    }[]
-  }
+  description: string
+  price: number
   image?: {
     alternativeText: string
     width: number
@@ -23,9 +14,28 @@ export type CarnetDTO = {
     previewUrl?: string
   }
 }
+export type CarnetDTO = {
+  id: number
+  title: string
+  description?: string
+  price?: number
+  carnetOptions?: {
+    placeholder: string
+    options: CarnetOptionDTO[]
+  }
+}
 
 const CMS_BASE_URL = process.env.CMS_BASE_URL
 const CMS_API_KEY = process.env.CMS_API_KEY
+
+type CarnetImageResponse = {
+  alternativeText: string
+  width: number
+  height: number
+  mime: string
+  url: string
+  previewUrl?: string
+}
 
 type CarnetListResponse = {
   data: [
@@ -40,22 +50,15 @@ type CarnetListResponse = {
         title: string
         description: string
         price: number
+        image?: CarnetImageResponse
       }[]
-      image?: {
-        alternativeText: string
-        width: number
-        height: number
-        mime: string
-        url: string
-        previewUrl?: string
-      }
     },
   ]
 }
 
 export async function fetchCarnetListFromCMS(): Promise<CarnetDTO[]> {
   const json: CarnetListResponse = await fetch(
-    `${CMS_BASE_URL}/api/carnets?populate[0]=carnetOptions&populate[1]=image`,
+    `${CMS_BASE_URL}/api/carnets?populate[0]=carnetOptions&populate[1]=carnetOptions.image`,
     {
       headers: {
         Authorization: `Bearer ${CMS_API_KEY}`,
@@ -77,15 +80,25 @@ export async function fetchCarnetListFromCMS(): Promise<CarnetDTO[]> {
         ...dto,
         carnetOptions: {
           placeholder: item.carnetOptionsPlaceholder,
-          options: item.carnetOptions,
+          options: item.carnetOptions.map(option => ({
+            ...option,
+            image: cmsImageDTO(option.image),
+          })),
         },
       }
     }
 
-    if (item.image) {
-      dto = { ...dto, image: item.image }
-    }
-
     return dto
   })
+}
+
+function cmsImageDTO(image?: CarnetImageResponse): CarnetImageResponse | undefined {
+  if (image) {
+    return {
+      ...image,
+      url: `${CMS_BASE_URL}${image.url}`,
+      previewUrl: image.previewUrl ? `${CMS_BASE_URL}${image.previewUrl}` : undefined,
+    }
+  }
+  return undefined
 }

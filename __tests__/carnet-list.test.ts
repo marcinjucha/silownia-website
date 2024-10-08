@@ -1,5 +1,6 @@
 import { CarnetDTO } from "@/repos/carnet-list-repo"
 import { fetchCarnetListUseCase } from "@/use-cases/carnet-list-use-case"
+import cloneDeep from "lodash/cloneDeep"
 
 describe("Fetch carnet list", () => {
   const dtos = [
@@ -21,22 +22,22 @@ describe("Fetch carnet list", () => {
             description: "co-d1",
             title: "co-t1",
             price: 200,
+            image: {
+              alternativeText: "image alt text",
+              height: 100,
+              width: 100,
+              mime: "mime",
+              url: "/upload/image-1",
+              previewUrl: "/upload/image-preview-1",
+            },
           },
         ],
       },
-      image: {
-        alternativeText: "image alt text",
-        height: 100,
-        width: 100,
-        mime: "mime",
-        url: "/upload/image-1",
-        previewUrl: "/upload/image-preview-1",
-      },
     },
-  ] as CarnetDTO[]
+  ] satisfies CarnetDTO[]
 
   it("should return list with carnets", async () => {
-    const fetch = async () => dtos.map(dto => ({ ...dto }))
+    const fetch = async () => cloneDeep(dtos)
 
     const result = await fetchCarnetListUseCase({ fetch })
 

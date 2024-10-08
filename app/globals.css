@@ -50,6 +50,7 @@
     --chart-5: 27 87% 67%;
     --radius: 0.5rem;
   }
+
   .dark {
     --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
@@ -88,7 +89,19 @@
 }
 
 @layer utilities {
-  .space-section {
+  .space-container {
+    @apply space-y-section container mx-auto p-4;
+  }
+
+  .space-y-section {
     @apply space-y-8;
+  }
+
+  .space-y-item {
+    @apply space-y-4;
+  }
+
+  .space-x-item {
+    @apply space-x-4;
   }
 }

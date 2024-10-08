@@ -23,8 +23,8 @@ export function PurchaseForm() {
   return (
     <Form {...form}>
       <form action={form.handleAction(onAction)}>
-        <div className="space-section grid gap-6 lg:grid-cols-2">
-          <div className="space-section">
+        <div className="space-y-section grid gap-6 lg:grid-cols-2">
+          <div className="space-y-section">
             <PersonalDetails control={form.control} />
             <AdditionalInformation control={form.control} />
           </div>
