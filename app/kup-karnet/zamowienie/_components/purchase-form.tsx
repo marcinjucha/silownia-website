@@ -1,10 +1,13 @@
 "use client"
 
-import { submitPurchaseForm } from "@/app/purchase/[order]/_actions/purchase-submit-form-action"
-import { PurchaseFormData, purchaseFormSchema } from "@/app/purchase/[order]/_actions/purchase-type"
-import { AdditionalInformation } from "@/app/purchase/[order]/_components/additional-information"
-import { OrderSummary } from "@/app/purchase/[order]/_components/order-summary"
-import { PersonalDetails } from "@/app/purchase/[order]/_components/personal-details"
+import { submitPurchaseForm } from "@/app/kup-karnet/zamowienie/_actions/purchase-submit-form-action"
+import {
+  PurchaseFormData,
+  purchaseFormSchema,
+} from "@/app/kup-karnet/zamowienie/_actions/purchase-type"
+import { AdditionalInformation } from "@/app/kup-karnet/zamowienie/_components/additional-information"
+import { OrderSummary } from "@/app/kup-karnet/zamowienie/_components/order-summary"
+import { PersonalDetails } from "@/app/kup-karnet/zamowienie/_components/personal-details"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Form, useFormWithAction as useFormWithAction } from "@/components/ui/form"

@@ -1,6 +1,6 @@
 "use client"
 
-import { CarnetListOrder } from "@/app/purchase/_components/carnet-list"
+import { CarnetListOrder } from "@/app/kup-karnet/_components/carnet-list"
 import { AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"

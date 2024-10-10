@@ -1,6 +1,6 @@
 "use client"
 
-import { CarnetListItem } from "@/app/purchase/_components/carnet-list-item"
+import { CarnetListItem } from "@/app/kup-karnet/_components/carnet-list-item"
 import { Accordion } from "@/components/ui/accordion"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {

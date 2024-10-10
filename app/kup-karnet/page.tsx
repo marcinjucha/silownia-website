@@ -1,5 +1,5 @@
-import { fetchCarnetList } from "@/app/purchase/_action/fetch-carnet-list"
-import CarnetList from "@/app/purchase/_components/carnet-list"
+import { fetchCarnetList } from "@/app/kup-karnet/_action/fetch-carnet-list"
+import CarnetList from "@/app/kup-karnet/_components/carnet-list"
 
 export default async function PurchaseListPage() {
   const carnets = await fetchCarnetList()
