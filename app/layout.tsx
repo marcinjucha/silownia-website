@@ -4,6 +4,7 @@ import "./globals.css"
 import { Home, Info, Phone, ShoppingCart } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
+import Navigation from "../app/_components/navigation"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -20,42 +21,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="flex min-h-screen flex-col">
-        {/* Sticky Header */}
-        <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-          <div className="container flex h-14 items-center">
-            <div className="mr-4 hidden md:flex">
-              <Link className="mr-6 flex items-center space-x-2" href="/">
-                <ShoppingCart className="h-6 w-6" />
-                <span className="hidden font-bold sm:inline-block">ACME Store</span>
-              </Link>
-            </div>
-            <div className="flex flex-1 items-center justify-between space-x-2 md:justify-end">
-              <nav className="flex items-center space-x-6">
-                <Link href="/" className="text-sm font-medium transition-colors hover:text-primary">
-                  <Home className="h-4 w-4" />
-                  <span className="sr-only">Home</span>
-                </Link>
-                <Link
-                  href="/about"
-                  className="text-sm font-medium transition-colors hover:text-primary"
-                >
-                  <Info className="h-4 w-4" />
-                  <span className="sr-only">About</span>
-                </Link>
-                <Link
-                  href="/contact"
-                  className="text-sm font-medium transition-colors hover:text-primary"
-                >
-                  <Phone className="h-4 w-4" />
-                  <span className="sr-only">Contact</span>
-                </Link>
-                <Link href="/purchase">
-                  <Button size="sm">Buy Now</Button>
-                </Link>
-              </nav>
-            </div>
-          </div>
-        </header>
+        <Navigation />
 
         <main className="space-section container mx-auto flex-1 p-4">{children}</main>
 
