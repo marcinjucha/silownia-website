@@ -60,7 +60,20 @@ export default function Home() {
           <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {[1, 2, 3, 4, 5, 6].map(item => (
               <Card key={item}>
-                <CardContent className="p-0"></CardContent>
+                <CardContent className="p-0">
+                  {/* <Image
+                    src={`/placeholder.svg?height=200&width=300`}
+                    alt={`Gallery item ${item}`}
+                    className="h-[200px] w-full object-cover"
+                  /> */}
+                  <Image
+                    src="/placeholder.svg"
+                    alt={`Gallery item ${item}`}
+                    width={300}
+                    height={200}
+                    className="h-[200px] w-full object-cover"
+                  />
+                </CardContent>
               </Card>
             ))}
           </div>
