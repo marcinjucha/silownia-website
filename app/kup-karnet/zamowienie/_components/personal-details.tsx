@@ -1,6 +1,6 @@
 "use client"
 
-import { PurchaseFormData } from "@/app/purchase/[order]/_actions/purchase-type"
+import { PurchaseFormData } from "@/app/kup-karnet/zamowienie/_actions/purchase-type"
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Control } from "react-hook-form"

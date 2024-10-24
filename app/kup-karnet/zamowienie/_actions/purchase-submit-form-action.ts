@@ -1,6 +1,6 @@
 "use server"
 
-import { PurchaseFormData } from "@/app/purchase/[order]/_actions/purchase-type"
+import { PurchaseFormData } from "@/app/kup-karnet/zamowienie/_actions/purchase-type"
 
 export async function submitPurchaseForm(formData: PurchaseFormData) {
   // Simulate a delay

@@ -12,7 +12,7 @@ export default function Navigation() {
     { name: "O nas", link: "/" },
     { name: "Oferta", link: "/oferta" },
     { name: "Galeria", link: "/galeria" },
-    { name: "Kup karnet", link: "/kupKarnet" },
+    { name: "Kup karnet", link: "/kup-karnet" },
   ]
 
   return (
