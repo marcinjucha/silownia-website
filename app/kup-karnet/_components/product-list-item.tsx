@@ -1,6 +1,5 @@
 "use client"
 
-import { CarnetListOrder } from "@/app/kup-karnet/_components/carnet-list"
 import { AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -11,23 +10,25 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { CarnetDTO, CarnetOptionDTO } from "@/repos/carnet-list-repo"
+import { ProductDTO, ProductOptionDTO } from "@/repos/product-list-repo"
+import { ProductOrderItemDTO } from "@/repos/product-order-repo"
+import { cp } from "fs"
 import { Minus, Plus } from "lucide-react"
 import Image from "next/image"
 import { useState } from "react"
 
-export function CarnetListItem({
-  carnet,
+export function ProductListItem({
+  product,
   onAdd,
 }: {
-  carnet: CarnetDTO
-  onAdd: (order: CarnetListOrder) => void
+  product: ProductDTO
+  onAdd: (order: ProductOrderItemDTO) => void
 }) {
   const [quantity, setQuantity] = useState(1)
-  const [selectedOption, setSelectedOption] = useState<CarnetOptionDTO | undefined>()
+  const [selectedOption, setSelectedOption] = useState<ProductOptionDTO | undefined>()
 
   function onSelectValueChange(id: string) {
-    const options = carnet.carnetOptions?.options
+    const options = product.productOptions?.options
     if (!options) {
       return
     }
@@ -51,18 +52,20 @@ export function CarnetListItem({
   }
 
   function handleAddButtonClick() {
+    const price = selectedOption ? selectedOption.price : product.price || -1
     const order = {
-      name: selectedOption ? `${carnet.title} - ${selectedOption.title}` : carnet.title,
+      name: selectedOption ? selectedOption.title : product.title,
       quantity,
-      price: selectedOption ? selectedOption.price : carnet.price || -1,
-    } satisfies CarnetListOrder
+      price,
+      totalPrice: price * quantity,
+    } satisfies ProductOrderItemDTO
 
     onAdd(order)
   }
 
   return (
-    <AccordionItem key={carnet.id} value={`item-${carnet.id}`}>
-      <AccordionTrigger>{carnet.title}</AccordionTrigger>
+    <AccordionItem key={product.id} value={`item-${product.id}`}>
+      <AccordionTrigger>{product.title}</AccordionTrigger>
       <AccordionContent className="space-y-item">
         {selectedOption?.image && (
           <Image
@@ -73,27 +76,27 @@ export function CarnetListItem({
             alt={selectedOption.image.alternativeText}
           />
         )}
-        {carnet.carnetOptions && (
+        {product.productOptions && (
           <Select onValueChange={onSelectValueChange}>
             <SelectTrigger className="w-full">
-              <SelectValue placeholder={carnet.carnetOptions.placeholder} />
+              <SelectValue placeholder={product.productOptions.placeholder} />
             </SelectTrigger>
             <SelectContent>
-              {carnet.carnetOptions.options.map(option => (
+              {product.productOptions.options.map(option => (
                 <SelectItem key={option.id} value={`${option.id}`}>
-                  {option.title}
+                  {option.name}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
         )}
 
-        {carnet.description && <p className="mb-2">{carnet.description}</p>}
+        {product.description && <p className="mb-2">{product.description}</p>}
         {selectedOption && <p className="mb-2">{selectedOption.description}</p>}
-        {(carnet.price || selectedOption) && (
+        {(product.price || selectedOption) && (
           <>
             <div className="space-y-item flex flex-col">
-              {carnet.price && <p className="font-bold">Price: ${carnet.price}</p>}
+              {product.price && <p className="font-bold">Price: ${product.price}</p>}
               {selectedOption && <p className="font-bold">Price: ${selectedOption.price}</p>}
 
               <div className="flex">
