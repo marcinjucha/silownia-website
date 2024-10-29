@@ -1,3 +1,4 @@
+import { ImageDTO } from "./common-repo"
 export type ProductDTO = {
   id: number
   title: string
@@ -15,14 +16,7 @@ export type ProductOptionDTO = {
   name: string
   description: string
   price: number
-  image?: {
-    alternativeText: string
-    width: number
-    height: number
-    mime: string
-    url: string
-    previewUrl?: string
-  }
+  image?: ImageDTO
 }
 
 type ProductImageResponse = {
