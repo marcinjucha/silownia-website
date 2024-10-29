@@ -1,12 +1,12 @@
-import { fetchCarnetList } from "@/app/kup-karnet/_action/fetch-carnet-list"
-import CarnetList from "@/app/kup-karnet/_components/carnet-list"
+import { fetchProductList } from "@/app/kup-karnet/_action/fetch-product-list"
+import ProductList from "@/app/kup-karnet/_components/product-list"
 
 export default async function PurchaseListPage() {
-  const carnets = await fetchCarnetList()
+  const products = await fetchProductList()
 
   return (
     <div className="space-container">
-      <CarnetList carnets={carnets} />
+      <ProductList products={products} />
     </div>
   )
 }

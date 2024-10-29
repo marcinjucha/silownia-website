@@ -1,6 +1,6 @@
 require("dotenv")
 
-const url = new URL(process.env.CMS_BASE_URL)
+const url = new URL(process.env.CMS_BASE_URL || "http://localhost:1337")
 
 module.exports = {
   logging: {

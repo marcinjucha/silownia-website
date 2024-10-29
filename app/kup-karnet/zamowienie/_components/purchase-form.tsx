@@ -1,6 +1,6 @@
 "use client"
 
-import { submitPurchaseForm } from "@/app/kup-karnet/zamowienie/_actions/purchase-submit-form-action"
+import { submitPurchaseForm } from "@/app/kup-karnet/zamowienie/_actions/purchase-submit-form"
 import {
   PurchaseFormData,
   purchaseFormSchema,
@@ -9,42 +9,42 @@ import { AdditionalInformation } from "@/app/kup-karnet/zamowienie/_components/a
 import { OrderSummary } from "@/app/kup-karnet/zamowienie/_components/order-summary"
 import { PersonalDetails } from "@/app/kup-karnet/zamowienie/_components/personal-details"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Form, useFormWithAction as useFormWithAction } from "@/components/ui/form"
+import { Form, useFormWithAction } from "@/components/ui/form"
+import { PaymentMethodDTO, ProductPurchaseDTO } from "@/repos/purchase-repo"
+import { ProductOrderDTO, ProductOrderItemDTO } from "@/repos/product-order-repo"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useFormStatus } from "react-dom"
 
-export function PurchaseForm() {
+type PurchaseFormProps = {
+  order: ProductOrderDTO
+}
+
+export function PurchaseForm({ order }: PurchaseFormProps) {
+  const products = order.products
   const form = useFormWithAction<PurchaseFormData>({
     resolver: zodResolver(purchaseFormSchema),
   })
 
   async function onAction(values: PurchaseFormData) {
-    await submitPurchaseForm(values)
+    await submitPurchaseForm(values, order, PaymentMethodDTO.PAYPAL)
   }
 
   return (
     <Form {...form}>
       <form action={form.handleAction(onAction)}>
-        <div className="space-y-section grid gap-6 lg:grid-cols-2">
-          <div className="space-y-section">
+        <div className="space-y-section grid gap-6 lg:grid-cols-2 lg:space-y-0">
+          <section className="space-y-section">
             <PersonalDetails control={form.control} />
             <AdditionalInformation control={form.control} />
-          </div>
-          <div>
-            <Card className="">
-              <CardHeader>
-                <CardTitle className="text-3xl font-bold">Your order</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <OrderSummary />
-              </CardContent>
-            </Card>
+          </section>
+          <section>
+            <OrderSummary products={products} />
+
             <div className="mt-6">
               <h2 className="mb-4 text-3xl font-bold">Payment Method</h2>
               <SubmitButton />
             </div>
-          </div>
+          </section>
         </div>
       </form>
     </Form>

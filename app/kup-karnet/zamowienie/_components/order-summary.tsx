@@ -1,37 +1,42 @@
 "use client"
 
-export function OrderSummary() {
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import { ProductOrderItemDTO } from "@/repos/product-order-repo"
+
+export function OrderSummary({ products }: { products: ProductOrderItemDTO[] }) {
+  const totalPrice = products.reduce((prev, curr) => prev + curr.totalPrice, 0)
   return (
-    <table className="w-full">
-      <thead>
-        <tr className="border-b ">
-          <th className="py-2 text-left">Product</th>
-          <th className="py-2 text-right">Subtotal</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr className="border-b ">
-          <td className="py-2">
-            <div className="flex items-center gap-2">
-              <div className="w-8  p-1 text-center">1</div>
-              <span>Bangtao Brawl 2 (Fight Night)</span>
-            </div>
-          </td>
-          <td className="py-2 text-right">฿800.00</td>
-        </tr>
-        <tr className="border-b ">
-          <td className="py-2">Subtotal</td>
-          <td className="py-2 text-right">฿800.00</td>
-        </tr>
-        <tr className="border-b ">
-          <td className="py-2">VAT</td>
-          <td className="py-2 text-right">฿56.00</td>
-        </tr>
-        <tr>
-          <td className="py-2 font-bold">Total</td>
-          <td className="py-2 text-right font-bold">฿856.00</td>
-        </tr>
-      </tbody>
-    </table>
+    <>
+      <h2 className="mb-4 text-3xl font-bold">Your order</h2>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="font-bold text-primary">Product</TableHead>
+            <TableHead className="text-right font-bold text-primary">Subtotal</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {products.map(product => (
+            <TableRow key={product.name}>
+              <TableCell>
+                {product.quantity}x {product.name}
+              </TableCell>
+              <TableCell className="text-right">${product.totalPrice}</TableCell>
+            </TableRow>
+          ))}
+          <TableRow>
+            <TableCell className="font-bold text-primary">Total</TableCell>
+            <TableCell className="text-right font-bold text-primary">{totalPrice}</TableCell>
+          </TableRow>
+        </TableBody>
+      </Table>
+    </>
   )
 }

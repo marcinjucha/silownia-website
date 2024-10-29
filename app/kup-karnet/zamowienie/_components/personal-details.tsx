@@ -7,7 +7,7 @@ import { Control } from "react-hook-form"
 
 export function PersonalDetails({ control }: { control: Control<PurchaseFormData> }) {
   return (
-    <div>
+    <>
       <h2 className="mb-4 text-3xl font-bold">Your details</h2>
       <div className="grid gap-4">
         <div className="grid gap-2">
@@ -56,6 +56,6 @@ export function PersonalDetails({ control }: { control: Control<PurchaseFormData
           />
         </div>
       </div>
-    </div>
+    </>
   )
 }
