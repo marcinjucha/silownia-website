@@ -16,6 +16,8 @@ export type ExecutionResult<T, E extends Error> =
   | { success: false; error: E }
 
 export function errorResult<T>(msg: string) {
+  console.error("Error result: ", msg)
+
   return {
     success: false,
     error: new Error(msg),

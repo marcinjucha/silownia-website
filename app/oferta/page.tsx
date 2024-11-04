@@ -1,28 +1,33 @@
 import ImageWithButton from "../../components/image-with-button"
 import ImageText from "../../components/image-text"
-import { fetchSports } from "./_action/fetch-sports"
+import { fetchOfferList } from "@/features/offer-list/actions/fetch-offer-list-action"
 
-export default function Home() {
-  const sports = fetchSports()
+export default async function Home() {
+  const offerList = await fetchOfferList()
 
   return (
     <>
       <div>
-        {sports.map((sport, index) => (
+        {offerList.map((offer, index) => (
           <ImageText
-            key={sport.id}
-            title={sport.title}
-            subtitle={sport.subtitle}
-            text={sport.text}
-            imageSrc={sport.imageSrc}
+            key={offer.id}
+            title={offer.title}
+            subtitle={offer.subtitle}
+            description={offer.description}
+            image={offer.image}
             buttonLabel="Dowiedz się więcej..."
-            linkUrl={`/oferta/${sport.id}`}
+            linkUrl={`/oferta/${offer.offerId}`}
             reverse={index % 2 !== 0}
           />
         ))}
       </div>
 
-      <ImageWithButton alt="sport" buttonLabel="Kup karnet" imageSrc="/sp9.jpg" linkUrl="/oferta" />
+      <ImageWithButton
+        alt="kup karnet"
+        buttonLabel="Kup karnet"
+        imageSrc="/sp9.jpg"
+        linkUrl="/kup-karnet"
+      />
     </>
   )
 }

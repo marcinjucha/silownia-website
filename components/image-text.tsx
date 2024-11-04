@@ -2,26 +2,27 @@
 import React, { useState, useEffect, useRef } from "react"
 import Image from "next/image"
 import Link from "next/link"
+import { ImageDTO } from "@/features/common/dtos"
 
-interface ImageTextProps {
+interface Props {
   title: string
   subtitle: string
-  text: string
-  imageSrc: string
+  description: string
   buttonLabel?: string
   linkUrl?: string
+  image: ImageDTO
   reverse?: boolean
 }
 
 export default function ImageText({
   title,
   subtitle,
-  text,
-  imageSrc,
+  description,
+  image,
   buttonLabel,
   linkUrl,
   reverse = false,
-}: ImageTextProps) {
+}: Props) {
   const [isVisible, setIsVisible] = useState(false)
   const imageRef = useRef<HTMLDivElement | null>(null)
 
@@ -60,17 +61,17 @@ export default function ImageText({
         }`}
       >
         <Image
-          src={imageSrc}
-          alt={title}
-          width={500}
-          height={300}
+          src={image.url}
+          alt={image.alternativeText}
+          width={image.width}
+          height={image.height}
           className="h-auto w-full rounded object-cover"
         />
       </div>
       <div className="w-full text-center md:w-1/2 md:text-left">
         <h2 className="text-2xl font-bold">{title}</h2>
         <h3 className="mb-4 text-xl text-gray-600">{subtitle}</h3>
-        <p>{text}</p>
+        <p>{description}</p>
         {buttonLabel && linkUrl && (
           <Link
             href={linkUrl}
