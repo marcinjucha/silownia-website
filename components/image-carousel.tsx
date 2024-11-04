@@ -1,6 +1,3 @@
-"use client"
-
-import * as React from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import {
   Carousel,
@@ -10,14 +7,10 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel"
 import Image from "next/image"
+import { ImageDTO } from "@/features/common/dtos"
 
 interface ImageCarouselProps {
-  images: {
-    src: string
-    width: number
-    height: number
-    alt: string
-  }[]
+  images: ImageDTO[]
 }
 
 export default function ImageCarousel({ images }: ImageCarouselProps) {
@@ -30,8 +23,8 @@ export default function ImageCarousel({ images }: ImageCarouselProps) {
               <Card>
                 <CardContent className=" flex aspect-video h-full w-full items-center justify-center p-0">
                   <Image
-                    src={image.src}
-                    alt={image.alt}
+                    src={image.url}
+                    alt={image.alternativeText}
                     width={image.width}
                     height={image.height}
                     layout="responsive"

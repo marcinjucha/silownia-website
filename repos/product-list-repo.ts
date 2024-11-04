@@ -1,4 +1,5 @@
-import { ImageDTO } from "./common-repo"
+import { ImageDTO } from "@/features/common/dtos"
+
 export type ProductDTO = {
   id: number
   title: string

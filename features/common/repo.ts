@@ -1,12 +1,3 @@
-export type ImageDTO = {
-  alternativeText: string
-  width: number
-  height: number
-  mime: string
-  url: string
-  previewUrl?: string
-}
-
 export type ImageResponse = {
   alternativeText: string
   width: number
