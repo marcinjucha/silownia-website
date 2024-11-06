@@ -18,7 +18,7 @@ export type OfferDTO = {
 }
 
 export type OfferDetailsDTO = {
-  imageGallery: ImageDTO[]
+  imageGallery?: ImageDTO[]
   sections: OfferDetailsSectionDTO[]
 }
 

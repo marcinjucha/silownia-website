@@ -5,17 +5,17 @@ import { fetchOfferDetails } from "@/features/offer-details/actions/fetch-offer-
 import { notFound } from "next/navigation"
 
 export default async function SportPage({ params }: { params: { id: string } }) {
-  const offerDetails = await fetchOfferDetails(params.id)
+  const details = await fetchOfferDetails(params.id)
 
   return (
     <>
       <div>
-        {offerDetails.sections.map((section, index) => (
+        {details.sections.map((section, index) => (
           <ImageText
             key={index}
             title={section.title}
             subtitle={section.subtitle}
-            description={section.description}
+            description={section.description || ""}
             image={section.image}
             reverse={index % 2 !== 0}
           />
@@ -24,9 +24,11 @@ export default async function SportPage({ params }: { params: { id: string } }) 
 
       <ImageWithButton alt="sport" buttonLabel="Kup karnet" imageSrc="/sp9.jpg" linkUrl="/oferta" />
 
-      <div className="container mx-auto">
-        <ImageCarousel images={offerDetails.imageGallery} />
-      </div>
+      {details.imageGallery && (
+        <div className="container mx-auto">
+          <ImageCarousel images={details.imageGallery} />
+        </div>
+      )}
     </>
   )
 }

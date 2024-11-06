@@ -1,9 +1,5 @@
-import { cmsImageDTO, ImageResponse } from "@/features/common/repo"
 import { OfferDTO } from "@/features/common/dtos"
-
-export type OfferListResponse = {
-  data: OfferResponse[]
-}
+import { cmsImageDTO, ImageResponse } from "@/features/common/repo"
 
 type OfferResponse = {
   id: number
@@ -16,7 +12,7 @@ type OfferResponse = {
 }
 
 type OfferDetailsResponse = {
-  imageGallery: ImageResponse[]
+  imageGallery?: ImageResponse[]
   sections: OfferDetailsSectionResponse[]
 }
 
@@ -39,9 +35,10 @@ export async function fetchOfferListFromCMS() {
       },
     },
   )
-  const json = (await response.json()) as OfferListResponse
+  const json = await response.json()
+  const offerList = json.data as OfferResponse[]
 
-  const result: OfferDTO[] = json.data.map(
+  const result: OfferDTO[] = offerList.map(
     offer =>
       ({
         ...offer,
@@ -51,7 +48,7 @@ export async function fetchOfferListFromCMS() {
             ...section,
             image: cmsImageDTO(section.image)!,
           })),
-          imageGallery: offer.offerDetails.imageGallery.map(img => cmsImageDTO(img)!),
+          imageGallery: offer.offerDetails.imageGallery?.map(img => cmsImageDTO(img)!),
         },
       }) satisfies OfferDTO,
   )
