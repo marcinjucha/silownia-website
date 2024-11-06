@@ -1,8 +1,10 @@
 "use client"
+
 import React, { useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import MenuBurgerButton from "./menuBurgerButton"
+import MenuBurgerButton from "./menu-burger-button"
+import Image from "next/image"
 
 export default function Navigation() {
   const [isOpen, setIsOpen] = useState(false)
@@ -11,28 +13,36 @@ export default function Navigation() {
   const menuItems = [
     { name: "O nas", link: "/" },
     { name: "Oferta", link: "/oferta" },
-    { name: "Galeria", link: "/galeria" },
+    { name: "Kontakt", link: "/galeria" },
     { name: "Kup karnet", link: "/kup-karnet" },
   ]
 
   return (
-    <nav className="relative sticky top-0 flex h-32 items-center justify-between bg-foreground p-8">
+    <nav className="sticky top-0 z-50 flex h-32 items-center justify-between bg-background p-8">
       {/* Logo */}
-      <div className="text-2xl font-bold text-background">
-        <Link href="/">LOGO</Link>
+      <div className="text-2xl font-bold text-accent">
+        <Link href="/">
+          <Image
+            src="/images/logo_zlote.svg"
+            alt="Logo ProgressGym"
+            width={180}
+            height={90}
+            priority
+          />
+        </Link>
       </div>
 
       {/* Navigation desktop */}
-      <ul className="hidden space-x-8 text-lg font-bold text-background md:flex">
+      <ul className="hidden space-x-8 text-lg font-bold text-border md:flex">
         {menuItems.map(item => (
           <li
             key={item.link}
-            className="transition-colors duration-300 ease-in-out hover:text-destructive"
+            className="transition-colors duration-300 ease-in-out hover:text-accent"
           >
             <Link
               href={item.link}
-              className={`transition-colors duration-300 ease-in-out hover:text-destructive ${
-                pathName === item.link ? "text-destructive" : ""
+              className={`transition-colors duration-300 ease-in-out hover:text-accent ${
+                pathName === item.link ? "text-accent" : ""
               }`}
             >
               {item.name}
