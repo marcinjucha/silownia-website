@@ -1,10 +1,9 @@
+import Navigation from "@/features/layout/navigation"
+import { ShoppingCart } from "lucide-react"
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
-import "./globals.css"
-import { Home, Info, Phone, ShoppingCart } from "lucide-react"
 import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import Navigation from "../app/_components/navigation"
+import "./globals.css"
 
 const inter = Inter({ subsets: ["latin"] })
 

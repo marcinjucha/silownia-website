@@ -1,10 +1,8 @@
-import React from "react"
-
-interface BurgerBtnProps {
+interface MenuBurgerButtonProps {
   isOpen: boolean
 }
 
-export default function MenuBurgerButton({ isOpen }: BurgerBtnProps) {
+export default function MenuBurgerButton({ isOpen }: MenuBurgerButtonProps) {
   return (
     <div className="flex h-10 w-10 flex-col items-center justify-between p-3">
       <span
