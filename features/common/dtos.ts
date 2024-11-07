@@ -1,8 +1,7 @@
 export type ImageDTO = {
-  alternativeText: string
+  altText: string
   width: number
   height: number
-  mime: string
   url: string
   previewUrl?: string
 }

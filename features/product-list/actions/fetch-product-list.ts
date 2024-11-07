@@ -1,7 +1,7 @@
 "use server"
 
-import { fetchProductListFromCMS } from "@/repos/product-list-repo"
-import { fetchProductListUseCase } from "@/use-cases/product-list-use-case"
+import { fetchProductListFromCMS } from "@/features/product-list/logic/product-list-repo"
+import { fetchProductListUseCase } from "@/features/product-list/logic/product-list-use-case"
 
 export async function fetchProductList() {
   const result = await fetchProductListUseCase({ fetch: fetchProductListFromCMS })

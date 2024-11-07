@@ -1,5 +1,5 @@
 import { executePromise } from "@/lib/utils"
-import { ProductDTO } from "@/repos/product-list-repo"
+import { ProductDTO } from "@/features/product-list/logic/product-list-repo"
 
 export type FetchProductList = () => Promise<ProductDTO[]>
 
