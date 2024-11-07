@@ -20,7 +20,7 @@ export default function ImageCarousel({ images }: ImageCarouselProps) {
         {images.map((image, index) => (
           <CarouselItem key={index} className="lg:basis-1/s pl-1 md:basis-1/2">
             <div className="p-1">
-              <Card>
+              <Card className="border-none">
                 <CardContent className=" flex aspect-video h-full w-full items-center justify-center p-0">
                   <Image
                     src={image.url}

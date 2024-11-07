@@ -1,6 +1,7 @@
 import React from "react"
 import Image from "next/image"
 import Link from "next/link"
+import { Button } from "./ui/button"
 
 interface ImageWithButtonProps {
   alt: string
@@ -18,7 +19,7 @@ const ImageWithButton: React.FC<ImageWithButtonProps> = ({
   linkUrl,
 }) => {
   return (
-    <div className="relative flex h-[70vh] w-full items-center justify-center overflow-hidden">
+    <div className="relative flex h-[60vh] w-full items-center justify-center overflow-hidden">
       <div className="absolute inset-0 z-0">
         <Image
           src={imageSrc}
@@ -32,10 +33,9 @@ const ImageWithButton: React.FC<ImageWithButtonProps> = ({
 
       <div className="relative z-10 text-center">
         <h1 className="text-4xl font-bold text-white md:text-6xl">{title}</h1>
+
         <Link href={linkUrl} passHref>
-          <button className="mt-4 border border-white px-6 py-2 text-lg font-medium text-white transition-colors hover:bg-white hover:text-black">
-            {buttonLabel}
-          </button>
+          <Button className="p-6 text-lg">{buttonLabel}</Button>
         </Link>
       </div>
 
