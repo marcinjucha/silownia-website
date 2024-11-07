@@ -1,7 +1,5 @@
 "use client"
 
-import { submitProductBooking } from "@/app/kup-karnet/_action/submit-product-booking"
-import { ProductListItem } from "@/app/kup-karnet/_components/product-list-item"
 import { Accordion } from "@/components/ui/accordion"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -13,7 +11,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { ProductDTO } from "@/repos/product-list-repo"
+import { submitProductBooking } from "@/features/product-list/actions/submit-product-booking"
+import { ProductListItem } from "@/features/product-list/components/product-list-item"
+import { ProductDTO } from "@/features/product-list/logic/product-list-repo"
 import { ProductOrderItemDTO } from "@/repos/product-order-repo"
 import React, { useState } from "react"
 
@@ -81,7 +81,7 @@ export default function ProductList({ products }: ProductListProps) {
                 <TableRow key={index}>
                   <TableCell>{order.name}</TableCell>
                   <TableCell className="text-right">${order.price}</TableCell>
-                  <TableCell className="text-right">${order.quantity}</TableCell>
+                  <TableCell className="text-right">{order.quantity}</TableCell>
                   <TableCell className="text-right">${order.totalPrice}</TableCell>
                 </TableRow>
               ))}

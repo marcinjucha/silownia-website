@@ -22,7 +22,12 @@ export default async function SportPage({ params }: { params: { id: string } }) 
         ))}
       </div>
 
-      <ImageWithButton alt="sport" buttonLabel="Kup karnet" imageSrc="/sp9.jpg" linkUrl="/oferta" />
+      <ImageWithButton
+        alt="sport"
+        buttonLabel="Kup karnet"
+        imageSrc="/sp9.jpg"
+        linkUrl="/kup-karnet"
+      />
 
       {details.imageGallery && (
         <div className="container mx-auto">

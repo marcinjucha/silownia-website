@@ -62,7 +62,7 @@ export default function ImageText({
       >
         <Image
           src={image.url}
-          alt={image.alternativeText}
+          alt={image.altText}
           width={image.width}
           height={image.height}
           className="h-auto w-full rounded object-cover"
