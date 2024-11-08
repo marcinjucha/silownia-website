@@ -1,9 +1,10 @@
+import SectionContact from "@/components/section-contact"
+import CookieConsent from "@/features/consent-cookie/cookie-consent"
 import Footer from "@/features/layout/footer"
 import Navigation from "@/features/layout/navigation"
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
-import SectionContact from "@/components/section-contact"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -24,6 +25,7 @@ export default function RootLayout({
         <main className="flex-1">{children}</main>
         <SectionContact />
         <Footer />
+        <CookieConsent />
       </body>
     </html>
   )
