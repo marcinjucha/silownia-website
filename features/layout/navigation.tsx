@@ -18,7 +18,7 @@ export default function Navigation() {
   ]
 
   return (
-    <nav className="sticky top-0 z-50 flex h-32 items-center justify-between bg-background p-8">
+    <nav className="sticky top-0 z-50 flex h-32 items-center justify-between p-8">
       {/* Logo */}
       <div className="text-2xl font-bold text-accent">
         <Link href="/">
@@ -33,23 +33,25 @@ export default function Navigation() {
       </div>
 
       {/* Navigation desktop */}
-      <ul className="hidden space-x-8 text-lg font-bold text-border md:flex">
-        {menuItems.map(item => (
-          <li
-            key={item.link}
-            className="transition-colors duration-300 ease-in-out hover:text-accent"
-          >
-            <Link
-              href={item.link}
-              className={`transition-colors duration-300 ease-in-out hover:text-accent ${
-                pathName === item.link ? "text-accent" : ""
-              }`}
+      <div className="hidden rounded-full bg-background p-6 opacity-80 md:block">
+        <ul className="hidden space-x-8 text-lg font-bold text-border md:flex">
+          {menuItems.map(item => (
+            <li
+              key={item.link}
+              className="transition-colors duration-300 ease-in-out hover:text-accent"
             >
-              {item.name}
-            </Link>
-          </li>
-        ))}
-      </ul>
+              <Link
+                href={item.link}
+                className={`transition-colors duration-300 ease-in-out hover:text-accent ${
+                  pathName === item.link ? "text-accent" : ""
+                }`}
+              >
+                {item.name}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </div>
 
       {/* Menu Burger Button */}
       <div className="mr-4 md:hidden">
@@ -60,7 +62,7 @@ export default function Navigation() {
 
       {/* Mobile Navigation */}
       {isOpen && (
-        <ul className="absolute left-0 top-full flex w-full flex-col items-center bg-foreground text-base text-background">
+        <ul className="absolute left-0 top-full flex w-full flex-col items-center rounded-b-full rounded-t-full bg-background px-0 py-4 text-base text-foreground">
           {menuItems.map(item => (
             <li key={item.link} className="py-2">
               <Link

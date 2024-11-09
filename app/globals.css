@@ -1,7 +1,6 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
 :root {
   --foreground-rgb: 255, 255, 255;
   --background-start-rgb: 0, 0, 0;
@@ -15,7 +14,6 @@
     text-wrap: balance;
   }
 }
-
 @layer base {
   :root {
     --background: 33 0% 1.92%;
@@ -40,7 +38,6 @@
     --radius: 0.5rem;
   }
 }
-
 @layer base {
   * {
     @apply border-border;
@@ -49,25 +46,20 @@
     @apply bg-background text-foreground;
   }
 }
-
 @layer utilities {
   .space-container {
     @apply space-y-section container mx-auto p-4;
   }
-
   .space-y-section {
     @apply space-y-8;
   }
-
   .space-y-item {
     @apply space-y-4;
   }
-
   .space-x-item {
     @apply space-x-4;
   }
 }
-
 @keyframes slideInRight {
   from {
     transform: translateX(100%);
@@ -78,11 +70,9 @@
     opacity: 1;
   }
 }
-
 .slide-in-right {
   animation: slideInRight 0.7s ease-out forwards;
 }
-
 @keyframes slideInLeft {
   from {
     transform: translateX(-100%);
@@ -93,7 +83,6 @@
     opacity: 1;
   }
 }
-
 .slide-in-left {
   animation: slideInLeft 0.7s ease-out forwards;
 }

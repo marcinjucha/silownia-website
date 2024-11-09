@@ -1,9 +1,9 @@
+import Footer from "@/features/layout/footer"
 import Navigation from "@/features/layout/navigation"
-import { ShoppingCart } from "lucide-react"
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
-import Link from "next/link"
 import "./globals.css"
+import SectionContact from "@/components/section-contact"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -21,36 +21,9 @@ export default function RootLayout({
     <html lang="en">
       <body className="flex min-h-screen flex-col">
         <Navigation />
-
         <main className="flex-1">{children}</main>
-
-        {/* Footer */}
-        <footer className="w-full bg-gray-100 py-6 dark:bg-gray-800">
-          <div className="container px-4 md:px-6">
-            <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
-              <div className="flex flex-col items-center gap-4 px-8 md:flex-row md:gap-2 md:px-0">
-                <ShoppingCart className="h-6 w-6" />
-                <p className="text-center text-sm leading-loose text-gray-600 dark:text-gray-400 md:text-left">
-                  © 2023 ACME Store. All rights reserved.
-                </p>
-              </div>
-              <div className="flex gap-4">
-                <Link
-                  href="/terms"
-                  className="text-sm text-gray-600 hover:underline dark:text-gray-400"
-                >
-                  Terms
-                </Link>
-                <Link
-                  href="/privacy"
-                  className="text-sm text-gray-600 hover:underline dark:text-gray-400"
-                >
-                  Privacy
-                </Link>
-              </div>
-            </div>
-          </div>
-        </footer>
+        <SectionContact />
+        <Footer />
       </body>
     </html>
   )

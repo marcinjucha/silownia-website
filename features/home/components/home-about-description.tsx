@@ -1,4 +1,5 @@
 import Image from "next/image"
+import { Button } from "@/components/ui/button"
 
 export default function HomeAboutDescription() {
   return (
@@ -19,7 +20,13 @@ export default function HomeAboutDescription() {
           earum harum numquam labore accusamus officiis ex! Ab architecto necessitatibus id illo
           obcaecati alias reprehenderit quod, repellendus aut possimus repudiandae magnam eum nisi
           rerum tempora similique aperiam soluta aliquam eos unde consequuntur laudantium, quasi
-          nesciunt quam!
+          nesciunt quam dlatego gorąc zachęcam żebyś trenował z nami i
+          <Button className="my-2 font-extrabold" variant="outline">
+            kupił karnet
+          </Button>
+        </p>
+        <p>
+          już dzisiaj. Dołącz do nas i ciesz się wszystkimi korzyściami, które daje Ci nasz klub!
         </p>
       </div>
     </section>
