@@ -1,8 +1,6 @@
-"use client"
-
-import { PurchaseFormData } from "@/app/kup-karnet/zamowienie/_actions/purchase-type"
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Textarea } from "@/components/ui/textarea"
+import { PurchaseFormData } from "@/features/purchase/actions/purchase-type"
 import { Control } from "react-hook-form"
 
 export function AdditionalInformation({ control }: { control: Control<PurchaseFormData> }) {

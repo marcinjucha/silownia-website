@@ -10,7 +10,7 @@ import {
   ProductComponentSelectOptionDTO,
   ProductDTO,
 } from "@/features/product-list/logic/product-list-repo"
-import { ProductOrderItemDTO } from "@/repos/product-order-repo"
+import { ProductOrderItemDTO } from "@/features/purchase/logic/product-order-repo"
 import { Minus, Plus } from "lucide-react"
 import { useEffect, useState } from "react"
 

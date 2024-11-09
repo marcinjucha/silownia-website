@@ -1,4 +1,4 @@
-import { OfferDTO } from "@/features/common/dtos"
+import { OfferDTO } from "@/features/offer-list/logic/offer-list-type"
 import { executePromise } from "@/lib/utils"
 
 export type FetchOfferList = () => Promise<OfferDTO[]>

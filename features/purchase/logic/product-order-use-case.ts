@@ -1,5 +1,5 @@
 import { errorResult, execute } from "@/lib/utils"
-import { ProductOrderDTO } from "@/repos/product-order-repo"
+import { ProductOrderDTO } from "@/features/purchase/logic/product-order-repo"
 
 export type SaveProductOrder = (order: ProductOrderDTO) => void
 export type GetProductOrder = () => string | undefined

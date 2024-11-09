@@ -1,5 +1,3 @@
-"use client"
-
 import {
   Table,
   TableBody,
@@ -8,10 +6,15 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { ProductOrderItemDTO } from "@/repos/product-order-repo"
+import { ProductOrderItemDTO } from "@/features/purchase/logic/product-order-repo"
 
-export function OrderSummary({ products }: { products: ProductOrderItemDTO[] }) {
-  const totalPrice = products.reduce((prev, curr) => prev + curr.totalPrice, 0)
+export function OrderSummary({
+  products,
+  totalPrice,
+}: {
+  products: ProductOrderItemDTO[]
+  totalPrice: string
+}) {
   return (
     <>
       <h2 className="mb-4 text-3xl font-bold">Your order</h2>

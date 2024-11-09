@@ -1,19 +1,13 @@
-import { getProductOrder } from "@/app/kup-karnet/zamowienie/_actions/get-product-order"
-import { submitPurchaseForm } from "@/app/kup-karnet/zamowienie/_actions/purchase-submit-form"
-import { PurchaseFormData } from "@/app/kup-karnet/zamowienie/_actions/purchase-type"
-import { PurchaseForm } from "@/app/kup-karnet/zamowienie/_components/purchase-form"
-import { PaymentMethodDTO } from "@/repos/purchase-repo"
+import { getEspagoConfig, getProductOrder } from "@/features/purchase/actions/purchase-action"
+import { PurchaseForm } from "@/features/purchase/components/purchase-form"
 
-export default async function ProductOrderPage({
-  searchParams,
-}: {
-  searchParams: { [key: string]: string | string[] | undefined }
-}) {
+export default async function ProductOrderPage() {
   const order = await getProductOrder()
+  const config = await getEspagoConfig()
 
   return (
     <div className="space-container">
-      <PurchaseForm order={order} />
+      <PurchaseForm order={order} config={config} />
     </div>
   )
 }

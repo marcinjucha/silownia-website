@@ -46,7 +46,7 @@ export function imageDTOSample(response?: ImageResponse) {
   return {
     height: response.height,
     width: response.width,
-    altText: response.alternativeText,
+    alt: response.alternativeText,
     url: `${CMS_BASE_URL}${response.url}`,
     previewUrl: response.previewUrl ? `${CMS_BASE_URL}${response.previewUrl}` : response.previewUrl,
   } satisfies ImageDTO

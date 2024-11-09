@@ -1,10 +1,10 @@
 import { clone } from "@/lib/utils"
-import { ProductOrderDTO } from "@/repos/product-order-repo"
+import { ProductOrderDTO } from "@/features/purchase/logic/product-order-repo"
 import {
   getProductOrderUseCase,
   SaveProductOrder,
   saveProductOrderUseCase,
-} from "@/use-cases/product-order-use-case"
+} from "@/features/purchase/logic/product-order-use-case"
 
 describe("Product order use case", () => {
   const order = {

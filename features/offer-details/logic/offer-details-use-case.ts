@@ -1,4 +1,4 @@
-import { OfferDetailsDTO } from "@/features/common/dtos"
+import { OfferDetailsDTO } from "@/features/offer-details/logic/offer-details-type"
 import { FetchOfferList } from "@/features/offer-list/logic/offer-list-use-case"
 import { errorResult, executePromise, successResult } from "@/lib/utils"
 

@@ -24,7 +24,7 @@ export default function ImageCarousel({ images }: ImageCarouselProps) {
                 <CardContent className=" flex aspect-video h-full w-full items-center justify-center p-0">
                   <Image
                     src={image.url}
-                    alt={image.altText}
+                    alt={image.alt}
                     width={image.width}
                     height={image.height}
                     layout="responsive"

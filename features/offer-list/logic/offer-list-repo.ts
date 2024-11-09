@@ -1,5 +1,5 @@
 import { cmsImageDTO, ImageResponse } from "@/features/common/repo"
-import { OfferDTO } from "@/features/common/dtos"
+import { OfferDTO } from "@/features/offer-list/logic/offer-list-type"
 
 export type OfferListResponse = {
   data: OfferResponse[]

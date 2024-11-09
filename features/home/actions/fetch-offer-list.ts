@@ -3,7 +3,7 @@ import { ImageDTO } from "@/features/common/dtos"
 export function fetchOfferList() {
   const image = {
     url: "/images/oferta.jpg",
-    altText: "image offer alt",
+    alt: "image offer alt",
     height: 1280,
     width: 1920,
   } satisfies ImageDTO

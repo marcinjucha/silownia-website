@@ -57,12 +57,14 @@ const CMS_BASE_URL = process.env.CMS_BASE_URL
 const CMS_API_KEY = process.env.CMS_API_KEY
 
 export async function fetchProductListFromCMS(): Promise<ProductDTO[]> {
-  const json: ProductListResponse = await fetch(`${CMS_BASE_URL}/api/products`, {
+  const result = await fetch(`${CMS_BASE_URL}/api/products`, {
     headers: {
       Authorization: `Bearer ${CMS_API_KEY}`,
     },
     cache: "no-cache",
-  }).then(res => res.json())
+  })
+
+  const json: ProductListResponse = await result.json()
 
   return json.data.map(item => {
     let dto: ProductDTO = {

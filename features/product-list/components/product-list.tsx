@@ -14,21 +14,14 @@ import {
 import { submitProductBooking } from "@/features/product-list/actions/submit-product-booking"
 import { ProductListItem } from "@/features/product-list/components/product-list-item"
 import { ProductDTO } from "@/features/product-list/logic/product-list-repo"
-import { ProductOrderItemDTO } from "@/repos/product-order-repo"
+import { ProductOrderItemDTO } from "@/features/purchase/logic/product-order-repo"
 import React, { useState } from "react"
 
-type ProductListItem = {
-  id: number
-  name: string
-  price: number
-  description: string
-}
-
-type ProductListProps = {
+type Props = {
   products: ProductDTO[]
 }
 
-export default function ProductList({ products }: ProductListProps) {
+export default function ProductList({ products }: Props) {
   const [items, setItems] = useState<ProductOrderItemDTO[]>([])
 
   const total = items.reduce((sum, item) => sum + item.totalPrice, 0)

@@ -1,4 +1,3 @@
-import { PaymentMethodDTO } from "@/repos/purchase-repo"
 import { cookies } from "next/headers"
 
 export type ProductOrderDTO = {

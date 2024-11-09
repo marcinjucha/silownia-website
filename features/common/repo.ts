@@ -15,7 +15,7 @@ export function cmsImageDTO(image?: ImageResponse): ImageDTO | undefined {
     return {
       height: image.height,
       width: image.width,
-      altText: image.alternativeText,
+      alt: image.alternativeText,
       url: `${CMS_BASE_URL}${image.url}`,
       previewUrl: image.previewUrl ? `${CMS_BASE_URL}${image.previewUrl}` : undefined,
     }
