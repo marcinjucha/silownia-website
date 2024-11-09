@@ -15,7 +15,7 @@ interface ImageCarouselProps {
 
 export default function ImageCarousel({ images }: ImageCarouselProps) {
   return (
-    <Carousel className="my-6 w-full max-w-full">
+    <Carousel className="my-12 w-full max-w-full">
       <CarouselContent className="-ml-1 flex">
         {images.map((image, index) => (
           <CarouselItem key={index} className="lg:basis-1/s pl-1 md:basis-1/2">
@@ -37,8 +37,8 @@ export default function ImageCarousel({ images }: ImageCarouselProps) {
           </CarouselItem>
         ))}
       </CarouselContent>
-      <CarouselPrevious />
-      <CarouselNext />
+      <CarouselPrevious className="left-2" />
+      <CarouselNext className="right-2" />
     </Carousel>
   )
 }

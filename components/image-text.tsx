@@ -51,7 +51,7 @@ export default function ImageText({
 
   return (
     <div
-      className={`container mx-auto my-8 flex flex-col-reverse items-center justify-center gap-6 pb-12 ${
+      className={`container mx-auto my-8 flex flex-col items-center justify-center gap-6 pb-12 ${
         reverse ? "md:flex-row-reverse" : "md:flex-row"
       } md:gap-12`}
     >
@@ -69,9 +69,9 @@ export default function ImageText({
           className="h-auto w-full rounded object-cover"
         />
       </div>
-      <div className="w-full text-center md:w-1/2 md:text-left">
-        <h2 className="text-2xl font-bold">{title}</h2>
-        <h3 className="my-2 text-xl text-gray-400">{subtitle}</h3>
+      <div className="w-full p-6 text-center md:w-1/2 md:text-left">
+        <h2 className="text-3xl font-bold text-primary">{title}</h2>
+        <h3 className="my-2 text-xl text-muted-foreground ">{subtitle}</h3>
         <p>{description}</p>
         {buttonLabel && linkUrl && (
           <Link href={linkUrl} passHref>
