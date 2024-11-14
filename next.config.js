@@ -1,6 +1,6 @@
 require("dotenv")
 
-const url = new URL(process.env.CMS_BASE_URL || "http://localhost:1337")
+const url = new URL(process.env.AWS_MEDIA_URL || "http://localhost:1337")
 
 module.exports = {
   logging: {
@@ -14,7 +14,7 @@ module.exports = {
         protocol: url.protocol.replace(":", ""),
         hostname: url.hostname,
         port: url.port,
-        pathname: "**",
+        pathname: "/**",
       },
     ],
   },
