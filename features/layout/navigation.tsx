@@ -18,7 +18,7 @@ export default function Navigation() {
   ]
 
   return (
-    <nav className="sticky top-0 z-50 flex h-32 items-center justify-between p-8">
+    <nav className="sticky top-0 z-50 flex h-24 items-center justify-between bg-background p-8 md:bg-transparent">
       {/* Logo */}
       <div className="text-2xl font-bold text-accent">
         <Link href="/">
@@ -62,13 +62,13 @@ export default function Navigation() {
 
       {/* Mobile Navigation */}
       {isOpen && (
-        <ul className="absolute left-0 top-full flex w-full flex-col items-center rounded-b-full rounded-t-full bg-background px-0 py-4 text-base text-foreground">
+        <ul className="absolute left-0 top-full flex w-full flex-col items-center  bg-background px-0 pb-8 text-base text-foreground">
           {menuItems.map(item => (
-            <li key={item.link} className="py-2">
+            <li key={item.link} className="py-4">
               <Link
                 href={item.link}
                 onClick={() => setIsOpen(false)}
-                className="py-4 font-bold active:text-destructive"
+                className="py-4 font-bold hover:text-accent active:text-primary"
               >
                 {item.name}
               </Link>

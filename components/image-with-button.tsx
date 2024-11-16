@@ -19,7 +19,7 @@ const ImageWithButton: React.FC<ImageWithButtonProps> = ({
   linkUrl,
 }) => {
   return (
-    <div className="relative flex h-[60vh] w-full items-center justify-center overflow-hidden">
+    <div className="relative my-16 flex h-[60vh] w-full items-center justify-center overflow-hidden">
       <div className="absolute inset-0 z-0">
         <Image
           src={imageSrc}

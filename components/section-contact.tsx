@@ -56,16 +56,23 @@ export default function SectionContact() {
       <div className="absolute inset-0 z-10 bg-muted opacity-70 mix-blend-multiply"></div>
 
       {/* Desktop */}
-      <div className="relative hidden h-[80vh] overflow-hidden md:block">
+      <div className="relative hidden h-[65vh] overflow-hidden md:block">
         {/* Kontakt */}
         <div className="absolute left-[12%] top-1/2 z-20 -translate-y-1/2 transform rounded-2xl bg-black p-6 text-left opacity-90">
-          <h3 className="my-2 text-2xl text-foreground">Dołącz do nas</h3>
+          <h3 className="mb-1 mt-2 text-2xl text-foreground">Dołącz do nas</h3>
           <address className="text-base not-italic text-muted ">
-            <p className="underline">Progress Gym Academy</p>
-            <p>ul. Robocza 10</p>
-            <p>00-000 Wrocław</p>
+            <p className="text-primary">Progress Gym Academy</p>
+            <a
+              href="https://maps.app.goo.gl/fYeeCqDVKYFzTsANA"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text muted no-underline transition-colors duration-300 hover:text-primary"
+            >
+              <p>ul. Robocza 10</p>
+              <p>00-000 Wrocław</p>
+            </a>
           </address>
-          <h3 className="my-2 text-2xl text-foreground">Kontakt:</h3>
+          <h3 className="mb-1 mt-2 text-2xl text-foreground">Kontakt:</h3>
           <p className="text-base">
             <a
               href="mailto:progressacademy@progress.pl"
@@ -76,7 +83,7 @@ export default function SectionContact() {
           </p>
           {contactInformation.map((contact, index) => (
             <div key={index}>
-              <h4 className="my-3 text-lg text-foreground">{contact.title}</h4>
+              <h4 className="mb-1 mt-3 text-lg text-foreground">{contact.title}</h4>
               <p className="text-base">
                 <a
                   href={contact.href}
@@ -125,13 +132,20 @@ export default function SectionContact() {
       <div className="relative z-20 flex flex-col items-center justify-center gap-6 p-6 md:hidden">
         {/* Kontakt */}
         <div className="w-full max-w-md rounded-2xl bg-background p-4 text-left opacity-80">
-          <h3 className="my-2 text-xl text-foreground">Dołącz do nas</h3>
+          <h3 className="my-2 text-2xl text-foreground">Dołącz do nas</h3>
           <address className="text-lg not-italic text-muted">
-            <p>Progress Gym Academy</p>
-            <p>ul. Robocza 10</p>
-            <p>00-000 Wrocław</p>
+            <p className="text-primary">Progress Gym Academy</p>
+            <a
+              href="https://maps.app.goo.gl/fYeeCqDVKYFzTsANA"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text muted no-underline transition-colors duration-300 hover:text-primary"
+            >
+              <p>ul. Robocza 10</p>
+              <p>00-000 Wrocław</p>
+            </a>
           </address>
-          <h3 className="my-2 text-xl text-foreground">Kontakt:</h3>
+          <h3 className="mb-1 mt-2 text-xl text-foreground">Kontakt:</h3>
           <p className="text-lg">
             <a
               href="mailto:progressacademy@progress.pl"
@@ -142,7 +156,7 @@ export default function SectionContact() {
           </p>
           {contactInformation.map((contact, index) => (
             <div key={index}>
-              <h4 className="my-3 text-lg text-foreground">{contact.title}</h4>
+              <h4 className="mb-1 mt-3 text-lg text-foreground">{contact.title}</h4>
               <p className="text-lg">
                 <a
                   href={contact.href}
