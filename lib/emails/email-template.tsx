@@ -1,3 +1,4 @@
+import React from "react"
 import {
   Body,
   Button,
@@ -17,100 +18,221 @@ import {
 } from "@react-email/components"
 import config from "./tailwind.email.config"
 
-interface VercelInviteUserEmailProps {
-  username?: string
-  userImage?: string
-  invitedByUsername?: string
-  invitedByEmail?: string
-  teamName?: string
-  teamImage?: string
-  inviteLink?: string
-  inviteFromIp?: string
-  inviteFromLocation?: string
+interface Product {
+  name: string
+  price: number
+  quantity: number
 }
 
-const baseUrl = process.env.HOST_URL ? `https://${process.env.HOST_URL}` : ""
+interface OrderData {
+  orderNumber: string
+  customerFirstname: string
+  customerLastname: string
+  customerEmail: string
+  products: Product[]
+  discount?: number
+}
 
-export const VercelInviteUserEmail = ({
-  username,
-  userImage,
-  invitedByUsername,
-  invitedByEmail,
-  teamName,
-  teamImage,
-  inviteLink,
-  inviteFromIp,
-  inviteFromLocation,
-}: VercelInviteUserEmailProps) => {
-  const previewText = `Join ${invitedByUsername} on Vercel`
+const baseUrl = process.env.HOST_URL ? `${process.env.HOST_URL}` : ""
+
+export const OrderConfirmationEmail = ({ orderData }: { orderData: OrderData }) => {
+  const { orderNumber, customerFirstname, customerLastname, customerEmail, products, discount } =
+    orderData
+
+  const calculateTotal = () => {
+    const productsTotal = products.reduce(
+      (total, product) => total + product.price * product.quantity,
+      0,
+    )
+    const total = productsTotal - (discount || 0)
+    return total.toFixed(2)
+  }
+
+  const previewText = `Potwierdzenie zamówienia nr ${orderNumber}`
 
   return (
     <Html>
       <Head />
       <Preview>{previewText}</Preview>
       <Tailwind config={config}>
-        <Body className="mx-auto my-auto bg-primary px-2 font-sans">
-          <Container className="mx-auto my-[40px] max-w-[465px] rounded border border-solid border-[#eaeaea] p-[20px]">
-            <Section className="mt-[32px]">
+        <Body className="mx-auto my-auto bg-gray-50 px-4 font-sans">
+          <Container className="mx-auto my-[40px] max-w-[600px] rounded border border-solid border-[#eaeaea] bg-white p-[30px]">
+            {/* Logo */}
+            <Section className="mb-6 text-center">
               <Img
-                src={`${baseUrl}/static/vercel-logo.png`}
-                width="40"
-                height="37"
-                alt="Vercel"
-                className="mx-auto my-0"
+                src={`${baseUrl}/logozlote.png`}
+                alt="Logo Progress Gym"
+                width="300"
+                height="auto"
               />
             </Section>
-            <Heading className="mx-0 my-[30px] p-0 text-center text-[24px] font-normal text-black">
-              Join <strong>{teamName}</strong> on <strong>Vercel</strong>
+
+            <Heading className="mx-0 my-16  p-0 text-center text-[24px] font-normal text-black">
+              Zamówienie {orderNumber}
             </Heading>
-            <Text className="text-[14px] leading-[24px] text-black">Hello {username},</Text>
-            <Text className="text-[14px] leading-[24px] text-black">
-              <strong>{invitedByUsername}</strong> (
-              <Link href={`mailto:${invitedByEmail}`} className="text-blue-600 no-underline">
-                {invitedByEmail}
-              </Link>
-              ) has invited you to the <strong>{teamName}</strong> team on <strong>Vercel</strong>.
+
+            <Text className="text-[14px] leading-[20px] text-black">
+              Cześć {customerFirstname} {customerLastname},
             </Text>
-            <Section>
-              <Row>
-                <Column align="right">
-                  <Img className="rounded-full" src={userImage} width="64" height="64" />
-                </Column>
-                <Column align="center">
-                  <Img
-                    src={`${baseUrl}/static/vercel-arrow.png`}
-                    width="12"
-                    height="9"
-                    alt="invited you to"
-                  />
-                </Column>
-                <Column align="left">
-                  <Img className="rounded-full" src={teamImage} width="64" height="64" />
-                </Column>
-              </Row>
-            </Section>
-            <Section className="mb-[32px] mt-[32px] text-center">
-              <Button
-                className="rounded bg-[#000000] px-5 py-3 text-center text-[12px] font-semibold text-white no-underline"
-                href={inviteLink}
+            <Text className="text-[14px] leading-[20px] text-black">
+              Dziękujemy, że dołączyłeś do naszej społeczności{" "}
+              <Link
+                href="https://progressgymacademy.pl/"
+                className="text-[16px] text-primary no-underline"
               >
-                Join the team
-              </Button>
-            </Section>
-            <Text className="text-[14px] leading-[24px] text-black">
-              or copy and paste this URL into your browser:{" "}
-              <Link href={inviteLink} className="text-blue-600 no-underline">
-                {inviteLink}
+                Progress Gym Academy
               </Link>
+              . Poniżej znajdują się szczegóły Twojego zamówienia.
             </Text>
+            <Text className="text-[14px] leading-[20px] text-black">
+              Teraz wystarczy, że przyjdziesz do nas z potwierdzeniem, a my zajmiemy się resztą. Do
+              zobaczenia!
+            </Text>
+
+            <Section className="mt-12">
+              <table className="w-full text-left text-sm text-gray-700">
+                <thead>
+                  <tr className="border-b font-semibold">
+                    <th className="py-2">Produkt</th>
+                    <th className="py-2">Cena</th>
+                    <th className="py-2 text-center">Ilość</th>
+                    <th className="py-2 text-center">Wartość</th>
+                  </tr>
+                  <tr>
+                    <td colSpan={4}>
+                      <Hr className="my-[1px] border-t-2 border-gray-300" />
+                    </td>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {products.map((product, index) => (
+                    <React.Fragment key={index}>
+                      <tr className="border-b">
+                        <td className="py-2">{product.name}</td>
+                        <td className="py-2">{product.price.toFixed(2)}zł</td>
+                        <td className="py-2 text-center">{product.quantity}</td>
+                        <td className="py-2 text-center">
+                          {(product.price * product.quantity).toFixed(2)}zł
+                        </td>
+                      </tr>
+
+                      <tr>
+                        <td colSpan={4}>
+                          <Hr className="my-[1px] border-t-2 border-gray-300" />
+                        </td>
+                      </tr>
+                    </React.Fragment>
+                  ))}
+                  {discount && (
+                    <tr>
+                      <td colSpan={3} className="py-2 font-semibold">
+                        Rabat
+                      </td>
+                      <td className="py-2 text-center text-red-500">-{discount.toFixed(2)} zł</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </Section>
+
+            <Section className="m text-right">
+              <Text className="text-lg font-semibold">
+                Wartość zamówienia: <span className="ml-4">{calculateTotal()} zł</span>
+              </Text>
+              <Hr className="my-[16px] border-t-2 border-gray-300" />
+            </Section>
+
+            <Section className="text-xs">
+              <Heading as="h2" className="">
+                Dane zamawiającego:
+              </Heading>
+              <Text className="">
+                Imię: {customerFirstname}
+                <br />
+                Nazwisko: {customerLastname}
+                <br />
+                Email: {customerEmail}
+              </Text>
+            </Section>
+
             <Hr className="mx-0 my-[26px] w-full border border-solid border-[#eaeaea]" />
-            <Text className="text-[12px] leading-[24px] text-[#666666]">
-              This invitation was intended for <span className="text-black">{username}</span>. This
-              invite was sent from <span className="text-black">{inviteFromIp}</span> located in{" "}
-              <span className="text-black">{inviteFromLocation}</span>. If you were not expecting
-              this invitation, you can ignore this email. If you are concerned about your
-              account&apos;s safety, please reply to this email to get in touch with us.
-            </Text>
+            <Section className="my-6 text-xs">
+              <Text>
+                Jeśli potrzebujesz pomocy lub masz jakiekolwiek pytania, skontaktuj się z nami{" "}
+                <Link href="tel:+48500500500" className="text-primary no-underline">
+                  +48 500-500-500
+                </Link>{" "}
+                lub napisz do nas na{" "}
+                <Link href="mailto:biuro@progressgym.pl" className="text-primary no-underline">
+                  biuro@progressgym.pl
+                </Link>
+              </Text>
+            </Section>
+            <Section className="text-center">
+              <table className="w-full">
+                <tr className="w-full">
+                  <td align="center">
+                    <Img
+                      src={`${baseUrl}/logozlote.png`}
+                      alt="Logo Progress Gym"
+                      width="180"
+                      height="auto"
+                    />
+                  </td>
+                </tr>
+                <tr>
+                  <td align="center">
+                    <Row className="table-cell h-[44px] w-[56px] align-bottom">
+                      <Column className="pr-[8px]">
+                        <Link href="https://www.facebook.com/">
+                          <Img
+                            alt="Facebook"
+                            height="36"
+                            src="https://react.email/static/facebook-logo.png"
+                            width="36"
+                          />
+                        </Link>
+                      </Column>
+                      <Column className="pr-[8px]"></Column>
+                      <Column>
+                        <Link href="https://www.instagram.com/">
+                          <Img
+                            alt="Instagram"
+                            height="36"
+                            src="https://react.email/static/instagram-logo.png"
+                            width="36"
+                          />
+                        </Link>
+                      </Column>
+                    </Row>
+                  </td>
+                </tr>
+                <tr>
+                  <td align="center">
+                    <Link
+                      href="https://maps.app.goo.gl/4YoQqrxbzPLv2Yda8"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm text-primary no-underline"
+                    >
+                      ul. Wrocławska 9, 00-000 Wrocław
+                    </Link>
+                  </td>
+                </tr>
+              </table>
+              <Text className="text-sm">
+                Dodatkowe informacje znajdziesz na naszej stronie internetowej{" "}
+                <Link href="https://progressgymacademy.pl/" className="text-primary no-underline">
+                  www.progressgymacademy.pl .
+                </Link>
+              </Text>
+              <Hr className="my-[16px] border-t-2 border-gray-300" />
+              <Text className="text-center text-xs text-muted">
+                Prosimy nie odpowiadać na tego maila. Został wygenerowany automatycznie przez
+                system.
+              </Text>
+            </Section>
           </Container>
         </Body>
       </Tailwind>
@@ -118,16 +240,19 @@ export const VercelInviteUserEmail = ({
   )
 }
 
-VercelInviteUserEmail.PreviewProps = {
-  username: "alanturing",
-  userImage: `${baseUrl}/static/vercel-user.png`,
-  invitedByUsername: "Alan",
-  invitedByEmail: "alan.turing@example.com",
-  teamName: "Enigma",
-  teamImage: `${baseUrl}/static/vercel-team.png`,
-  inviteLink: "https://vercel.com/teams/invite/foo",
-  inviteFromIp: "204.13.186.218",
-  inviteFromLocation: "São Paulo, Brazil",
-} as VercelInviteUserEmailProps
+OrderConfirmationEmail.PreviewProps = {
+  orderData: {
+    orderNumber: "123456",
+    customerFirstname: "Jan",
+    customerLastname: "Kowalski",
+    customerEmail: "jan.kowalski@example.com",
+    products: [
+      { name: "Karnet miesięczny", price: 120, quantity: 1 },
+      { name: "Karnet ", price: 110, quantity: 1 },
+      { name: "Trening personalny", price: 250, quantity: 2 },
+    ],
+    discount: "",
+  },
+}
 
-export default VercelInviteUserEmail
+export default OrderConfirmationEmail
