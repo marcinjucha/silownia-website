@@ -3,7 +3,7 @@ import ImageText from "@/components/image-text"
 import ImageWithButton from "@/components/image-with-button"
 import { fetchOfferDetails } from "@/features/offer-details/actions/fetch-offer-details"
 
-export default async function SportPage({ params }: { params: { id: string } }) {
+export default async function OfferDetailsPage({ params }: { params: { id: string } }) {
   const details = await fetchOfferDetails(params.id)
 
   return (

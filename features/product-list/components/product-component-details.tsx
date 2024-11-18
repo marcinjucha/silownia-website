@@ -18,7 +18,7 @@ export default function ProductComponentDetails({
           src={image.url}
           width={image.width}
           height={image.height}
-          alt={image.alt}
+          alt={image.alt || "image"}
         />
       )}
 

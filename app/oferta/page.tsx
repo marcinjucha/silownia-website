@@ -1,5 +1,5 @@
-import ImageWithButton from "../../components/image-with-button"
-import ImageText from "../../components/image-text"
+import ImageText from "@/components/image-text"
+import ImageWithButton from "@/components/image-with-button"
 import { fetchOfferList } from "@/features/offer-list/actions/fetch-offer-list-action"
 
 export default async function Home() {

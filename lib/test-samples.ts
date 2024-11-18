@@ -1,9 +1,9 @@
-import { ImageDTO, OfferDetailsSectionDTO, OfferDTO } from "@/features/common/dtos"
+import { ImageDTO } from "@/features/common/dtos"
 import { ImageResponse } from "@/features/common/repo"
-import {
-  OfferDetailsSectionResponse,
-  OfferListResponse,
-} from "@/features/offer-list/logic/offer-list-repo"
+import { OfferDetailsSectionResponse } from "@/features/offer-details/logic/offer-details-repo"
+import { OfferDetailsSectionDTO } from "@/features/offer-details/logic/offer-details-type"
+import { OfferListResponse } from "@/features/offer-list/logic/offer-list-repo"
+import { OfferDTO } from "@/features/offer-list/logic/offer-list-type"
 import {
   ProductComponentDetailsDTO,
   ProductComponentSelectOptionDTO,
@@ -48,7 +48,6 @@ export function imageDTOSample(response?: ImageResponse) {
     width: response.width,
     alt: response.alternativeText,
     url: `${CMS_BASE_URL}${response.url}`,
-    previewUrl: response.previewUrl ? `${CMS_BASE_URL}${response.previewUrl}` : response.previewUrl,
   } satisfies ImageDTO
 }
 
@@ -58,7 +57,6 @@ export function imageResponseSample(text: string = randomString()) {
     height: height,
     width: width,
     url: `/uploads/${text}.jpg`,
-    previewUrl: usePreview ? `/uploads/preview-${text}.jpg` : undefined,
   } satisfies ImageResponse
 }
 
@@ -71,18 +69,14 @@ export function offerDetailsSectionDTOSample(response: OfferDetailsSectionRespon
 }
 
 export function offerListDTOSample(response: OfferListResponse) {
-  return response.data.map(
-    ({ description, id, image, offerDetails, offerId, subtitle, title }) =>
+  return response.offers.map(
+    ({ description, id, image, offerId, subtitle, title }) =>
       ({
         description,
         id,
         offerId,
         subtitle,
         title,
-        offerDetails: {
-          sections: offerDetails.sections.map(offerDetailsSectionDTOSample),
-          imageGallery: offerDetails.imageGallery.map(img => imageDTOSample(img)!),
-        },
         image: imageDTOSample(image)!,
       }) satisfies OfferDTO,
   )
@@ -100,7 +94,7 @@ export function offerDetailsSectionResponseSample(title: string) {
 }
 
 export const offerListResposneSample = {
-  data: [
+  offers: [
     {
       id: 1,
       offerId: "mma",
@@ -108,14 +102,6 @@ export const offerListResposneSample = {
       title: "title 1",
       subtitle: "subtitle 1",
       image: imageResponseSample("mma"),
-      offerDetails: {
-        sections: [
-          offerDetailsSectionResponseSample("Beginner mma"),
-          offerDetailsSectionResponseSample("Advanced mma"),
-          offerDetailsSectionResponseSample("Meet mma"),
-        ],
-        imageGallery: [imageResponseSample("mma gal 1"), imageResponseSample("mma gal 2")],
-      },
     },
   ],
 } satisfies OfferListResponse

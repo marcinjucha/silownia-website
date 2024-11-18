@@ -1,8 +1,10 @@
-import { cmsImageDTO, ImageResponse } from "@/features/common/repo"
+import { imageDTO, ImageResponse } from "@/features/common/repo"
 import { OfferDTO } from "@/features/offer-list/logic/offer-list-type"
+import client, { gql } from "@/lib/graph-ql/client"
+import { IMAGE_FIELDS } from "@/lib/graph-ql/fragment-defs"
 
 export type OfferListResponse = {
-  data: OfferResponse[]
+  offers: OfferResponse[]
 }
 
 export type OfferResponse = {
@@ -12,47 +14,31 @@ export type OfferResponse = {
   subtitle: string
   description: string
   image: ImageResponse
-  offerDetails: OfferDetailsResponse
 }
 
-export type OfferDetailsResponse = {
-  imageGallery: ImageResponse[]
-  sections: OfferDetailsSectionResponse[]
-}
-
-export type OfferDetailsSectionResponse = {
-  title: string
-  subtitle: string
-  description: string
-  image: ImageResponse
-}
+const listQuery = gql`
+  query {
+    offers {
+      offerId
+      title
+      subtitle
+      description
+      image {
+        ...ImageFields
+      }
+    }
+  }
+  ${IMAGE_FIELDS}
+`
 
 export async function fetchOfferListFromCMS() {
-  const URL = process.env.CMS_BASE_URL
-  const API_KEY = process.env.CMS_API_KEY
+  const { data } = await client.query<{ offers: OfferResponse[] }>({ query: listQuery })
 
-  const response = await fetch(
-    `${URL}/api/offers?populate[0]=image&populate[1]=offerDetails.sections.image&populate[2]=offerDetails.imageGallery`,
-    {
-      headers: {
-        Authorization: `Bearer ${API_KEY}`,
-      },
-    },
-  )
-  const json = (await response.json()) as OfferListResponse
-
-  const result: OfferDTO[] = json.data.map(
+  const result: OfferDTO[] = data.offers.map(
     offer =>
       ({
         ...offer,
-        image: cmsImageDTO(offer.image)!,
-        offerDetails: {
-          sections: offer.offerDetails.sections.map(section => ({
-            ...section,
-            image: cmsImageDTO(section.image)!,
-          })),
-          imageGallery: offer.offerDetails.imageGallery.map(img => cmsImageDTO(img)!),
-        },
+        image: imageDTO(offer.image),
       }) satisfies OfferDTO,
   )
 

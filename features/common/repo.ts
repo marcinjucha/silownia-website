@@ -1,22 +1,57 @@
-import { ImageDTO } from "@/features/common/dtos"
+import { ImageDTO, ImageFormatKey, ImageFormatsDTO } from "@/features/common/dtos"
 
 export type ImageResponse = {
   alternativeText: string
   width: number
   height: number
   url: string
-  previewUrl?: string
+  formats?: ImageFormatsResponse
 }
 
-export function cmsImageDTO(image?: ImageResponse): ImageDTO | undefined {
+export type ImageFormatsResponse = Record<ImageFormatKey, ImageFormatResponse | undefined>
+
+export type ImageFormatResponse = {
+  url: string
+  width: number
+  height: number
+}
+
+export function optionalImageDTO(image?: ImageResponse): ImageDTO | undefined {
   if (image) {
-    return {
-      height: image.height,
-      width: image.width,
-      alt: image.alternativeText,
-      url: image.url,
-      previewUrl: image.previewUrl,
-    }
+    return imageDTO(image)
   }
+
   return undefined
+}
+
+export function imageDTO(image: ImageResponse): ImageDTO {
+  return {
+    height: image.height,
+    width: image.width,
+    alt: image.alternativeText,
+    url: image.url,
+    formats: imageFormatsDTO(image.formats),
+  }
+}
+
+export function imageFormatsDTO(formats?: ImageFormatsResponse): ImageFormatsDTO | undefined {
+  if (!formats) return undefined
+
+  const keys: ImageFormatKey[] = Object.keys(formats) as (keyof ImageFormatsResponse)[]
+
+  const result: ImageFormatsDTO = {
+    large: undefined,
+    medium: undefined,
+    small: undefined,
+    thumbnail: undefined,
+  }
+
+  keys.forEach(key => {
+    if (formats[key]) {
+      const format = formats[key]
+      result[key] = { height: format.height, url: format.url, width: format.width }
+    }
+  })
+
+  return result
 }

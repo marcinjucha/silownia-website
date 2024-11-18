@@ -1,4 +1,3 @@
-import { OfferDTO } from "@/features/common/dtos"
 import { fetchOfferListFromCMS } from "@/features/offer-list/logic/offer-list-repo"
 import { fetchOfferListUseCase } from "@/features/offer-list/logic/offer-list-use-case"
 import { notFound } from "next/navigation"

@@ -23,7 +23,7 @@ const ImageWithButton: React.FC<ImageWithButtonProps> = ({
       <div className="absolute inset-0 z-0">
         <Image
           src={imageSrc}
-          alt={alt}
+          alt={alt || "image"}
           layout="fill"
           objectFit="cover"
           className="h-full w-full"

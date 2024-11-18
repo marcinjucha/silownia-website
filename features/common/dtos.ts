@@ -3,27 +3,15 @@ export type ImageDTO = {
   width: number
   height: number
   url: string
-  previewUrl?: string
+  formats?: ImageFormatsDTO
 }
 
-export type OfferDTO = {
-  id: number
-  offerId: string
-  title: string
-  subtitle: string
-  description: string
-  image: ImageDTO
-  offerDetails: OfferDetailsDTO
-}
+export type ImageFormatKey = "large" | "medium" | "small" | "thumbnail"
 
-export type OfferDetailsDTO = {
-  imageGallery?: ImageDTO[]
-  sections: OfferDetailsSectionDTO[]
-}
+export type ImageFormatsDTO = Record<ImageFormatKey, ImageFormatDTO | undefined>
 
-export type OfferDetailsSectionDTO = {
-  title: string
-  subtitle: string
-  description: string
-  image: ImageDTO
+export type ImageFormatDTO = {
+  url: string
+  width: number
+  height: number
 }

@@ -1,16 +1,20 @@
+import { fetchOfferDetailsFromCMS } from "@/features/offer-details/logic/offer-details-repo"
 import { fetchOfferDetailsUseCase } from "@/features/offer-details/logic/offer-details-use-case"
-import { fetchOfferListFromCMS } from "@/features/offer-list/logic/offer-list-repo"
 import { redirect } from "next/navigation"
+import { match } from "ts-pattern"
 
 export async function fetchOfferDetails(id: string) {
   const result = await fetchOfferDetailsUseCase(
     {
-      fetch: fetchOfferListFromCMS,
+      fetch: fetchOfferDetailsFromCMS,
     },
     id,
   )
 
-  if (!result.success) redirect("/oferta")
+  const offer = match(result)
+    .with({ success: true }, val => val.value)
+    .with({ success: false }, () => redirect("/oferta"))
+    .exhaustive()
 
-  return result.value
+  return offer
 }

@@ -1,5 +1,5 @@
 import { ImageDTO } from "@/features/common/dtos"
-import { cmsImageDTO, ImageResponse } from "@/features/common/repo"
+import { ImageResponse, optionalImageDTO } from "@/features/common/repo"
 
 export type ProductDTO = {
   id: number
@@ -86,7 +86,7 @@ export async function fetchProductListFromCMS(): Promise<ProductDTO[]> {
             description: item.description,
             name: item.name,
             component: "product-details",
-            image: cmsImageDTO(item.image),
+            image: optionalImageDTO(item.image),
           })),
         } satisfies ProductComponentSelectOptionDTO
       }
@@ -97,7 +97,7 @@ export async function fetchProductListFromCMS(): Promise<ProductDTO[]> {
           description: content.description,
           name: content.name,
           component: "product-details",
-          image: cmsImageDTO(content.image),
+          image: optionalImageDTO(content.image),
         } satisfies ProductComponentDetailsDTO
       }
 
