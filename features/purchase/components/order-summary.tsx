@@ -17,12 +17,12 @@ export function OrderSummary({
 }) {
   return (
     <>
-      <h2 className="mb-4 text-3xl font-bold">Your order</h2>
+      <h2 className="mb-4 text-3xl font-bold">Twoje zamówienie</h2>
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="font-bold text-primary">Product</TableHead>
-            <TableHead className="text-right font-bold text-primary">Subtotal</TableHead>
+            <TableHead className="font-bold text-primary">Produkt</TableHead>
+            <TableHead className="text-right font-bold text-primary">Wartość</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -31,12 +31,12 @@ export function OrderSummary({
               <TableCell>
                 {product.quantity}x {product.name}
               </TableCell>
-              <TableCell className="text-right">${product.totalPrice}</TableCell>
+              <TableCell className="text-right">{product.totalPrice}zł</TableCell>
             </TableRow>
           ))}
           <TableRow>
-            <TableCell className="font-bold text-primary">Total</TableCell>
-            <TableCell className="text-right font-bold text-primary">{totalPrice}</TableCell>
+            <TableCell className="font-bold text-primary">Wartość zamówienia</TableCell>
+            <TableCell className="text-right font-bold text-primary">{totalPrice}zł</TableCell>
           </TableRow>
         </TableBody>
       </Table>

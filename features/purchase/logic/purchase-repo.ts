@@ -1,5 +1,4 @@
 import { randomInt } from "crypto"
-import { cookies } from "next/headers"
 
 export type EspagoConfig = {
   url: string
@@ -33,7 +32,7 @@ export function espagoConfigProvider() {
     appId: appId,
     sessionId: "1559655843622983577", // Date.now().toString(),
     timestamp: "1444044688", // Math.floor(Date.now() / 1000).toString(),
-    paymentId: randomInt(100000, 200000).toString(),
+    paymentId: "payment_id:294", // `Zamowienie:${randomInt(100000, 200000).toString()}`,
     successURL,
     failureURL,
   } satisfies EspagoConfig

@@ -6,7 +6,7 @@ import { Control } from "react-hook-form"
 export function AdditionalInformation({ control }: { control: Control<PurchaseFormData> }) {
   return (
     <>
-      <h2 className="mb-4 text-3xl font-bold">Additional information</h2>
+      <h2 className="mb-4 text-3xl font-bold">Dodatkowe informacje</h2>
       <div className="grid gap-4">
         <div className="grid gap-2">
           <FormField
@@ -14,14 +14,13 @@ export function AdditionalInformation({ control }: { control: Control<PurchaseFo
             control={control}
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Order Notes (optional)</FormLabel>
+                <FormLabel>Uwagi do zamówienia (opcjonalnie)</FormLabel>
                 <FormControl>
                   <Textarea
-                    placeholder="Notes about your order, e.g. special notes for delivery."
+                    placeholder="Uwagi dotyczące zamówienia, np. specjalne uwagi dotyczące dostawy."
                     {...field}
                   />
                 </FormControl>
-                {/* <FormDescription>This is your public display name.</FormDescription> */}
                 <FormMessage />
               </FormItem>
             )}

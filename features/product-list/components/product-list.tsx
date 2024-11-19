@@ -1,6 +1,14 @@
 "use client"
 
 import { Accordion } from "@/components/ui/accordion"
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
@@ -15,6 +23,8 @@ import { submitProductBooking } from "@/features/product-list/actions/submit-pro
 import { ProductListItem } from "@/features/product-list/components/product-list-item"
 import { ProductDTO } from "@/features/product-list/logic/product-list-repo"
 import { ProductOrderItemDTO } from "@/features/purchase/logic/product-order-repo"
+import { AlertDialogDescription } from "@radix-ui/react-alert-dialog"
+import { Trash, Trash2 } from "lucide-react"
 import React, { useState } from "react"
 
 type Props = {
@@ -23,6 +33,8 @@ type Props = {
 
 export default function ProductList({ products }: Props) {
   const [items, setItems] = useState<ProductOrderItemDTO[]>([])
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [selectedOrder, setSelectedOrder] = useState<ProductOrderItemDTO | null>(null)
 
   const total = items.reduce((sum, item) => sum + item.totalPrice, 0)
 
@@ -35,9 +47,29 @@ export default function ProductList({ products }: Props) {
       const data = [...items]
       const order = data[index]
       order.quantity += newOrder.quantity
+      order.totalPrice = order.quantity * order.price
       data.splice(index, 1, order)
-      setItems(() => [...data])
+      setItems(() => data)
     }
+  }
+
+  function onRemoveOrderFromBucket(order: ProductOrderItemDTO) {
+    setSelectedOrder(order)
+    setShowDeleteDialog(true)
+  }
+
+  function handleDeleteAction() {
+    setShowDeleteDialog(false)
+
+    if (!selectedOrder) return
+
+    const index = items.findIndex(item => item.name === selectedOrder.name)
+
+    if (index == -1) return
+
+    const data = [...items]
+    data.splice(index, 1)
+    setItems(() => data)
   }
 
   function handleBookingButton() {
@@ -47,7 +79,7 @@ export default function ProductList({ products }: Props) {
   return (
     <>
       <section className="space-y-section bg-background p-4">
-        <h1 className="text-center text-3xl font-bold">Select Your Training Package</h1>
+        <h1 className="text-center text-3xl font-bold">Wybierz pakiet treningowy</h1>
         <Accordion type="single" collapsible className="grid gap-4 lg:grid-cols-2">
           {products.map(product => (
             <ProductListItem key={product.id} product={product} onAdd={addToBucket} />
@@ -57,38 +89,59 @@ export default function ProductList({ products }: Props) {
 
       <Card>
         <CardHeader>
-          <CardTitle>Your Booking Overview</CardTitle>
+          <CardTitle>Przegląd zamówienia</CardTitle>
         </CardHeader>
         <CardContent className="space-y-item">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Product</TableHead>
-                <TableHead className="text-right">Price</TableHead>
-                <TableHead className="text-right">Quantity</TableHead>
-                <TableHead className="text-right">Subtotal</TableHead>
+                <TableHead>Produkt</TableHead>
+                <TableHead className="text-right md:w-28">Cena</TableHead>
+                <TableHead className="text-right md:w-28">Ilość</TableHead>
+                <TableHead className="text-right md:w-28">Wartość</TableHead>
+                <TableHead className="md:w-28" />
               </TableRow>
             </TableHeader>
             <TableBody>
               {items.map((order, index) => (
                 <TableRow key={index}>
                   <TableCell>{order.name}</TableCell>
-                  <TableCell className="text-right">${order.price}</TableCell>
+                  <TableCell className="text-right">{order.price}zł</TableCell>
                   <TableCell className="text-right">{order.quantity}</TableCell>
-                  <TableCell className="text-right">${order.totalPrice}</TableCell>
+                  <TableCell className="text-right">{order.totalPrice}zł</TableCell>
+                  <TableCell className="text-right">
+                    <Trash2
+                      className="text-destructive"
+                      onClick={onRemoveOrderFromBucket.bind(null, order)}
+                    />
+                  </TableCell>
                 </TableRow>
               ))}
               <TableRow>
-                <TableCell className="font-bold">Total</TableCell>
-                <TableCell className="text-right font-bold">${total}</TableCell>
+                <TableCell className="font-bold">Wartość zamówienia</TableCell>
+                <TableCell className="text-right font-bold">{total}zł</TableCell>
               </TableRow>
             </TableBody>
           </Table>
           <Button disabled={items.length === 0} onClick={handleBookingButton}>
-            Proceed with this booking
+            Zrealizuj zamówienie
           </Button>
         </CardContent>
       </Card>
+
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogDescription>
+            <AlertDialogTitle>Czy na pewno chcesz usunąć ten produkt?</AlertDialogTitle>
+          </AlertDialogDescription>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Anuluj</AlertDialogCancel>
+            <Button variant="destructive" onClick={handleDeleteAction}>
+              Usuń
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   )
 }

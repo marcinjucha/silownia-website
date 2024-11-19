@@ -25,7 +25,7 @@ export default function ProductComponentDetails({
       {children && children}
 
       {description && <p className="mb-2">{description}</p>}
-      {price && <p className="font-bold">Price: ${price}</p>}
+      {price && <p className="font-bold">Cena: {price}zł</p>}
     </div>
   )
 }

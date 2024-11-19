@@ -10,8 +10,8 @@ import {
   ProductDTO,
   ProductListContentResponse,
   ProductListDetailsResponse,
-  ProductListResponse,
   ProductListSelectOptionResponse,
+  ProductResponse,
 } from "@/features/product-list/logic/product-list-repo"
 import { match } from "ts-pattern"
 
@@ -37,8 +37,7 @@ function randomString(length: number = randomInt()): string {
 
 const height = randomInt()
 const width = randomInt()
-const usePreview = randomBool()
-const CMS_BASE_URL = process.env.CMS_BASE_URL
+const AWS_MEDIA_URL = process.env.AWS_MEDIA_URL
 
 export function imageDTOSample(response?: ImageResponse) {
   if (!response) return undefined
@@ -47,7 +46,7 @@ export function imageDTOSample(response?: ImageResponse) {
     height: response.height,
     width: response.width,
     alt: response.alternativeText,
-    url: `${CMS_BASE_URL}${response.url}`,
+    url: response.url,
   } satisfies ImageDTO
 }
 
@@ -56,7 +55,7 @@ export function imageResponseSample(text: string = randomString()) {
     alternativeText: "alt " + text,
     height: height,
     width: width,
-    url: `/uploads/${text}.jpg`,
+    url: `${AWS_MEDIA_URL}uploads/${text}.jpg`,
   } satisfies ImageResponse
 }
 
@@ -111,34 +110,38 @@ export const offerListResposneSample = {
 export function productListResponseSample() {
   const makeContent = () => {
     const option = {
-      __component: "product.product-option",
+      __typename: "ComponentProductProductOption",
       ...productListSelectOptionResponseSample,
     } satisfies ProductListContentResponse
     const details = {
       ...productListDetailsResponseSample(),
-      __component: "product.product-details",
+      __typename: "ComponentProductProductDetails",
     } satisfies ProductListContentResponse
     return randomBool() ? option : details
   }
 
   return {
-    data: [randomString(), randomString()].map(val => ({
-      id: randomInt(),
-      title: "title " + val,
-      note: randomBool() ? "note " + val : undefined,
-      content: [makeContent(), makeContent()],
-    })),
-  } satisfies ProductListResponse
+    products: [randomString(), randomString()].map(
+      val =>
+        ({
+          documentId: randomString(),
+          title: "title " + val,
+          note: randomBool() ? "note " + val : undefined,
+          content: [makeContent(), makeContent()],
+        }) satisfies ProductResponse,
+    ),
+  }
 }
 
 export const productListSelectOptionResponseSample: ProductListSelectOptionResponse = {
+  id: randomString(),
   placeholder: randomString(),
   details: [productListDetailsResponseSample(), productListDetailsResponseSample()],
 }
 
 export function productListDetailsResponseSample(): ProductListDetailsResponse {
   return {
-    id: randomInt(),
+    id: randomString(),
     price: randomInt(),
     description: randomString(),
     image: imageResponseSample(),
@@ -148,17 +151,17 @@ export function productListDetailsResponseSample(): ProductListDetailsResponse {
 
 // Product DTO
 
-export function productDTOSample(response: ProductListResponse) {
+export function productDTOSample(response: { products: ProductResponse[] }) {
   const makeContent = (val: ProductListContentResponse) =>
     match(val)
-      .with({ __component: "product.product-option" }, productComponentSelectOptionDTOSample)
-      .with({ __component: "product.product-details" }, productComponentDetailsDTOSample)
+      .with({ __typename: "ComponentProductProductOption" }, productComponentSelectOptionDTOSample)
+      .with({ __typename: "ComponentProductProductDetails" }, productComponentDetailsDTOSample)
       .exhaustive()
 
-  return response.data.map(
-    ({ id, title, note, content }) =>
+  return response.products.map(
+    ({ documentId, title, note, content }) =>
       ({
-        id,
+        id: documentId,
         title,
         note,
         content: content.map(makeContent),
@@ -179,6 +182,7 @@ export function productComponentDetailsDTOSample(response: ProductListDetailsRes
 export function productComponentSelectOptionDTOSample(response: ProductListSelectOptionResponse) {
   return {
     component: "product-select-option",
+    id: response.id,
     placeholder: response.placeholder,
     options: response.details.map(productComponentDetailsDTOSample),
   } satisfies ProductComponentSelectOptionDTO

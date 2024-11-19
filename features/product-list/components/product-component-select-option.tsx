@@ -1,6 +1,5 @@
 "use client"
 
-import { Accordion } from "@/components/ui/accordion"
 import {
   Select,
   SelectContent,
@@ -26,7 +25,7 @@ export function ProductComponentSelectOption({
   const [selectedOption, setSelectedOption] = useState<ProductComponentDetailsDTO | undefined>()
 
   function onSelectValueChange(id: string) {
-    const index = options.findIndex(option => option.id === +id)
+    const index = options.findIndex(option => option.id === id)
 
     if (index === -1) {
       return

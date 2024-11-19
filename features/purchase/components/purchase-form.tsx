@@ -120,7 +120,7 @@ export function PurchaseForm({ order, config }: Props) {
           <FormField
             name="title"
             control={form.control}
-            defaultValue={`Zamowienie:${config.paymentId}`}
+            defaultValue={config.paymentId}
             render={({ field }) => <input {...field} type="hidden" />}
           />
           <input name="kind" type="hidden" value="sale" />
@@ -138,7 +138,7 @@ export function PurchaseForm({ order, config }: Props) {
 function SubmitButton({ isSubmitting }: { isSubmitting: boolean }) {
   return (
     <Button type="submit" disabled={isSubmitting} className="w-full">
-      {isSubmitting ? "Submitting..." : "Kup teraz"}
+      {isSubmitting ? "Przesyłanie..." : "Kup teraz"}
     </Button>
   )
 }

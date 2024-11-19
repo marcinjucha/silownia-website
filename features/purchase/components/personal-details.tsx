@@ -6,7 +6,7 @@ import { Control } from "react-hook-form"
 export function PersonalDetails({ control }: { control: Control<PurchaseFormData> }) {
   return (
     <>
-      <h2 className="mb-4 text-3xl font-bold">Your details</h2>
+      <h2 className="mb-4 text-3xl font-bold">Dane kontaktowe</h2>
       <div className="grid gap-4">
         <div className="grid gap-2">
           <FormField
@@ -14,9 +14,9 @@ export function PersonalDetails({ control }: { control: Control<PurchaseFormData
             control={control}
             render={({ field }) => (
               <FormItem>
-                <FormLabel>First name *</FormLabel>
+                <FormLabel>Imię *</FormLabel>
                 <FormControl>
-                  <Input placeholder="first name" {...field} />
+                  <Input placeholder="Imię" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -29,9 +29,9 @@ export function PersonalDetails({ control }: { control: Control<PurchaseFormData
             control={control}
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Last name *</FormLabel>
+                <FormLabel>Nazwisko *</FormLabel>
                 <FormControl>
-                  <Input placeholder="last name" {...field} />
+                  <Input placeholder="Nazwisko" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -44,9 +44,9 @@ export function PersonalDetails({ control }: { control: Control<PurchaseFormData
             control={control}
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Email address *</FormLabel>
+                <FormLabel>Adres e-mail *</FormLabel>
                 <FormControl>
-                  <Input placeholder="last name" {...field} />
+                  <Input placeholder="adres e-mail" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>

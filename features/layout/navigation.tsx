@@ -13,7 +13,6 @@ export default function Navigation() {
   const menuItems = [
     { name: "O nas", link: "/" },
     { name: "Oferta", link: "/oferta" },
-    { name: "Kontakt", link: "/galeria" },
     { name: "Kup karnet", link: "/kup-karnet" },
   ]
 

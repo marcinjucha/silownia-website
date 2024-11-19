@@ -47,7 +47,7 @@ export function ProductListItem({
             <ProductComponent key={index} component={val} onChange={setSelectedProduct} />
             <ProductQuantity key={selectedProduct?.id} onChange={setQuantity} />
             <Button onClick={handleAddButtonClick} disabled={!selectedProduct}>
-              Add to Booking
+              Dodaj do zamówienia
             </Button>
           </>
         ))}

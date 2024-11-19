@@ -17,7 +17,7 @@ export default function Footer() {
           </a>
         </p>
         <div className="flex justify-center space-x-6">
-          <Link href="/privacy" className="transition hover:text-foreground">
+          <Link href="/polityka-prywatnosci" className="transition hover:text-foreground">
             Polityka prywatności
           </Link>
           <Link href="/regulamin" className="transition hover:text-foreground">

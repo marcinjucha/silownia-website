@@ -1,8 +1,10 @@
 import { ImageDTO } from "@/features/common/dtos"
 import { ImageResponse, optionalImageDTO } from "@/features/common/repo"
+import client, { gql } from "@/lib/graph-ql/client"
+import { IMAGE_FIELDS } from "@/lib/graph-ql/fragment-defs"
 
 export type ProductDTO = {
-  id: number
+  id: string
   title: string
   note?: string
   content: (ProductComponentSelectOptionDTO | ProductComponentDetailsDTO)[]
@@ -10,38 +12,37 @@ export type ProductDTO = {
 
 export type ProductComponentSelectOptionDTO = {
   component: "product-select-option"
+  id: string
   placeholder: string
   options: ProductComponentDetailsDTO[]
 }
 
 export type ProductComponentDetailsDTO = {
   component: "product-details"
-  id: number
+  id: string
   name?: string
   description?: string
   price: number
   image?: ImageDTO
 }
 
-export type ProductListResponse = {
-  data: {
-    id: number
-    title: string
-    note?: string
-    content: ProductListContentResponse[]
-  }[]
+export type ProductResponse = {
+  documentId: string
+  title: string
+  note?: string
+  content: ProductListContentResponse[]
 }
 
 export type ProductListContentResponse =
   | ({
-      __component: "product.product-option"
+      __typename: "ComponentProductProductOption"
     } & ProductListSelectOptionResponse)
   | ({
-      __component: "product.product-details"
+      __typename: "ComponentProductProductDetails"
     } & ProductListDetailsResponse)
 
 export type ProductListDetailsResponse = {
-  id: number
+  id: string
   name?: string
   description?: string
   price: number
@@ -49,26 +50,53 @@ export type ProductListDetailsResponse = {
 }
 
 export type ProductListSelectOptionResponse = {
+  id: string
   placeholder: string
   details: ProductListDetailsResponse[]
 }
 
-const CMS_BASE_URL = process.env.CMS_BASE_URL
-const CMS_API_KEY = process.env.CMS_API_KEY
+const query = gql`
+  query Products {
+    products {
+      documentId
+      title
+      note
+      content {
+        ... on ComponentProductProductDetails {
+          id
+          name
+          description
+          price
+          image {
+            ...ImageFields
+          }
+        }
+        ... on ComponentProductProductOption {
+          id
+          placeholder
+          details {
+            id
+            name
+            description
+            price
+            image {
+              ...ImageFields
+            }
+          }
+        }
+      }
+    }
+  }
+
+  ${IMAGE_FIELDS}
+`
 
 export async function fetchProductListFromCMS(): Promise<ProductDTO[]> {
-  const result = await fetch(`${CMS_BASE_URL}/api/products`, {
-    headers: {
-      Authorization: `Bearer ${CMS_API_KEY}`,
-    },
-    cache: "no-cache",
-  })
+  const { data } = await client.query<{ products: ProductResponse[] }>({ query })
 
-  const json: ProductListResponse = await result.json()
-
-  return json.data.map(item => {
+  const result = data.products.map(item => {
     let dto: ProductDTO = {
-      id: item.id,
+      id: item.documentId,
       title: item.title,
       note: item.note,
       content: [],
@@ -76,9 +104,10 @@ export async function fetchProductListFromCMS(): Promise<ProductDTO[]> {
 
     for (const content of item.content) {
       let comp: ProductComponentSelectOptionDTO | ProductComponentDetailsDTO
-      if (content.__component === "product.product-option") {
+      if (content.__typename === "ComponentProductProductOption") {
         comp = {
           component: "product-select-option",
+          id: content.id,
           placeholder: content.placeholder,
           options: content.details.map(item => ({
             id: item.id,
@@ -89,8 +118,7 @@ export async function fetchProductListFromCMS(): Promise<ProductDTO[]> {
             image: optionalImageDTO(item.image),
           })),
         } satisfies ProductComponentSelectOptionDTO
-      }
-      if (content.__component === "product.product-details") {
+      } else if (content.__typename === "ComponentProductProductDetails") {
         comp = {
           id: content.id,
           price: content.price,
@@ -106,4 +134,6 @@ export async function fetchProductListFromCMS(): Promise<ProductDTO[]> {
 
     return dto
   })
+
+  return result
 }
