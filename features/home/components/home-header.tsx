@@ -16,7 +16,7 @@ export default function HomeHeader() {
         </Link>
       </h1>
       <video
-        className="absolute h-full w-full object-cover"
+        className="pointer-events-none absolute h-full w-full object-cover"
         autoPlay
         muted
         loop
