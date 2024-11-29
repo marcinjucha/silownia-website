@@ -1,4 +1,4 @@
-import { ImageDTO } from "@/features/common/dtos"
+import { ImageDTO } from "@/features/common/common-dtos"
 
 export type OfferDTO = {
   id: number

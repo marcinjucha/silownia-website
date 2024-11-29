@@ -1,6 +1,6 @@
 import Image from "next/image"
 import Link from "next/link"
-import { ImageDTO } from "@/features/common/dtos"
+import { ImageDTO } from "@/features/common/common-dtos"
 import { Button } from "@/components/ui/button"
 
 interface Props {

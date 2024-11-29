@@ -1,10 +1,8 @@
 "use server"
 
-import {
-  ProductOrderDTO,
-  saveProductOrderToCookies,
-} from "@/features/purchase/logic/product-order-repo"
-import { saveProductOrderUseCase } from "@/features/purchase/logic/product-order-use-case"
+import { saveProductOrderToCookies } from "@/features/product-order/logic/product-order-repo"
+import { ProductOrderDTO } from "@/features/product-order/logic/product-order-type"
+import { saveProductOrderUseCase } from "@/features/product-order/logic/product-order-use-case"
 import { redirect } from "next/navigation"
 
 export async function submitProductBooking(order: ProductOrderDTO) {

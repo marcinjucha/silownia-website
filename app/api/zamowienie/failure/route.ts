@@ -1,32 +1,57 @@
-import { saveConfirmationStatus as saveConfirmationStatus } from "@/features/confirmation/logic/confirmation-repo"
-import { espagoChecksumProvider } from "@/features/purchase/logic/purchase-repo"
-import { paymentConfirmationAPIUseCase } from "@/features/purchase/logic/purchase-use-case"
+import { makeAPIErrorResponseUseCase } from "@/features/common/common-use-cases"
+import { saveConfirmationStatusToCookies } from "@/features/confirmation/logic/confirmation-repos"
+import { saveConfirmationStatusAPIUseCase } from "@/features/confirmation/logic/confirmation-use-cases"
+import {
+  espagoChecksumProvider,
+  getPurchaseOrderCMS,
+  updatePurchaseOrderCMS,
+} from "@/features/purchase/logic/purchase-repo"
+import {
+  getPurchaseOrderAPIUseCase,
+  updatePurchaseOrderStatusAPIUseCase,
+} from "@/features/purchase/logic/purchase-use-cases"
 import { redirect } from "next/navigation"
-import { NextRequest, NextResponse } from "next/server"
-import { match } from "ts-pattern"
+import { NextRequest } from "next/server"
 
 export async function GET(req: NextRequest) {
-  const result = paymentConfirmationAPIUseCase(
+  const success = false
+  const purchaseResult = await getPurchaseOrderAPIUseCase(
     {
       espageChecksumProvider: espagoChecksumProvider,
-      saveConfirmationStatus: saveConfirmationStatus,
+      getPurchaseOrder: getPurchaseOrderCMS,
     },
     {
       params: req.nextUrl.searchParams,
-      success: false,
     },
   )
 
-  const value = match(result)
-    .with({ success: true }, val => val.value)
-    .with({ success: false }, () =>
-      NextResponse.json({ error: "Unauthorized access" }, { status: 401 }),
-    )
-    .exhaustive()
-
-  if (value instanceof NextResponse) {
-    return value
-  } else {
-    redirect("/kup-karnet/potwierdzenie")
+  if (!purchaseResult.success) {
+    return makeAPIErrorResponseUseCase(success, purchaseResult.error)
   }
+
+  const { documentId } = purchaseResult.value
+
+  const updateResult = await updatePurchaseOrderStatusAPIUseCase(
+    {
+      updatePurchaseOrderStatus: updatePurchaseOrderCMS,
+    },
+    { documentId, success },
+  )
+
+  if (!updateResult.success) {
+    return makeAPIErrorResponseUseCase(success, updateResult.error)
+  }
+
+  const confirmationResult = saveConfirmationStatusAPIUseCase(
+    {
+      saveStatus: saveConfirmationStatusToCookies,
+    },
+    { success },
+  )
+
+  if (!confirmationResult.success) {
+    return makeAPIErrorResponseUseCase(success, confirmationResult.error)
+  }
+
+  redirect("/kup-karnet/potwierdzenie")
 }

@@ -22,7 +22,7 @@ import {
 import { submitProductBooking } from "@/features/product-list/actions/submit-product-booking"
 import { ProductListItem } from "@/features/product-list/components/product-list-item"
 import { ProductDTO } from "@/features/product-list/logic/product-list-repo"
-import { ProductOrderItemDTO } from "@/features/purchase/logic/product-order-repo"
+import { ProductOrderItemDTO } from "@/features/product-order/logic/product-order-type"
 import { AlertDialogDescription } from "@radix-ui/react-alert-dialog"
 import { Trash, Trash2 } from "lucide-react"
 import React, { useState } from "react"

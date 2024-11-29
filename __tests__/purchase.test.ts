@@ -1,5 +1,5 @@
 import { espagoChecksumProvider } from "@/features/purchase/logic/purchase-repo"
-import { calculateChecksumUseCase } from "@/features/purchase/logic/purchase-use-case"
+import { calculateChecksumUseCase } from "@/features/purchase/logic/purchase-use-cases"
 import { createHash } from "crypto"
 
 describe("Purchase order", () => {

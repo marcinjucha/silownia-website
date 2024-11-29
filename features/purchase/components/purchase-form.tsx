@@ -2,15 +2,16 @@
 
 import { Button } from "@/components/ui/button"
 import { Form, FormField, useFormWithAction } from "@/components/ui/form"
-import { calculateChecksum } from "@/features/purchase/actions/purchase-action"
+import { ProductOrderDTO } from "@/features/product-order/logic/product-order-type"
+import { calculateChecksum, savePurchaseOrder } from "@/features/purchase/actions/purchase-action"
 import { PurchaseFormData, purchaseFormSchema } from "@/features/purchase/actions/purchase-type"
 import { AdditionalInformation } from "@/features/purchase/components/additional-information"
 import { OrderSummary } from "@/features/purchase/components/order-summary"
 import { PersonalDetails } from "@/features/purchase/components/personal-details"
-import { EspagoConfig } from "@/features/purchase/logic/purchase-repo"
-import { ProductOrderDTO } from "@/features/purchase/logic/product-order-repo"
+import { EspagoConfig } from "@/features/purchase/logic/purchase-type"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useRef, useState } from "react"
+import { match } from "ts-pattern"
 
 type Props = {
   order: ProductOrderDTO
@@ -29,15 +30,7 @@ export function PurchaseForm({ order, config }: Props) {
   const successRef = useRef<HTMLInputElement>(null)
   const failureRef = useRef<HTMLInputElement>(null)
 
-  const totalPrice = (10.0).toFixed(2) // products.reduce((prev, curr) => prev + curr.totalPrice, 0).toFixed(2)
-  const description = products.reduce((prev, curr) => prev + "# " + curr.name + "\n", "")
-
-  const params = new URLSearchParams({
-    appId: config.appId,
-    sessionId: config.sessionId,
-    amount: totalPrice,
-    currency: "PLN",
-  })
+  const totalPrice = (10).toFixed(2) // products.reduce((prev, curr) => prev + curr.totalPrice, 0).toFixed(2)
 
   async function onSubmit(formData: PurchaseFormData) {
     const form = formRef.current
@@ -48,26 +41,41 @@ export function PurchaseForm({ order, config }: Props) {
 
     setIsSubmitting(true)
 
-    const checksum = await calculateChecksum(formData)
+    const checksumResult = await calculateChecksum(formData)
 
-    if (checksum.error) {
+    if (!checksumResult.success) {
+      setIsSubmitting(false)
+      // TODO: display error - alert
+      return
+    }
+    const checksum = checksumResult.value
+
+    const orderResult = await savePurchaseOrder({
+      paymentId: config.paymentId,
+      checksum,
+      email: formData.email,
+      firstName: formData.firstName,
+      lastName: formData.lastName,
+      otherNotes: formData.orderNotes,
+      products: order.products,
+    })
+
+    if (!orderResult.success) {
       setIsSubmitting(false)
       // TODO: display error - alert
       return
     }
 
-    if (checksum.checksum) {
-      checksumInput.value = checksum.checksum
-      params.append("checksum", checksum.checksum!)
-      successInput.value = `${config.successURL}?${params.toString()}`
-      failureInput.value = `${config.failureURL}?${params.toString()}`
+    const params = new URLSearchParams({
+      purchaseId: orderResult.value,
+    })
+    checksumInput.value = checksum
+    successInput.value = `${config.successURL}?${params.toString()}`
+    failureInput.value = `${config.failureURL}?${params.toString()}`
 
-      form.submit()
-      return
-    }
+    form.submit()
 
     setIsSubmitting(false)
-    // TODO: display error - alert
   }
 
   return (
@@ -124,10 +132,10 @@ export function PurchaseForm({ order, config }: Props) {
             render={({ field }) => <input {...field} type="hidden" />}
           />
           <input name="kind" type="hidden" value="sale" />
-          <input name="description" type="hidden" value={description} />
           <input ref={successRef} name="positive_url" type="hidden" />
           <input ref={failureRef} name="negative_url" type="hidden" />
           <input name="ts" type="hidden" value={config.timestamp} />
+          <input name="locale" type="hidden" value="pl" />
           <input ref={checksumRef} name="checksum" type="hidden" />
         </form>
       </Form>

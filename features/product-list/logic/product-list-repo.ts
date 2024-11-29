@@ -1,13 +1,15 @@
-import { ImageDTO } from "@/features/common/dtos"
-import { ImageResponse, optionalImageDTO } from "@/features/common/repo"
+import { ImageDTO } from "@/features/common/common-dtos"
+import { ImageResponse, optionalImageDTO } from "@/features/common/common-repos"
 import client, { gql } from "@/lib/graph-ql/client"
 import { IMAGE_FIELDS } from "@/lib/graph-ql/fragment-defs"
+import { handleGraphQLQuery } from "@/lib/graph-ql/graphql-utils"
+import { match } from "ts-pattern"
 
 export type ProductDTO = {
   id: string
   title: string
   note?: string
-  content: (ProductComponentSelectOptionDTO | ProductComponentDetailsDTO)[]
+  content: ProductComponentSelectOptionDTO | ProductComponentDetailsDTO
 }
 
 export type ProductComponentSelectOptionDTO = {
@@ -56,8 +58,8 @@ export type ProductListSelectOptionResponse = {
 }
 
 const query = gql`
-  query Products {
-    products {
+  query Products($sort: [String]) {
+    products(sort: $sort) {
       documentId
       title
       note
@@ -92,20 +94,34 @@ const query = gql`
 `
 
 export async function fetchProductListFromCMS(): Promise<ProductDTO[]> {
-  const { data } = await client.query<{ products: ProductResponse[] }>({ query })
+  const response = await client.query<{ products: ProductResponse[] }>({
+    query,
+    variables: {
+      sort: ["updatedAt:desc"],
+    },
+  })
+  const data = handleGraphQLQuery(response)
 
   const result = data.products.map(item => {
     let dto: ProductDTO = {
       id: item.documentId,
       title: item.title,
       note: item.note,
-      content: [],
+      content: item.content.map(makeProductContentDTO)[0],
     }
 
-    for (const content of item.content) {
-      let comp: ProductComponentSelectOptionDTO | ProductComponentDetailsDTO
-      if (content.__typename === "ComponentProductProductOption") {
-        comp = {
+    return dto
+  })
+
+  return result
+}
+
+function makeProductContentDTO(content: ProductListContentResponse) {
+  return match(content)
+    .with(
+      { __typename: "ComponentProductProductOption" },
+      content =>
+        ({
           component: "product-select-option",
           id: content.id,
           placeholder: content.placeholder,
@@ -117,23 +133,19 @@ export async function fetchProductListFromCMS(): Promise<ProductDTO[]> {
             component: "product-details",
             image: optionalImageDTO(item.image),
           })),
-        } satisfies ProductComponentSelectOptionDTO
-      } else if (content.__typename === "ComponentProductProductDetails") {
-        comp = {
+        }) satisfies ProductComponentSelectOptionDTO,
+    )
+    .with(
+      { __typename: "ComponentProductProductDetails" },
+      content =>
+        ({
           id: content.id,
           price: content.price,
           description: content.description,
           name: content.name,
           component: "product-details",
           image: optionalImageDTO(content.image),
-        } satisfies ProductComponentDetailsDTO
-      }
-
-      dto.content.push(comp!)
-    }
-
-    return dto
-  })
-
-  return result
+        }) satisfies ProductComponentDetailsDTO,
+    )
+    .exhaustive()
 }

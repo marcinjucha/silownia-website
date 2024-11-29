@@ -10,19 +10,6 @@ module.exports = {
     },
   },
   images: {
-    remotePatterns: [
-      {
-        protocol: awsURL.protocol.replace(":", ""),
-        hostname: awsURL.hostname,
-        port: awsURL.port,
-        pathname: "/**",
-      },
-      {
-        protocol: cmsURL.protocol.replace(":", ""),
-        hostname: cmsURL.hostname,
-        port: cmsURL.port,
-        pathname: "/",
-      },
-    ],
+    domains: [cmsURL.hostname, awsURL.hostname],
   },
 }

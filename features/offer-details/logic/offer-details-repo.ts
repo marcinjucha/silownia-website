@@ -1,4 +1,4 @@
-import { imageDTO, ImageResponse } from "@/features/common/repo"
+import { imageDTO, ImageResponse } from "@/features/common/common-repos"
 import { OfferDetailsDTO } from "@/features/offer-details/logic/offer-details-type"
 import client, { gql } from "@/lib/graph-ql/client"
 import { IMAGE_FIELDS } from "@/lib/graph-ql/fragment-defs"

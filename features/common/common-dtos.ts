@@ -15,3 +15,8 @@ export type ImageFormatDTO = {
   width: number
   height: number
 }
+
+export type APIResponseStatusDTO = {
+  statusCode: number
+  message: string
+}

@@ -1,15 +1,5 @@
+import { ProductOrderDTO } from "@/features/product-order/logic/product-order-type"
 import { cookies } from "next/headers"
-
-export type ProductOrderDTO = {
-  products: ProductOrderItemDTO[]
-}
-
-export type ProductOrderItemDTO = {
-  name: string
-  quantity: number
-  price: number
-  totalPrice: number
-}
 
 const cookieKey = "order"
 

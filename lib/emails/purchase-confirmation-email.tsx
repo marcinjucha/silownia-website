@@ -1,7 +1,6 @@
-import React from "react"
+import { PurchaseOrderFormDTO } from "@/features/purchase/logic/purchase-type"
 import {
   Body,
-  Button,
   Column,
   Container,
   Head,
@@ -16,39 +15,22 @@ import {
   Tailwind,
   Text,
 } from "@react-email/components"
+import React from "react"
 import config from "./tailwind.email.config"
-
-interface Product {
-  name: string
-  price: number
-  quantity: number
-}
-
-interface OrderData {
-  orderNumber: string
-  customerFirstname: string
-  customerLastname: string
-  customerEmail: string
-  products: Product[]
-  discount?: number
-}
 
 const baseUrl = process.env.HOST_URL ? `${process.env.HOST_URL}` : ""
 
-export const OrderConfirmationEmail = ({ orderData }: { orderData: OrderData }) => {
-  const { orderNumber, customerFirstname, customerLastname, customerEmail, products, discount } =
-    orderData
+const PurchaseConfirmationEmail = ({ purchase }: { purchase: PurchaseOrderFormDTO }) => {
+  const { email, firstName, lastName, paymentId, otherNotes, products } = purchase
+  const logoURL = `${baseUrl}/images/logo_zlote.svg`
 
   const calculateTotal = () => {
-    const productsTotal = products.reduce(
-      (total, product) => total + product.price * product.quantity,
-      0,
-    )
-    const total = productsTotal - (discount || 0)
-    return total.toFixed(2)
+    const productsTotal = products.reduce((total, product) => total + product.totalPrice, 0)
+
+    return productsTotal.toFixed(2)
   }
 
-  const previewText = `Potwierdzenie zamówienia nr ${orderNumber}`
+  const previewText = `Potwierdzenie zamówienia nr ${paymentId}`
 
   return (
     <Html>
@@ -59,32 +41,24 @@ export const OrderConfirmationEmail = ({ orderData }: { orderData: OrderData }) 
           <Container className="mx-auto my-[40px] max-w-[600px] rounded border border-solid border-[#eaeaea] bg-white p-[30px]">
             {/* Logo */}
             <Section className="mb-6 text-center">
-              <Img
-                src={`${baseUrl}/logozlote.png`}
-                alt="Logo Progress Gym"
-                width="300"
-                height="auto"
-              />
+              <Img src={logoURL} alt="Logo Progress Gym" width="300" height="auto" />
             </Section>
 
             <Heading className="mx-0 my-16  p-0 text-center text-[24px] font-normal text-black">
-              Zamówienie {orderNumber}
+              Zamówienie {paymentId}
             </Heading>
 
-            <Text className="text-[14px] leading-[20px] text-black">
-              Cześć {customerFirstname} {customerLastname},
+            <Text className="text-[14px] leading-5 text-black">
+              Cześć {firstName} {lastName},
             </Text>
-            <Text className="text-[14px] leading-[20px] text-black">
+            <Text className="text-[14px] leading-5 text-black">
               Dziękujemy, że dołączyłeś do naszej społeczności{" "}
-              <Link
-                href="https://progressgymacademy.pl/"
-                className="text-[16px] text-primary no-underline"
-              >
+              <Link href={baseUrl} className="text-[16px] text-primary no-underline">
                 Progress Gym Academy
               </Link>
               . Poniżej znajdują się szczegóły Twojego zamówienia.
             </Text>
-            <Text className="text-[14px] leading-[20px] text-black">
+            <Text className="text-[14px] leading-5 text-black">
               Teraz wystarczy, że przyjdziesz do nas z potwierdzeniem, a my zajmiemy się resztą. Do
               zobaczenia!
             </Text>
@@ -112,9 +86,7 @@ export const OrderConfirmationEmail = ({ orderData }: { orderData: OrderData }) 
                         <td className="py-2">{product.name}</td>
                         <td className="py-2">{product.price.toFixed(2)}zł</td>
                         <td className="py-2 text-center">{product.quantity}</td>
-                        <td className="py-2 text-center">
-                          {(product.price * product.quantity).toFixed(2)}zł
-                        </td>
+                        <td className="py-2 text-center">{product.totalPrice.toFixed(2)}zł</td>
                       </tr>
 
                       <tr>
@@ -124,14 +96,6 @@ export const OrderConfirmationEmail = ({ orderData }: { orderData: OrderData }) 
                       </tr>
                     </React.Fragment>
                   ))}
-                  {discount && (
-                    <tr>
-                      <td colSpan={3} className="py-2 font-semibold">
-                        Rabat
-                      </td>
-                      <td className="py-2 text-center text-red-500">-{discount.toFixed(2)} zł</td>
-                    </tr>
-                  )}
                 </tbody>
               </table>
             </Section>
@@ -148,11 +112,11 @@ export const OrderConfirmationEmail = ({ orderData }: { orderData: OrderData }) 
                 Dane zamawiającego:
               </Heading>
               <Text className="">
-                Imię: {customerFirstname}
+                Imię: {firstName}
                 <br />
-                Nazwisko: {customerLastname}
+                Nazwisko: {lastName}
                 <br />
-                Email: {customerEmail}
+                Email: {email}
               </Text>
             </Section>
 
@@ -173,12 +137,7 @@ export const OrderConfirmationEmail = ({ orderData }: { orderData: OrderData }) 
               <table className="w-full">
                 <tr className="w-full">
                   <td align="center">
-                    <Img
-                      src={`${baseUrl}/logozlote.png`}
-                      alt="Logo Progress Gym"
-                      width="180"
-                      height="auto"
-                    />
+                    <Img src={logoURL} alt="Logo Progress Gym" width="180" height="auto" />
                   </td>
                 </tr>
                 <tr>
@@ -223,7 +182,7 @@ export const OrderConfirmationEmail = ({ orderData }: { orderData: OrderData }) 
               </table>
               <Text className="text-sm">
                 Dodatkowe informacje znajdziesz na naszej stronie internetowej{" "}
-                <Link href="https://progressgymacademy.pl/" className="text-primary no-underline">
+                <Link href={baseUrl} className="text-primary no-underline">
                   www.progressgymacademy.pl .
                 </Link>
               </Text>
@@ -240,19 +199,20 @@ export const OrderConfirmationEmail = ({ orderData }: { orderData: OrderData }) 
   )
 }
 
-OrderConfirmationEmail.PreviewProps = {
+PurchaseConfirmationEmail.PreviewProps = {
   orderData: {
-    orderNumber: "123456",
-    customerFirstname: "Jan",
-    customerLastname: "Kowalski",
-    customerEmail: "jan.kowalski@example.com",
+    paymentId: "123456",
+    checksum: "12312312",
+    firstName: "Jan",
+    lastName: "Kowalski",
+    email: "jan.kowalski@example.com",
+    otherNotes: undefined,
     products: [
-      { name: "Karnet miesięczny", price: 120, quantity: 1 },
-      { name: "Karnet ", price: 110, quantity: 1 },
-      { name: "Trening personalny", price: 250, quantity: 2 },
+      { name: "Karnet miesięczny", price: 120, quantity: 1, totalPrice: 120 * 1 },
+      { name: "Karnet ", price: 110, quantity: 1, totalPrice: 110 * 1 },
+      { name: "Trening personalny", price: 250, quantity: 2, totalPrice: 250 * 2 },
     ],
-    discount: "",
-  },
+  } satisfies PurchaseOrderFormDTO,
 }
 
-export default OrderConfirmationEmail
+export default PurchaseConfirmationEmail

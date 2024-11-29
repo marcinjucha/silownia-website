@@ -1,10 +1,10 @@
 import { clone } from "@/lib/utils"
-import { ProductOrderDTO } from "@/features/purchase/logic/product-order-repo"
 import {
   getProductOrderUseCase,
   SaveProductOrder,
   saveProductOrderUseCase,
-} from "@/features/purchase/logic/product-order-use-case"
+} from "@/features/product-order/logic/product-order-use-case"
+import { ProductOrderDTO } from "@/features/product-order/logic/product-order-type"
 
 describe("Product order use case", () => {
   const order = {
@@ -60,7 +60,7 @@ describe("Product order use case", () => {
       const result = getProductOrderUseCase({ getProductOrder })
 
       if (result.success) fail()
-      else expect(result.error.message).toEqual("no available orders")
+      else expect(result.error).toEqual("no available orders")
     })
 
     it("invalid order", () => {
@@ -69,7 +69,7 @@ describe("Product order use case", () => {
       const result = getProductOrderUseCase({ getProductOrder })
 
       if (result.success) fail()
-      else expect(result.error.message).toEqual("products are missing")
+      else expect(result.error).toEqual("products are missing")
     })
 
     it("valid order", () => {

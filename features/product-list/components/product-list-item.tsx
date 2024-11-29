@@ -10,7 +10,7 @@ import {
   ProductComponentSelectOptionDTO,
   ProductDTO,
 } from "@/features/product-list/logic/product-list-repo"
-import { ProductOrderItemDTO } from "@/features/purchase/logic/product-order-repo"
+import { ProductOrderItemDTO } from "@/features/product-order/logic/product-order-type"
 import { Minus, Plus } from "lucide-react"
 import { useEffect, useState } from "react"
 
@@ -42,16 +42,13 @@ export function ProductListItem({
     <AccordionItem key={id} value={`item-${id}`}>
       <AccordionTrigger>{title}</AccordionTrigger>
       <AccordionContent className="space-y-item">
-        {content.map((val, index) => (
-          <>
-            <ProductComponent key={index} component={val} onChange={setSelectedProduct} />
-            <ProductQuantity key={selectedProduct?.id} onChange={setQuantity} />
-            <Button onClick={handleAddButtonClick} disabled={!selectedProduct}>
-              Dodaj do zamówienia
-            </Button>
-          </>
-        ))}
-
+        <>
+          <ProductComponent key={content.id} component={content} onChange={setSelectedProduct} />
+          <ProductQuantity key={selectedProduct?.id} onChange={setQuantity} />
+          <Button onClick={handleAddButtonClick} disabled={!selectedProduct}>
+            Dodaj do zamówienia
+          </Button>
+        </>
         {note && <p>{note}</p>}
       </AccordionContent>
     </AccordionItem>

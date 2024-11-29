@@ -9,29 +9,47 @@ export function clone(value: any) {
   return JSON.parse(JSON.stringify(value))
 }
 
+export function unwrapData<T>(data?: T): NonNullable<T> {
+  if (data) {
+    return data
+  }
+  throw new Error("No data available")
+}
+
+export function stringify(data: any) {
+  return JSON.stringify(data)
+}
+
 // MARK: Error Handler
 
-export type ExecutionResult<T, E extends Error> =
-  | { success: true; value: T }
-  | { success: false; error: E }
+export type ClientResult<T, E> = { success: true; value: T } | { success: false; error: E }
 
-export function errorResult<T>(msg: string) {
-  console.error("Error result: ", msg)
+export function clientResult<T>(result: ExecutionResult<T, Error>) {
+  if (result.success) {
+    return result as ClientResult<T, string>
+  }
 
   return {
     success: false,
-    error: new Error(msg),
-  } satisfies ExecutionResult<T, Error>
+    error: result.error.message,
+  } satisfies ClientResult<T, string>
 }
-
-export function successResult<T>(value: T) {
+export function clientValue<T>(value: T) {
   return {
     success: true,
     value,
-  } satisfies ExecutionResult<T, Error>
+  } satisfies ClientResult<T, string>
+}
+export function clientError<T>(msg: string) {
+  return {
+    success: false,
+    error: msg,
+  } satisfies ClientResult<T, string>
 }
 
-export async function executePromise<T, E extends Error>(
+export type ExecutionResult<T, E> = { success: true; value: T } | { success: false; error: E }
+
+export async function executePromise<T, E = Error>(
   fn: () => Promise<T>,
 ): Promise<ExecutionResult<T, E>> {
   try {
@@ -43,7 +61,7 @@ export async function executePromise<T, E extends Error>(
   }
 }
 
-export function execute<T, E extends Error>(fn: () => T): ExecutionResult<T, E> {
+export function execute<T, E = Error>(fn: () => T): ExecutionResult<T, E> {
   try {
     const result = fn()
     return { success: true, value: result }
@@ -51,4 +69,18 @@ export function execute<T, E extends Error>(fn: () => T): ExecutionResult<T, E> 
     console.error("Execute error: ", error)
     return { success: false, error: error as E }
   }
+}
+
+export function executeValue<T, E = Error>(value: T) {
+  return {
+    success: true,
+    value,
+  } satisfies ExecutionResult<T, E>
+}
+
+export function executeError<T, E = Error>(error: E) {
+  return {
+    success: false,
+    error,
+  } satisfies ExecutionResult<T, E>
 }

@@ -1,5 +1,5 @@
-import { errorResult, execute } from "@/lib/utils"
-import { ProductOrderDTO } from "@/features/purchase/logic/product-order-repo"
+import { ProductOrderDTO } from "@/features/product-order/logic/product-order-type"
+import { clientError, clientResult, execute } from "@/lib/utils"
 
 export type SaveProductOrder = (order: ProductOrderDTO) => void
 export type GetProductOrder = () => string | undefined
@@ -15,14 +15,14 @@ export function getProductOrderUseCase(context: { getProductOrder: GetProductOrd
   const order = context.getProductOrder()
 
   if (!order) {
-    return errorResult("no available orders")
+    return clientError("no available orders")
   }
 
   const result = execute(() => JSON.parse(order) as ProductOrderDTO)
 
   if (result.success && !result.value.products) {
-    return errorResult("products are missing")
+    return clientError("products are missing")
   }
 
-  return result
+  return clientResult(result)
 }

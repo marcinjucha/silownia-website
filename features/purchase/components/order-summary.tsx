@@ -6,7 +6,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { ProductOrderItemDTO } from "@/features/purchase/logic/product-order-repo"
+import { ProductOrderItemDTO } from "@/features/product-order/logic/product-order-type"
 
 export function OrderSummary({
   products,

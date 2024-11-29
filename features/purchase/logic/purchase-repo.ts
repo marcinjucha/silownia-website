@@ -1,22 +1,12 @@
-import { randomInt } from "crypto"
-
-export type EspagoConfig = {
-  url: string
-  apiVersion: string
-  appId: string
-  sessionId: string
-  timestamp: string
-  paymentId: string
-  successURL: string
-  failureURL: string
-}
-
-export type EspagoChecksumData = {
-  appId: string
-  sessionId: string
-  amount: string
-  currency: string
-}
+import {
+  EspagoChecksumData,
+  EspagoConfig,
+  PurchaseOrderDTO,
+  PurchaseOrderFormDTO,
+  PurchaseOrderStatusDTO,
+} from "@/features/purchase/logic/purchase-type"
+import client, { gql } from "@/lib/graph-ql/client"
+import { handleGraphQLMutation, handleGraphQLQuery } from "@/lib/graph-ql/graphql-utils"
 
 export function espagoConfigProvider() {
   const url = process.env.ESPAGO_URL!
@@ -43,4 +33,77 @@ export function espagoChecksumProvider({ appId, sessionId, amount, currency }: E
   const checksumData = `${appId}|${sessionId}|${amount}|${currency}|${secretKey}`
 
   return "938ee2f7729ac4ba1a7c98f5ead8b167" // createHash("md5").update(checksumData).digest("hex")
+}
+
+export async function getPurchaseOrderCMS(documentId: string) {
+  type PurchaseOrderResponse = {
+    paymentId: string
+    checksum: string
+    purchase_status: PurchaseOrderStatusDTO
+    purchase_details: PurchaseOrderFormDTO
+  }
+  const query = gql`
+    query PurchaseOrder($documentId: ID!) {
+      purchaseOrder(documentId: $documentId) {
+        purchase_status
+        purchase_details
+      }
+    }
+  `
+
+  const result = await client.query<{ purchaseOrder: PurchaseOrderResponse }>({
+    query,
+    variables: {
+      documentId,
+    },
+  })
+
+  const order = handleGraphQLQuery(result).purchaseOrder
+
+  return {
+    purchaseDetails: order.purchase_details,
+    purchaseStatus: order.purchase_status,
+  } satisfies PurchaseOrderDTO
+}
+
+export async function savePurchaseOrderCMS(purchase: PurchaseOrderFormDTO) {
+  const mutation = gql`
+    mutation CreatePurchaseOrder($data: PurchaseOrderInput!) {
+      createPurchaseOrder(data: $data) {
+        documentId
+      }
+    }
+  `
+  const result = await client.mutate<{ createPurchaseOrder: { documentId: string } }>({
+    mutation,
+    variables: {
+      data: {
+        purchase_status: "started",
+        purchase_details: purchase,
+      },
+    },
+  })
+
+  return { id: handleGraphQLMutation(result).createPurchaseOrder.documentId }
+}
+
+export async function updatePurchaseOrderCMS(documentId: string, status: PurchaseOrderStatusDTO) {
+  const mutation = gql`
+    mutation UpdatePurchaseOrder($documentId: ID!, $data: PurchaseOrderInput!) {
+      updatePurchaseOrder(documentId: $documentId, data: $data) {
+        documentId
+      }
+    }
+  `
+  const result = await client.mutate<{ updatePurchaseOrder: { documentId: string } }>({
+    mutation,
+    variables: {
+      documentId,
+      data: {
+        purchase_status: status,
+      },
+    },
+  })
+
+  return handleGraphQLMutation(result).updatePurchaseOrder
 }

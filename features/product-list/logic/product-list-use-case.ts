@@ -1,5 +1,5 @@
 import { ProductDTO } from "@/features/product-list/logic/product-list-repo"
-import { EspagoConfig } from "@/features/purchase/logic/purchase-repo"
+import { EspagoConfig } from "@/features/purchase/logic/purchase-type"
 import { execute, executePromise } from "@/lib/utils"
 
 export type FetchProductList = () => Promise<ProductDTO[]>

@@ -1,4 +1,4 @@
-import { ImageDTO, ImageFormatKey, ImageFormatsDTO } from "@/features/common/dtos"
+import { ImageDTO, ImageFormatKey, ImageFormatsDTO } from "@/features/common/common-dtos"
 
 export type ImageResponse = {
   alternativeText: string

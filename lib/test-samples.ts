@@ -1,5 +1,5 @@
-import { ImageDTO } from "@/features/common/dtos"
-import { ImageResponse } from "@/features/common/repo"
+import { ImageDTO } from "@/features/common/common-dtos"
+import { ImageResponse } from "@/features/common/common-repos"
 import { OfferDetailsSectionResponse } from "@/features/offer-details/logic/offer-details-repo"
 import { OfferDetailsSectionDTO } from "@/features/offer-details/logic/offer-details-type"
 import { OfferListResponse } from "@/features/offer-list/logic/offer-list-repo"
@@ -164,7 +164,7 @@ export function productDTOSample(response: { products: ProductResponse[] }) {
         id: documentId,
         title,
         note,
-        content: content.map(makeContent),
+        content: content.map(makeContent)[0],
       }) satisfies ProductDTO,
   )
 }

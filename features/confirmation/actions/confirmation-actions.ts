@@ -1,10 +1,10 @@
-import { confirmationStatusProvider } from "@/features/confirmation/logic/confirmation-repo"
-import { getConfirmationStatusUseCase } from "@/features/confirmation/logic/confirmation-use-case"
+import { getConfirmationStatusFromCookies } from "@/features/confirmation/logic/confirmation-repos"
+import { getConfirmationStatusUseCase } from "@/features/confirmation/logic/confirmation-use-cases"
 import { notFound } from "next/navigation"
 import { match } from "ts-pattern"
 
 export async function getConfirmationStatus() {
-  const result = getConfirmationStatusUseCase({ statusProvider: confirmationStatusProvider })
+  const result = getConfirmationStatusUseCase({ statusProvider: getConfirmationStatusFromCookies })
 
   const status = match(result)
     .with({ success: true }, val => val.value)
