@@ -2,6 +2,7 @@
 
 import { AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import ProductComponentDetails from "@/features/product-list/components/product-component-details"
 import { ProductComponentSelectOption } from "@/features/product-list/components/product-component-select-option"
@@ -12,46 +13,28 @@ import {
 } from "@/features/product-list/logic/product-list-repo"
 import { ProductOrderItemDTO } from "@/features/product-order/logic/product-order-type"
 import { Minus, Plus } from "lucide-react"
+import Link from "next/link"
 import { useEffect, useState } from "react"
 
-export function ProductListItem({
-  product,
-  onAdd,
-}: {
-  product: ProductDTO
-  onAdd: (order: ProductOrderItemDTO) => void
-}) {
+export function ProductListItem({ product }: { product: ProductDTO }) {
   const { id, title, content, note } = product
-  const [quantity, setQuantity] = useState(1)
   const [selectedProduct, setSelectedProduct] = useState<ProductComponentDetailsDTO | undefined>()
 
-  function handleAddButtonClick() {
-    if (!selectedProduct) return
-
-    const price = selectedProduct.price
-    const order = {
-      name: selectedProduct.name ? `${product.title} - ${selectedProduct.name}` : product.title,
-      quantity,
-      price,
-      totalPrice: price * quantity,
-    } satisfies ProductOrderItemDTO
-    onAdd(order)
-  }
-
   return (
-    <AccordionItem key={id} value={`item-${id}`}>
-      <AccordionTrigger>{title}</AccordionTrigger>
-      <AccordionContent className="space-y-item">
-        <>
-          <ProductComponent key={content.id} component={content} onChange={setSelectedProduct} />
-          <ProductQuantity key={selectedProduct?.id} onChange={setQuantity} />
-          <Button onClick={handleAddButtonClick} disabled={!selectedProduct}>
-            Dodaj do zamówienia
-          </Button>
-        </>
+    <Card key={id}>
+      <CardHeader>
+        <CardTitle>{title}</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-item">
+        <ProductComponent key={content.id} component={content} onChange={setSelectedProduct} />
         {note && <p>{note}</p>}
-      </AccordionContent>
-    </AccordionItem>
+      </CardContent>
+      <CardFooter>
+        <Button asChild>
+          <Link href={""}>Kup karnet</Link>
+        </Button>
+      </CardFooter>
+    </Card>
   )
 }
 
