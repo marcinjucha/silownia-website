@@ -1,5 +1,4 @@
 import ImageText from "@/components/image-text"
-import ImageWithButton from "@/components/image-with-button"
 import { fetchOfferList } from "@/features/offer-list/actions/fetch-offer-list-action"
 
 export default async function Home() {
@@ -21,13 +20,6 @@ export default async function Home() {
           />
         ))}
       </div>
-
-      <ImageWithButton
-        alt="kup karnet"
-        buttonLabel="Kup karnet"
-        imageSrc="/sp9.jpg"
-        linkUrl="/kup-karnet"
-      />
     </>
   )
 }

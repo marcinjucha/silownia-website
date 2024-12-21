@@ -21,12 +21,7 @@ export default async function OfferDetailsPage({ params }: { params: { id: strin
         ))}
       </div>
 
-      <ImageWithButton
-        alt="sport"
-        buttonLabel="Kup karnet"
-        imageSrc="/sp9.jpg"
-        linkUrl="/kup-karnet"
-      />
+      <ImageWithButton buttonLabel="Kup karnet" image={details.offerImage} linkUrl="/kup-karnet" />
 
       {details.imageGallery && (
         <div className="container mx-auto">

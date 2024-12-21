@@ -8,6 +8,7 @@ export type OfferDetailsQueryResponse = {
 }
 
 export type OfferDetailsResponse = {
+  offerImage: ImageResponse
   imageGallery: ImageResponse[]
   sections: OfferDetailsSectionResponse[]
 }
@@ -34,6 +35,9 @@ const detailsQuery = gql`
         imageGallery {
           ...ImageFields
         }
+        offerImage {
+          ...ImageFields
+        }
       }
     }
   }
@@ -56,6 +60,7 @@ export async function fetchOfferDetailsFromCMS(offerId: string) {
   const offer = data.offers[0].offerDetails
 
   const result = {
+    offerImage: imageDTO(offer.offerImage),
     sections: offer.sections.map(section => ({
       ...section,
       image: imageDTO(section.image),

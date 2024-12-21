@@ -1,6 +1,7 @@
 import { ImageDTO } from "@/features/common/common-dtos"
 
 export type OfferDetailsDTO = {
+  offerImage: ImageDTO
   imageGallery: ImageDTO[]
   sections: OfferDetailsSectionDTO[]
 }
