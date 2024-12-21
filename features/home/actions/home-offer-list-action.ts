@@ -8,7 +8,7 @@ export async function fetchHomeOfferList() {
 
   const val = match(result)
     .with({ success: true }, val => val.value)
-    .with({ success: false }, () => notFound())
+    .with({ success: false }, () => [])
     .exhaustive()
 
   return val
