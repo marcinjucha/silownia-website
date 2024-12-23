@@ -10,10 +10,10 @@ export default function Navigation() {
   const [isOpen, setIsOpen] = useState(false)
   const pathName = usePathname()
 
-  const menuItems: { name: string; link: string }[] = [
-    // { name: "O nas", link: "/" },
-    // { name: "Oferta", link: "/oferta" },
-    // { name: "Kup karnet", link: "/kup-karnet" },
+  const menuItems = [
+    { name: "O nas", link: "/" },
+    { name: "Oferta", link: "/oferta" },
+    { name: "Kup karnet", link: "/kup-karnet" },
   ]
 
   return (
