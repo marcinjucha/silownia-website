@@ -1,7 +1,7 @@
+import { TailwindConfig } from "@react-email/components"
 import type { Config } from "tailwindcss"
 
-const config: Config = {
-  content: ["./**/*.{js,jsx,ts,tsx}"],
+const config: TailwindConfig = {
   theme: {
     extend: {
       colors: {

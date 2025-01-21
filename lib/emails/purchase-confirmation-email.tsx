@@ -200,7 +200,7 @@ const PurchaseConfirmationEmail = ({ purchase }: { purchase: PurchaseOrderFormDT
 }
 
 PurchaseConfirmationEmail.PreviewProps = {
-  orderData: {
+  purchase: {
     paymentId: "123456",
     checksum: "12312312",
     firstName: "Jan",

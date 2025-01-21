@@ -11,13 +11,15 @@ import {
   ExecutionResult,
 } from "@/lib/utils"
 
-export type ConfirmationStatusProvider = () => string
+export type ConfirmationStatusProvider = () => Promise<string>
 
-export function getConfirmationStatusUseCase(context: {
+export async function getConfirmationStatusUseCase(context: {
   statusProvider: ConfirmationStatusProvider
 }) {
   return clientResult(
-    execute(() => JSON.parse(decrypt(context.statusProvider())) as ConfirmationStatusDTO),
+    await executePromise(
+      async () => JSON.parse(decrypt(await context.statusProvider())) as ConfirmationStatusDTO,
+    ),
   )
 }
 

@@ -3,11 +3,11 @@ import { cookies } from "next/headers"
 
 const cookieKey = "order"
 
-export function saveProductOrderToCookies(order: ProductOrderDTO) {
+export async function saveProductOrderToCookies(order: ProductOrderDTO) {
   const jsonOrder = JSON.stringify(order)
-  cookies().set(cookieKey, jsonOrder)
+  ;(await cookies()).set(cookieKey, jsonOrder)
 }
 
-export function getProductOrderFromCookies() {
-  return cookies().get(cookieKey)?.value
+export async function getProductOrderFromCookies() {
+  return (await cookies()).get(cookieKey)?.value
 }
