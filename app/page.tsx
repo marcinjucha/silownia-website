@@ -1,8 +1,3 @@
-import HomeAboutDescription from "@/features/home/components/home-about-description"
-import TitleDescriptionSection from "@/features/home/components/title-description-section"
-import HomeHeader from "@/features/home/components/home-header"
-import HomeOfferCardList from "@/features/home/components/home-offer-card-list"
-
 export default async function Home() {
   return (
     <>
