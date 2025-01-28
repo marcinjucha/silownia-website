@@ -24,7 +24,10 @@ export function optionalImageDTO(image?: ImageResponse): ImageDTO | undefined {
   return undefined
 }
 
-const baseURL = process.env.NODE_ENV === "production" ? "" : process.env.CMS_BASE_URL || ""
+const baseURL =
+  process.env.NODE_ENV === "production" || process.env.ENV === "production"
+    ? ""
+    : process.env.CMS_BASE_URL || ""
 
 export function imageDTO(image: ImageResponse): ImageDTO {
   return {
