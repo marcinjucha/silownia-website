@@ -4,12 +4,12 @@ import { executeError, executeValue, ExecutionResult } from "@/lib/utils"
 import { cookies } from "next/headers"
 import { Resend } from "resend"
 
-export function saveConfirmationStatusToCookies(status: string) {
-  cookies().set("confirmationKey", status)
+export async function saveConfirmationStatusToCookies(status: string) {
+  ;(await cookies()).set("confirmationKey", status)
 }
 
-export function getConfirmationStatusFromCookies() {
-  return cookies().get("confirmationKey")?.value || ""
+export async function getConfirmationStatusFromCookies() {
+  return (await cookies()).get("confirmationKey")?.value || ""
 }
 
 export async function sendPurchaseConfirmationEmailResend(purchase: PurchaseOrderFormDTO) {

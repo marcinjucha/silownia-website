@@ -6,7 +6,7 @@ import { saveProductOrderUseCase } from "@/features/product-order/logic/product-
 import { redirect } from "next/navigation"
 
 export async function submitProductBooking(order: ProductOrderDTO) {
-  const result = saveProductOrderUseCase({ saveOrder: saveProductOrderToCookies }, order)
+  const result = await saveProductOrderUseCase({ saveOrder: saveProductOrderToCookies }, order)
 
   if (!result.success) {
     return result.error

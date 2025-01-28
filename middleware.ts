@@ -10,21 +10,11 @@ export const config = {
      * - favicon.ico (favicon file)
      * - public folder
      */
-    // "/((?!api|_next/static|_next/image|favicon.ico|public/).*)",
+    "/((?!api|_next/static|_next/image|favicon.ico|public/).*)",
     // Optional: Add specific app paths if you want to limit it further
-    "/api",
-    "/",
-    "/kup-karnet",
-    "/oferta",
   ],
 }
 
 export function middleware(request: NextRequest) {
-  const isProd = process.env.NODE_ENV === "production"
-  const path = request.nextUrl.pathname
-  if (!isProd || path.startsWith("/regulamin") || path.startsWith("/polityka-prywatnosci")) {
-    return NextResponse.next()
-  }
-
-  return NextResponse.redirect(new URL("/regulamin", request.url))
+  return NextResponse.next()
 }

@@ -4,7 +4,9 @@ import { notFound } from "next/navigation"
 import { match } from "ts-pattern"
 
 export async function getConfirmationStatus() {
-  const result = getConfirmationStatusUseCase({ statusProvider: getConfirmationStatusFromCookies })
+  const result = await getConfirmationStatusUseCase({
+    statusProvider: getConfirmationStatusFromCookies,
+  })
 
   const status = match(result)
     .with({ success: true }, val => val.value)

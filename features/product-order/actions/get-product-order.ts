@@ -4,7 +4,7 @@ import { redirect } from "next/navigation"
 import { match } from "ts-pattern"
 
 export async function getProductOrder() {
-  const result = getProductOrderUseCase({ getProductOrder: getProductOrderFromCookies })
+  const result = await getProductOrderUseCase({ getProductOrder: getProductOrderFromCookies })
 
   const value = match(result)
     .with({ success: true }, val => val.value)
