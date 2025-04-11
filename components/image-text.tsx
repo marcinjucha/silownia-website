@@ -70,12 +70,12 @@ export default function ImageText({
         />
       </div>
       <div className="w-full p-6 text-center md:w-1/2 md:text-left">
-        <h2 className="text-3xl font-bold text-primary">{title}</h2>
-        <h3 className="my-2 text-xl text-muted-foreground ">{subtitle}</h3>
+        <h2 className="text-primary text-3xl font-bold">{title}</h2>
+        <h3 className="text-muted-foreground my-2 text-xl">{subtitle}</h3>
         <p>{description}</p>
         {buttonLabel && linkUrl && (
           <Link href={linkUrl} passHref>
-            <Button className="mt-4 ">{buttonLabel}</Button>
+            <Button className="mt-4">{buttonLabel}</Button>
           </Link>
         )}
       </div>

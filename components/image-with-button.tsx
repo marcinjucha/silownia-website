@@ -38,7 +38,7 @@ const ImageWithButton: React.FC<ImageWithButtonProps> = ({
           </Link>
         </div>
 
-        <div className="z-5 absolute inset-0 bg-black opacity-40"></div>
+        <div className="absolute inset-0 z-5 bg-black opacity-40"></div>
       </div>
     </>
   )

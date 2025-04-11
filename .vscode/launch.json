@@ -28,6 +28,13 @@
         "uriFormat": "%s",
         "webRoot": "${workspaceFolder}"
       }
+    },
+    {
+      "name": "Vitest: run",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "yarn test:watch",
+      "skipFiles": ["<node_internals>/**"]
     }
   ]
 }

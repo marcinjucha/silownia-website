@@ -1,5 +1,5 @@
 import { OfferDetailsDTO } from "@/features/offer-details/logic/offer-details-type"
-import { executePromise } from "@/lib/utils"
+import { executePromise } from "@/lib/error-handling"
 
 export type FetchOfferDetails = (offerId: string) => Promise<OfferDetailsDTO>
 

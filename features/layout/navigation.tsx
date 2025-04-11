@@ -17,9 +17,9 @@ export default function Navigation() {
   ]
 
   return (
-    <nav className="sticky top-0 z-50 flex h-24 items-center justify-between bg-background p-8 md:bg-transparent">
+    <nav className="bg-background sticky top-0 z-50 flex h-24 items-center justify-between p-8 md:bg-transparent">
       {/* Logo */}
-      <div className="text-2xl font-bold text-accent">
+      <div className="text-accent text-2xl font-bold">
         <Link href="/">
           <Image
             src="/images/logo_zlote.svg"
@@ -32,16 +32,16 @@ export default function Navigation() {
       </div>
 
       {/* Navigation desktop */}
-      <div className="hidden rounded-full bg-background p-6 opacity-80 md:block">
-        <ul className="hidden space-x-8 text-lg font-bold text-border md:flex">
+      <div className="bg-background hidden rounded-full p-6 opacity-80 md:block">
+        <ul className="text-border hidden space-x-8 text-lg font-bold md:flex">
           {menuItems.map(item => (
             <li
               key={item.link}
-              className="transition-colors duration-300 ease-in-out hover:text-accent"
+              className="hover:text-accent transition-colors duration-300 ease-in-out"
             >
               <Link
                 href={item.link}
-                className={`transition-colors duration-300 ease-in-out hover:text-accent ${
+                className={`hover:text-accent transition-colors duration-300 ease-in-out ${
                   pathName === item.link ? "text-accent" : ""
                 }`}
               >
@@ -61,13 +61,13 @@ export default function Navigation() {
 
       {/* Mobile Navigation */}
       {isOpen && (
-        <ul className="absolute left-0 top-full flex w-full flex-col items-center  bg-background px-0 pb-8 text-base text-foreground">
+        <ul className="bg-background text-foreground absolute top-full left-0 flex w-full flex-col items-center px-0 pb-8 text-base">
           {menuItems.map(item => (
             <li key={item.link} className="py-4">
               <Link
                 href={item.link}
                 onClick={() => setIsOpen(false)}
-                className="py-4 font-bold hover:text-accent active:text-primary"
+                className="hover:text-accent active:text-primary py-4 font-bold"
               >
                 {item.name}
               </Link>

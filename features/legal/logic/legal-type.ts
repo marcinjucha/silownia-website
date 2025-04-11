@@ -1,7 +1,7 @@
-import { type LegalContentDTO } from "@/components/rich-text"
+import { RichTextControlContentDTO } from "@/components/controls/rich-text-repo"
 
 export type LegalDTO = {
   title: string
   description?: string
-  content: LegalContentDTO
+  content: RichTextControlContentDTO
 }

@@ -1,5 +1,5 @@
 import { ProductOrderDTO } from "@/features/product-order/logic/product-order-type"
-import { clientError, clientResult, execute, executePromise } from "@/lib/utils"
+import { clientError, clientResult, execute, executePromise } from "@/lib/error-handling"
 
 export type SaveProductOrder = (order: ProductOrderDTO) => Promise<void>
 export type GetProductOrder = () => Promise<string | undefined>

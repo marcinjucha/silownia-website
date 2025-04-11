@@ -1,5 +1,5 @@
 import { HomeOfferDTO } from "@/features/home/logic/home-offer-list-type"
-import { executePromise } from "@/lib/utils"
+import { executePromise } from "@/lib/error-handling"
 
 export type FetchHomeOfferList = () => Promise<HomeOfferDTO[]>
 

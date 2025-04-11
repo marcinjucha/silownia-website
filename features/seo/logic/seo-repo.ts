@@ -1,7 +1,16 @@
-import { imageDTO, ImageResponse } from "@/features/common/common-repos"
-import { SEOMetadataDTO } from "@/features/seo/logic/seo-type"
+import { ImageControlFields } from "@/components/controls/image"
+import { SEOImage, SEOMetadataDTO, SEOOpenGraphType } from "@/features/seo/logic/seo-type"
 import client, { gql } from "@/lib/graph-ql/client"
-import { IMAGE_FIELDS } from "@/lib/graph-ql/fragment-defs"
+
+type SEOImageResponse = {
+  alt: string
+  imageFormat: string
+  image: {
+    url: string
+    height: number
+    width: number
+  }
+}
 
 export type SEOMetadataResponse = {
   title: string
@@ -13,7 +22,7 @@ export type SEOMetadataResponse = {
     description: string
     type: SEOOpenGraphTypeResponse
     url: string
-    image: ImageResponse
+    image: SEOImageResponse
   }
 }
 
@@ -37,14 +46,23 @@ const listQuery = gql`
           type
           url
           image {
-            ...ImageFields
+            ...ImageControlFields
           }
         }
       }
     }
   }
-  ${IMAGE_FIELDS}
+  ${ImageControlFields}
 `
+
+function mapCMSImageToSEOImage(cmsImage: SEOImageResponse): SEOImage {
+  return {
+    url: cmsImage.image.url,
+    width: cmsImage.image.width,
+    height: cmsImage.image.height,
+    alt: cmsImage.alt,
+  }
+}
 
 export async function fetchSeoFromCMS() {
   const { data } = await client.query<{ seos: SEOResponse[] }>({
@@ -59,9 +77,9 @@ export async function fetchSeoFromCMS() {
     openGraph: {
       description: item.seo.openGraph.description,
       title: item.seo.openGraph.title,
-      type: item.seo.openGraph.type,
+      type: item.seo.openGraph.type as SEOOpenGraphType,
       url: item.seo.openGraph.url,
-      image: imageDTO(item.seo.openGraph.image),
+      image: mapCMSImageToSEOImage(item.seo.openGraph.image),
     },
   }))[0]
 
