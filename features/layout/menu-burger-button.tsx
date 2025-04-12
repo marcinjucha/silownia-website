@@ -6,15 +6,15 @@ export default function MenuBurgerButton({ isOpen }: MenuBurgerButtonProps) {
   return (
     <div className="flex h-10 w-10 flex-col items-center justify-between p-3">
       <span
-        className={`block h-1 w-10 bg-primary transition-transform ${
+        className={`bg-primary block h-1 w-10 transition-transform ${
           isOpen ? "translate-y-1.5 rotate-45" : ""
         }`}
       ></span>
       <span
-        className={`block h-1 w-10 bg-primary transition-opacity ${isOpen ? "opacity-0" : ""}`}
+        className={`bg-primary block h-1 w-10 transition-opacity ${isOpen ? "opacity-0" : ""}`}
       ></span>
       <span
-        className={`block h-1 w-10 bg-primary transition-transform ${
+        className={`bg-primary block h-1 w-10 transition-transform ${
           isOpen ? "-translate-y-1.5 -rotate-45" : ""
         }`}
       ></span>

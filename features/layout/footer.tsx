@@ -3,8 +3,8 @@ import Link from "next/link"
 export default function Footer() {
   const currentYear = new Date().getFullYear()
   return (
-    <footer className="bg-background py-6 text-foreground">
-      <div className="container mx-auto text-center text-muted">
+    <footer className="bg-background text-foreground py-6">
+      <div className="text-muted container mx-auto text-center">
         <p className="flex items-center justify-center gap-x-2.5">
           &copy;<span>{currentYear}</span>
           <a href="https://roomofcode.com" target="_blank" rel="noopener noreferrer">
@@ -17,10 +17,10 @@ export default function Footer() {
           </a>
         </p>
         <div className="flex justify-center space-x-6">
-          <Link href="/polityka-prywatnosci" className="transition hover:text-foreground">
+          <Link href="/polityka-prywatnosci" className="hover:text-foreground transition">
             Polityka prywatności
           </Link>
-          <Link href="/regulamin" className="transition hover:text-foreground">
+          <Link href="/regulamin" className="hover:text-foreground transition">
             Regulamin
           </Link>
         </div>

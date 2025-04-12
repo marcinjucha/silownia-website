@@ -20,3 +20,11 @@ export type APIResponseStatusDTO = {
   statusCode: number
   message: string
 }
+
+export type UploadFileDTO = {
+  name: string
+  extension: string
+  mimeType: string
+  fileSize: number
+  downloadUrl: string
+}

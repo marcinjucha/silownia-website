@@ -1,5 +1,5 @@
 import { SEOMetadataDTO } from "./seo-type"
-import { executePromise } from "@/lib/utils"
+import { executePromise } from "@/lib/error-handling"
 
 export type FetchSEOMetadata = () => Promise<SEOMetadataDTO>
 

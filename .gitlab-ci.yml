@@ -1,0 +1,48 @@
+# Używamy oficjalnego obrazu Node.js w wersji 20 na bazie Alpine Linux
+# Alpine to lekka dystrybucja, która przyspiesza budowanie
+image: node:20-alpine
+
+.rules:
+  feature_branch: &feature
+    rules:
+      - if: $CI_COMMIT_BRANCH =~ /^(production|staging)$/
+        when: never
+      - when: always
+
+# Domyślna konfiguracja dla wszystkich jobów
+default:
+  before_script:
+    - yarn install
+
+# Zmienne globalne dostępne dla wszystkich jobów
+variables:
+  # Ustawiamy folder cache dla yarn, aby przyspieszyć instalację zależności
+  YARN_CACHE_FOLDER: .yarn-cache
+
+# Konfiguracja cache - przyspiesza kolejne uruchomienia pipeline'u
+cache:
+  # Klucz cache bazujący na zawartości yarn.lock
+  # Jeśli yarn.lock się zmieni, cache zostanie zresetowany
+  key:
+    files:
+      - yarn.lock
+  # Foldery, które będą cachowane między uruchomieniami
+  paths:
+    - .yarn-cache
+    - node_modules
+
+# Definicja etapów pipeline'u
+stages:
+  - test
+
+test:
+  <<: *feature
+  stage: test
+  script:
+    - yarn test
+  coverage: '/All files\s*\|[^|]*\|[^|]*\|[^|]*\|\s*([\d\.]+)\s*\|/'
+  artifacts:
+    when: always
+    paths:
+      - coverage/
+    expire_in: 1 week

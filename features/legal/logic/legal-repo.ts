@@ -1,8 +1,8 @@
-import { type LegalContentDTO } from "@/components/rich-text"
 import client from "@/lib/graph-ql/client"
 import { handleGraphQLQuery } from "@/lib/graph-ql/graphql-utils"
 import { gql } from "@apollo/client"
 import { LegalDTO } from "./legal-type"
+import { RichTextControlContentDTO } from "@/components/controls/rich-text-repo"
 
 const legalQuery = gql`
   query Query($filters: LegalContentFiltersInput) {
@@ -17,7 +17,7 @@ const legalQuery = gql`
 export type LegalResponse = {
   title: string
   description?: string
-  content: LegalContentDTO
+  content: RichTextControlContentDTO
 }
 
 export async function fetchRegulaminFromCMS(): Promise<LegalDTO> {

@@ -1,4 +1,4 @@
-import { createCipheriv, createDecipheriv, randomBytes } from "crypto"
+import { createCipheriv, createDecipheriv, randomBytes, createHash } from "crypto"
 
 const algorithm = "aes-256-ctr"
 const secretKey = Buffer.from(process.env.ENCRYPT_SECRET_KEY || "", "hex")
@@ -16,4 +16,13 @@ export function decrypt(hash: string): string {
   const decipher = createDecipheriv(algorithm, secretKey, iv)
   const decrypted = Buffer.concat([decipher.update(encrypted), decipher.final()])
   return decrypted.toString()
+}
+
+// MD5 (128-bit)
+export function md5(text: string): string {
+  return createHash("md5").update(text).digest("hex")
+}
+
+export function verifyMd5(text: string, hashedText: string): boolean {
+  return md5(text) === hashedText
 }

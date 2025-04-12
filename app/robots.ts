@@ -7,6 +7,6 @@ export default function robots(): MetadataRoute.Robots {
       allow: ["/"],
       disallow: ["/api/*"],
     },
-    sitemap: "https://progressgymacademy.pl/sitemap.xml",
+    sitemap: `${process.env.HOST_URL}sitemap.xml`,
   }
 }

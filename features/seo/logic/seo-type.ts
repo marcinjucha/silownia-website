@@ -1,6 +1,11 @@
-import { ImageDTO } from "@/features/common/common-dtos"
-
 export type SEOOpenGraphType = "website"
+
+export type SEOImage = {
+  url: string
+  width: number
+  height: number
+  alt: string
+}
 
 export type SEOMetadataDTO = {
   title: string
@@ -12,6 +17,6 @@ export type SEOMetadataDTO = {
     description: string
     type: SEOOpenGraphType
     url: string
-    image: ImageDTO
+    image: SEOImage
   }
 }

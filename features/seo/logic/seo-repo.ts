@@ -1,3 +1,4 @@
+import { ImageControlFields } from "@/components/controls/image"
 import { imageDTO, ImageResponse } from "@/features/common/common-repos"
 import { SEOMetadataDTO } from "@/features/seo/logic/seo-type"
 import client, { gql } from "@/lib/graph-ql/client"
@@ -19,26 +20,20 @@ export type SEOMetadataResponse = {
 
 export type SEOOpenGraphTypeResponse = "website"
 
-export type SEOResponse = {
-  seo: SEOMetadataResponse
-}
-
 const listQuery = gql`
   query {
     seos {
-      seo {
+      title
+      description
+      keywords
+      canonical
+      openGraph {
         title
         description
-        keywords
-        canonical
-        openGraph {
-          title
-          description
-          type
-          url
-          image {
-            ...ImageFields
-          }
+        type
+        url
+        image {
+          ...ImageFields
         }
       }
     }
@@ -47,21 +42,21 @@ const listQuery = gql`
 `
 
 export async function fetchSeoFromCMS() {
-  const { data } = await client.query<{ seos: SEOResponse[] }>({
+  const { data } = await client.query<{ seos: SEOMetadataResponse[] }>({
     query: listQuery,
   })
 
   const result: SEOMetadataDTO = data.seos.map(item => ({
-    title: item.seo.title,
-    description: item.seo.description,
-    keywords: item.seo.keywords,
-    canonical: item.seo.canonical,
+    title: item.title,
+    description: item.description,
+    keywords: item.keywords,
+    canonical: item.canonical,
     openGraph: {
-      description: item.seo.openGraph.description,
-      title: item.seo.openGraph.title,
-      type: item.seo.openGraph.type,
-      url: item.seo.openGraph.url,
-      image: imageDTO(item.seo.openGraph.image),
+      description: item.openGraph.description,
+      title: item.openGraph.title,
+      type: item.openGraph.type,
+      url: item.openGraph.url,
+      image: imageDTO(item.openGraph.image),
     },
   }))[0]
 

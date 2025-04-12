@@ -1,5 +1,5 @@
 import { OfferDTO } from "@/features/offer-list/logic/offer-list-type"
-import { executePromise } from "@/lib/utils"
+import { executePromise } from "@/lib/error-handling"
 
 export type FetchOfferList = () => Promise<OfferDTO[]>
 

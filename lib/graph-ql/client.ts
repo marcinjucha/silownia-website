@@ -13,6 +13,11 @@ const httpLink = createHttpLink({
 const client = new ApolloClient({
   link: httpLink,
   cache: new InMemoryCache(),
+  defaultOptions: {
+    query: {
+      fetchPolicy: "network-only",
+    },
+  },
 })
 
 class GraphQLError extends Error {

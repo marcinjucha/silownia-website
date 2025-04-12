@@ -1,5 +1,5 @@
 import { LegalDTO } from "@/features/legal/logic/legal-type"
-import { executePromise, clientError, clientValue } from "@/lib/utils"
+import { clientError, clientValue, executePromise } from "@/lib/error-handling"
 
 export type FetchLegalData = () => Promise<LegalDTO>
 
