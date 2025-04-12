@@ -27,17 +27,12 @@ export function optionalImageDTO(image?: ImageResponse): ImageDTO | undefined {
   return undefined
 }
 
-const baseURL =
-  process.env.NODE_ENV === "production" || process.env.ENV === "production"
-    ? ""
-    : process.env.CMS_BASE_URL || ""
-
 export function imageDTO(image: ImageResponse): ImageDTO {
   return {
     height: image.height,
     width: image.width,
     alt: image.alternativeText,
-    url: `${baseURL}${image.url}`,
+    url: makeImageUrl(image.url),
     formats: imageFormatsDTO(image.formats),
   }
 }
@@ -59,7 +54,7 @@ export function imageFormatsDTO(formats?: ImageFormatsResponse): ImageFormatsDTO
       const format = formats[key]
       result[key] = {
         height: format.height,
-        url: `${baseURL}${format.url}`,
+        url: makeImageUrl(format.url),
         width: format.width,
       }
     }

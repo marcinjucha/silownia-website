@@ -1,16 +1,8 @@
 import { ImageControlFields } from "@/components/controls/image"
-import { SEOImage, SEOMetadataDTO, SEOOpenGraphType } from "@/features/seo/logic/seo-type"
+import { imageDTO, ImageResponse } from "@/features/common/common-repos"
+import { SEOMetadataDTO } from "@/features/seo/logic/seo-type"
 import client, { gql } from "@/lib/graph-ql/client"
-
-type SEOImageResponse = {
-  alt: string
-  imageFormat: string
-  image: {
-    url: string
-    height: number
-    width: number
-  }
-}
+import { IMAGE_FIELDS } from "@/lib/graph-ql/fragment-defs"
 
 export type SEOMetadataResponse = {
   title: string
@@ -22,64 +14,49 @@ export type SEOMetadataResponse = {
     description: string
     type: SEOOpenGraphTypeResponse
     url: string
-    image: SEOImageResponse
+    image: ImageResponse
   }
 }
 
 export type SEOOpenGraphTypeResponse = "website"
 
-export type SEOResponse = {
-  seo: SEOMetadataResponse
-}
-
 const listQuery = gql`
   query {
     seos {
-      seo {
+      title
+      description
+      keywords
+      canonical
+      openGraph {
         title
         description
-        keywords
-        canonical
-        openGraph {
-          title
-          description
-          type
-          url
-          image {
-            ...ImageControlFields
-          }
+        type
+        url
+        image {
+          ...ImageFields
         }
       }
     }
   }
-  ${ImageControlFields}
+  ${IMAGE_FIELDS}
 `
 
-function mapCMSImageToSEOImage(cmsImage: SEOImageResponse): SEOImage {
-  return {
-    url: cmsImage.image.url,
-    width: cmsImage.image.width,
-    height: cmsImage.image.height,
-    alt: cmsImage.alt,
-  }
-}
-
 export async function fetchSeoFromCMS() {
-  const { data } = await client.query<{ seos: SEOResponse[] }>({
+  const { data } = await client.query<{ seos: SEOMetadataResponse[] }>({
     query: listQuery,
   })
 
   const result: SEOMetadataDTO = data.seos.map(item => ({
-    title: item.seo.title,
-    description: item.seo.description,
-    keywords: item.seo.keywords,
-    canonical: item.seo.canonical,
+    title: item.title,
+    description: item.description,
+    keywords: item.keywords,
+    canonical: item.canonical,
     openGraph: {
-      description: item.seo.openGraph.description,
-      title: item.seo.openGraph.title,
-      type: item.seo.openGraph.type as SEOOpenGraphType,
-      url: item.seo.openGraph.url,
-      image: mapCMSImageToSEOImage(item.seo.openGraph.image),
+      description: item.openGraph.description,
+      title: item.openGraph.title,
+      type: item.openGraph.type,
+      url: item.openGraph.url,
+      image: imageDTO(item.openGraph.image),
     },
   }))[0]
 
