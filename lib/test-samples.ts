@@ -55,7 +55,7 @@ export function imageResponseSample(text: string = randomString()) {
     alternativeText: "alt " + text,
     height: height,
     width: width,
-    url: `${AWS_MEDIA_URL}uploads/${text}.jpg`,
+    url: `${AWS_MEDIA_URL}/uploads/${text}.jpg`,
   } satisfies ImageResponse
 }
 
