@@ -1,5 +1,10 @@
+import { ImageControlDTO, ImageControlFields } from "@/components/controls/image"
+import { TextControlDTO, TextControlFields } from "@/components/controls/text"
 import { imageDTO, ImageResponse } from "@/features/common/common-repos"
-import { OfferDetailsDTO } from "@/features/offer-details/logic/offer-details-type"
+import {
+  OfferDetailsDTO,
+  OfferDetailsTrainerDTO,
+} from "@/features/offer-details/logic/offer-details-type"
 import client, { gql } from "@/lib/graph-ql/client"
 import { IMAGE_FIELDS } from "@/lib/graph-ql/fragment-defs"
 
@@ -11,6 +16,8 @@ export type OfferDetailsResponse = {
   offerImage: ImageResponse
   imageGallery: ImageResponse[]
   sections: OfferDetailsSectionResponse[]
+  trainersTitle: TextControlDTO
+  trainers: OfferDetailsTrainerDTO[]
 }
 
 export type OfferDetailsSectionResponse = {
@@ -18,6 +25,12 @@ export type OfferDetailsSectionResponse = {
   subtitle: string
   description: string
   image: ImageResponse
+}
+
+export type OfferDetailsTrainerResponse = {
+  title: TextControlDTO
+  description: TextControlDTO
+  image: ImageControlDTO
 }
 
 const detailsQuery = gql`
@@ -38,11 +51,27 @@ const detailsQuery = gql`
         offerImage {
           ...ImageFields
         }
+        trainersTitle {
+          ...TextControlFields
+        }
+        trainers {
+          title {
+            ...TextControlFields
+          }
+          description {
+            ...TextControlFields
+          }
+          image {
+            ...ImageControlFields
+          }
+        }
       }
     }
   }
 
   ${IMAGE_FIELDS}
+  ${ImageControlFields}
+  ${TextControlFields}
 `
 
 export async function fetchOfferDetailsFromCMS(offerId: string) {
@@ -66,6 +95,10 @@ export async function fetchOfferDetailsFromCMS(offerId: string) {
       image: imageDTO(section.image),
     })),
     imageGallery: offer.imageGallery.map(img => imageDTO(img)),
+    trainersTitle: offer.trainersTitle,
+    trainers: offer.trainers.map(trainer => ({
+      ...trainer,
+    })),
   } satisfies OfferDetailsDTO
 
   return result
