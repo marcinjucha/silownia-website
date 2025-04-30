@@ -14,23 +14,6 @@ default:
   before_script:
     - yarn install
 
-# Zmienne globalne dostępne dla wszystkich jobów
-variables:
-  # Ustawiamy folder cache dla yarn, aby przyspieszyć instalację zależności
-  YARN_CACHE_FOLDER: .yarn-cache
-
-# Konfiguracja cache - przyspiesza kolejne uruchomienia pipeline'u
-cache:
-  # Klucz cache bazujący na zawartości yarn.lock
-  # Jeśli yarn.lock się zmieni, cache zostanie zresetowany
-  key:
-    files:
-      - yarn.lock
-  # Foldery, które będą cachowane między uruchomieniami
-  paths:
-    - .yarn-cache
-    - node_modules
-
 # Definicja etapów pipeline'u
 stages:
   - test

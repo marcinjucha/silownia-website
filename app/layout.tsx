@@ -6,6 +6,8 @@ import { fetchSEOMetadata } from "@/features/seo/action/seo-action"
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
+import SliderSection from "@/features/layout/slider/components/slider"
+import { fetchSlider } from "@/features/layout/slider/actions/slider-actions"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -36,17 +38,22 @@ export async function generateMetadata(): Promise<Metadata> {
   }
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const slider = await fetchSlider()
+
   return (
     <html lang="pl">
       <body className="flex min-h-screen flex-col">
         <Navigation />
         <main className="flex-1">{children}</main>
         <SectionContact />
+        {slider.success && (
+          <SliderSection title={slider.value.title} items={slider.value.sliderItem} />
+        )}
         <Footer />
         <CookieConsent />
       </body>
