@@ -70,23 +70,40 @@ describe("SEO Use Cases", () => {
       const mockSEOData = {
         seos: [
           {
-            seo: {
-              title: "Test Title",
-              description: "Test Description",
-              keywords: "test, keywords",
-              canonical: "https://test.com",
-              openGraph: {
-                title: "OG Test Title",
-                description: "OG Test Description",
-                type: "website",
-                url: "https://test.com",
-                image: {
-                  alt: "Test Image",
-                  imageFormat: "large",
-                  image: {
-                    url: "/test-image.jpg",
-                    height: 630,
+            title: "Test Title",
+            description: "Test Description",
+            keywords: "test, keywords",
+            canonical: "https://test.com",
+            openGraph: {
+              title: "OG Test Title",
+              description: "OG Test Description",
+              type: "website",
+              url: "https://test.com",
+              image: {
+                alternativeText: "Test Image",
+                width: 1200,
+                height: 630,
+                url: "/test-image.jpg",
+                formats: {
+                  large: {
+                    url: "/test-image-large.jpg",
                     width: 1200,
+                    height: 630,
+                  },
+                  medium: {
+                    url: "/test-image-medium.jpg",
+                    width: 750,
+                    height: 394,
+                  },
+                  small: {
+                    url: "/test-image-small.jpg",
+                    width: 500,
+                    height: 263,
+                  },
+                  thumbnail: {
+                    url: "/test-image-thumbnail.jpg",
+                    width: 250,
+                    height: 131,
                   },
                 },
               },

@@ -58,7 +58,7 @@ export function ImageControl({ alt, imageFormat, image }: ImageProps) {
   const width = selectedFormat?.width || image.width
   const height = selectedFormat?.height || image.height
 
-  return <Image src={imageUrl} alt={alt} width={width} height={height} />
+  return <Image src={imageUrl} alt={alt} width={width} height={height} className="object-contain" />
 }
 
 export default ImageControl
