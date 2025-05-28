@@ -5,6 +5,7 @@ import Navigation from "@/features/layout/navigation"
 import { fetchSEOMetadata } from "@/features/seo/action/seo-action"
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
+import Script from "next/script"
 import "./globals.css"
 import SliderSection from "@/features/layout/slider/components/slider"
 import { fetchSlider } from "@/features/layout/slider/actions/slider-actions"
@@ -47,6 +48,17 @@ export default async function RootLayout({
 
   return (
     <html lang="pl">
+      <head>
+        <Script
+          defer
+          data-domain={process.env.ANALYTICS_DOMAIN}
+          src={process.env.ANALYTICS_URL}
+          strategy="afterInteractive"
+        />
+        <Script id="plausible-init" strategy="afterInteractive">
+          {`window.plausible = window.plausible || function() { (window.plausible.q = window.plausible.q || []).push(arguments) }`}
+        </Script>
+      </head>
       <body className="flex min-h-screen flex-col">
         <Navigation />
         <main className="flex-1">{children}</main>
