@@ -1,8 +1,13 @@
-import { fetchSeoFromCMS } from "../logic/seo-repo"
-import { fetchSEOMetadataUseCase } from "../logic/seo-use-case"
+import { fetchSeoFromCMS } from "@/features/seo/logic/seo-repo"
+import { fetchSEOMetadataUseCase } from "@/features/seo/logic/seo-use-case"
+import { NextjsMetadata } from "@/features/seo/logic/seo-type"
 
-export async function fetchSEOMetadata() {
+export async function fetchSEOMetadata(): Promise<NextjsMetadata | null> {
   const result = await fetchSEOMetadataUseCase({ fetch: fetchSeoFromCMS })
 
-  return result
+  if (result.isFailure) {
+    return null
+  }
+
+  return result.value
 }

@@ -1,0 +1,1205 @@
+<!-- ---
+description: Kompletny przewodnik TypeScript dla tego projektu - od podstaw do zaawansowanych wzorców
+globs: *.ts,*.tsx
+alwaysApply: true
+--- -->
+
+# TypeScript - Przewodnik od Podstaw do Zaawansowanych
+
+## 📋 Spis Treści
+
+1. [Podstawy TypeScript](#podstawy-typescript)
+   - [Czym jest TypeScript](#czym-jest-typescript)
+   - [Podstawowe typy](#podstawowe-typy)
+   - [Konfiguracja projektu](#konfiguracja-projektu)
+2. [Typy w praktyce](#typy-w-praktyce)
+   - [Interfaces vs Types](#interfaces-vs-types)
+   - [Union Types](#union-types)
+   - [Literal Types](#literal-types)
+3. [Funkcje i metody](#funkcje-i-metody)
+   - [Typowanie funkcji](#typowanie-funkcji)
+   - [Generic Functions](#generic-functions)
+   - [Function Overloads](#function-overloads)
+4. [Obiekty i klasy](#obiekty-i-klasy)
+   - [Object Types](#object-types)
+   - [Optional Properties](#optional-properties)
+   - [Readonly Properties](#readonly-properties)
+5. [Zaawansowane typy](#zaawansowane-typy)
+   - [Generic Types](#generic-types)
+   - [Conditional Types](#conditional-types)
+   - [Mapped Types](#mapped-types)
+   - [Utility Types](#utility-types)
+6. [TypeScript + React](#typescript--react)
+   - [Component Props](#component-props)
+   - [Hooks Typing](#hooks-typing)
+   - [Event Handling](#event-handling)
+7. [Wzorce projektowe](#wzorce-projektowe)
+   - [DTO Pattern](#dto-pattern)
+   - [Repository Pattern](#repository-pattern)
+   - [Use Case Pattern](#use-case-pattern)
+8. [Error Handling](#error-handling)
+   - [Type Guards](#type-guards)
+   - [Discriminated Unions](#discriminated-unions)
+   - [Result Pattern](#result-pattern)
+9. [Najlepsze praktyki](#najlepsze-praktyki)
+   - [Naming Conventions](#naming-conventions)
+   - [Code Organization](#code-organization)
+   - [Performance Tips](#performance-tips)
+10. [Debugging i narzędzia](#debugging-i-narzędzia)
+    - [TypeScript Compiler](#typescript-compiler)
+    - [IDE Integration](#ide-integration)
+    - [Common Errors](#common-errors)
+
+---
+
+## Podstawy TypeScript
+
+### Czym jest TypeScript
+
+TypeScript to **superset JavaScript** - oznacza to, że każdy poprawny kod JavaScript jest również poprawnym kodem TypeScript. TypeScript dodaje **statyczne typowanie** do JavaScript, co pomaga:
+
+- **Wykrywać błędy** na etapie pisania kodu
+- **Lepsze IntelliSense** w edytorze
+- **Refactoring** bez strachu
+- **Dokumentację** w kodzie
+- **Lepszą współpracę** w zespole
+
+```typescript
+// JavaScript - brak informacji o typach
+function greet(name) {
+  return "Hello, " + name
+}
+
+// TypeScript - jasne typy
+function greet(name: string): string {
+  return "Hello, " + name
+}
+
+greet("World") // ✅ OK
+greet(123) // ❌ Error: Argument of type 'number' is not assignable to parameter of type 'string'
+```
+
+### Podstawowe typy
+
+```typescript
+// Podstawowe typy prymitywne
+let name: string = "John"
+let age: number = 30
+let isActive: boolean = true
+let nothing: null = null
+let notDefined: undefined = undefined
+
+// Arrays
+let numbers: number[] = [1, 2, 3]
+let names: Array<string> = ["John", "Jane"]
+
+// Tuple - tablica o stałej długości i typach
+let person: [string, number] = ["John", 30]
+
+// Any - unikaj tego typu!
+let anything: any = "hello"
+anything = 123 // ✅ OK, ale tracisz type safety
+
+// Unknown - bezpieczniejsza alternatywa dla any
+let something: unknown = "hello"
+if (typeof something === "string") {
+  console.log(something.toUpperCase()) // ✅ OK po sprawdzeniu typu
+}
+
+// Never - typ który nigdy nie występuje
+function throwError(message: string): never {
+  throw new Error(message)
+}
+
+// Void - brak wartości zwracanej
+function logMessage(message: string): void {
+  console.log(message)
+}
+```
+
+### Konfiguracja projektu
+
+Nasz projekt używa strict TypeScript configuration:
+
+```json
+// tsconfig.json
+{
+  "compilerOptions": {
+    "strict": true, // Włącza wszystkie strict checks
+    "noUnusedLocals": true, // Błąd dla nieużywanych zmiennych
+    "noUnusedParameters": true, // Błąd dla nieużywanych parametrów
+    "exactOptionalPropertyTypes": true, // Strict optional properties
+    "noImplicitReturns": true, // Wszystkie ścieżki muszą zwracać wartość
+    "noFallthroughCasesInSwitch": true, // Brak fall-through w switch
+    "noUncheckedIndexedAccess": true // Bezpieczny dostęp do array/object
+  }
+}
+```
+
+---
+
+## Typy w praktyce
+
+### Interfaces vs Types
+
+W naszym projekcie **preferujemy `type` nad `interface`**:
+
+```typescript
+// ✅ Preferowane - type
+type User = {
+  id: string
+  name: string
+  email: string
+}
+
+// ❌ Unikamy - interface (chyba że potrzebujemy extends)
+interface User {
+  id: string
+  name: string
+  email: string
+}
+
+// ✅ Interface tylko gdy potrzebujemy dziedziczenia
+interface BaseEntity {
+  id: string
+  createdAt: Date
+}
+
+interface User extends BaseEntity {
+  name: string
+  email: string
+}
+```
+
+### Union Types
+
+Union types pozwalają na wartości z kilku typów:
+
+```typescript
+// Union types
+type Status = "pending" | "completed" | "failed"
+type ID = string | number
+
+// Discriminated unions - bardzo ważne w naszym projekcie!
+type ApiResponse<T> = { success: true; data: T } | { success: false; error: string }
+
+// Użycie
+function handleResponse<T>(response: ApiResponse<T>) {
+  if (response.success) {
+    // TypeScript wie że mamy response.data
+    console.log(response.data)
+  } else {
+    // TypeScript wie że mamy response.error
+    console.log(response.error)
+  }
+}
+```
+
+### Literal Types
+
+Literal types to konkretne wartości jako typy:
+
+```typescript
+// String literals
+type Theme = "light" | "dark"
+type ButtonSize = "sm" | "md" | "lg"
+
+// Number literals
+type DiceRoll = 1 | 2 | 3 | 4 | 5 | 6
+
+// Boolean literals
+type IsLoading = true // tylko true, nie false
+
+// Template literal types
+type EventName = `on${Capitalize<string>}`
+type ApiEndpoint = `/api/${string}`
+
+// Przykład użycia
+function setTheme(theme: Theme) {
+  document.body.className = theme
+}
+
+setTheme("light") // ✅ OK
+setTheme("blue") // ❌ Error
+```
+
+---
+
+## Funkcje i metody
+
+### Typowanie funkcji
+
+```typescript
+// Podstawowe typowanie funkcji
+function add(a: number, b: number): number {
+  return a + b
+}
+
+// Arrow functions
+const multiply = (a: number, b: number): number => a * b
+
+// Optional parameters
+function greet(name: string, title?: string): string {
+  return title ? `Hello, ${title} ${name}` : `Hello, ${name}`
+}
+
+// Default parameters
+function createUser(name: string, role: string = "user"): User {
+  return { id: generateId(), name, role }
+}
+
+// Rest parameters
+function sum(...numbers: number[]): number {
+  return numbers.reduce((total, num) => total + num, 0)
+}
+
+// Function types
+type MathOperation = (a: number, b: number) => number
+const divide: MathOperation = (a, b) => a / b
+```
+
+### Generic Functions
+
+Generics pozwalają na tworzenie reusable functions:
+
+```typescript
+// Basic generic function
+function identity<T>(arg: T): T {
+  return arg
+}
+
+const stringResult = identity<string>("hello") // string
+const numberResult = identity<number>(42) // number
+const autoInferred = identity("hello") // TypeScript infers string
+
+// Generic with constraints
+function getProperty<T, K extends keyof T>(obj: T, key: K): T[K] {
+  return obj[key]
+}
+
+const user = { id: "1", name: "John", age: 30 }
+const userName = getProperty(user, "name") // string
+const userAge = getProperty(user, "age") // number
+
+// Multiple generics
+function map<T, U>(array: T[], fn: (item: T) => U): U[] {
+  return array.map(fn)
+}
+
+const numbers = [1, 2, 3]
+const strings = map(numbers, n => n.toString()) // string[]
+```
+
+### Function Overloads
+
+Function overloads pozwalają na różne sygnatury dla tej samej funkcji:
+
+```typescript
+// Function overloads
+function createElement(tag: "div"): HTMLDivElement
+function createElement(tag: "span"): HTMLSpanElement
+function createElement(tag: "button"): HTMLButtonElement
+function createElement(tag: string): HTMLElement
+function createElement(tag: string): HTMLElement {
+  return document.createElement(tag)
+}
+
+const div = createElement("div") // HTMLDivElement
+const span = createElement("span") // HTMLSpanElement
+```
+
+---
+
+## Obiekty i klasy
+
+### Object Types
+
+```typescript
+// Object type definition
+type Address = {
+  street: string
+  city: string
+  zipCode: string
+  country: string
+}
+
+type User = {
+  id: string
+  name: string
+  email: string
+  address: Address
+  preferences: {
+    theme: "light" | "dark"
+    notifications: boolean
+  }
+}
+
+// Nested object access
+function getUserCity(user: User): string {
+  return user.address.city
+}
+```
+
+### Optional Properties
+
+```typescript
+// Optional properties with ?
+type CreateUserRequest = {
+  name: string
+  email: string
+  age?: number // Optional
+  bio?: string // Optional
+}
+
+// Partial utility type - makes all properties optional
+type UpdateUserRequest = Partial<CreateUserRequest> & {
+  id: string // id is required
+}
+
+// Required utility type - makes all properties required
+type CompleteUser = Required<CreateUserRequest>
+```
+
+### Readonly Properties
+
+```typescript
+// Readonly properties
+type ImmutableUser = {
+  readonly id: string
+  readonly createdAt: Date
+  name: string // Can be modified
+  email: string // Can be modified
+}
+
+// Readonly utility type
+type ReadonlyUser = Readonly<User>
+
+// Deep readonly (custom utility type)
+type DeepReadonly<T> = {
+  readonly [P in keyof T]: T[P] extends object ? DeepReadonly<T[P]> : T[P]
+}
+
+// Usage
+const user: ImmutableUser = {
+  id: "123",
+  createdAt: new Date(),
+  name: "John",
+  email: "john@example.com",
+}
+
+user.name = "Jane" // ✅ OK
+user.id = "456" // ❌ Error: Cannot assign to 'id' because it is a read-only property
+```
+
+---
+
+## Zaawansowane typy
+
+### Generic Types
+
+```typescript
+// Generic interfaces
+type Repository<T> = {
+  findById(id: string): Promise<T | null>
+  create(data: Omit<T, "id">): Promise<T>
+  update(id: string, data: Partial<T>): Promise<T>
+  delete(id: string): Promise<void>
+}
+
+// Usage
+const userRepository: Repository<User> = {
+  async findById(id: string) {
+    // Implementation
+    return null
+  },
+  async create(data: Omit<User, "id">) {
+    // Implementation
+    return { id: "new-id", ...data }
+  },
+  // ... other methods
+}
+
+// Generic constraints
+type Identifiable = {
+  id: string
+}
+
+type EntityRepository<T extends Identifiable> = {
+  findById(id: string): Promise<T | null>
+  save(entity: T): Promise<T>
+}
+```
+
+### Conditional Types
+
+```typescript
+// Conditional types
+type NonNullable<T> = T extends null | undefined ? never : T
+
+// More complex conditional types
+type ApiResponse<T> = T extends string ? { message: T } : T extends object ? { data: T } : never
+
+// Infer keyword
+type ReturnType<T> = T extends (...args: any[]) => infer R ? R : never
+
+type FunctionReturn = ReturnType<() => string> // string
+type MethodReturn = ReturnType<(x: number) => boolean> // boolean
+```
+
+### Mapped Types
+
+```typescript
+// Basic mapped type
+type Optional<T> = {
+  [K in keyof T]?: T[K]
+}
+
+// Key remapping
+type Getters<T> = {
+  [K in keyof T as `get${Capitalize<string & K>}`]: () => T[K]
+}
+
+type UserGetters = Getters<User>
+// Result:
+// {
+//   getId: () => string
+//   getName: () => string
+//   getEmail: () => string
+// }
+
+// Conditional mapped types
+type NonFunctionPropertyNames<T> = {
+  [K in keyof T]: T[K] extends Function ? never : K
+}[keyof T]
+
+type NonFunctionProperties<T> = Pick<T, NonFunctionPropertyNames<T>>
+```
+
+### Utility Types
+
+TypeScript ma wiele built-in utility types:
+
+```typescript
+type User = {
+  id: string
+  name: string
+  email: string
+  age: number
+}
+
+// Partial - wszystkie properties optional
+type PartialUser = Partial<User>
+// { id?: string; name?: string; email?: string; age?: number }
+
+// Required - wszystkie properties required
+type RequiredUser = Required<PartialUser>
+
+// Pick - wybierz tylko określone properties
+type UserSummary = Pick<User, "id" | "name">
+// { id: string; name: string }
+
+// Omit - wyklucz określone properties
+type CreateUser = Omit<User, "id">
+// { name: string; email: string; age: number }
+
+// Record - tworzy object type z key-value pairs
+type UserRoles = Record<string, "admin" | "user" | "moderator">
+// { [key: string]: "admin" | "user" | "moderator" }
+
+// Exclude - wyklucz z union type
+type Status = "pending" | "completed" | "failed" | "cancelled"
+type ActiveStatus = Exclude<Status, "failed" | "cancelled">
+// "pending" | "completed"
+
+// Extract - wyciągnij z union type
+type ErrorStatus = Extract<Status, "failed" | "cancelled">
+// "failed" | "cancelled"
+```
+
+---
+
+## TypeScript + React
+
+### Component Props
+
+```typescript
+import { ReactNode, MouseEvent } from "react"
+
+// Basic component props
+type ButtonProps = {
+  children: ReactNode
+  variant?: "primary" | "secondary"
+  size?: "sm" | "md" | "lg"
+  disabled?: boolean
+  onClick?: (event: MouseEvent<HTMLButtonElement>) => void
+}
+
+function Button({ children, variant = "primary", size = "md", ...props }: ButtonProps) {
+  return (
+    <button
+      className={`btn btn-${variant} btn-${size}`}
+      {...props}
+    >
+      {children}
+    </button>
+  )
+}
+
+// Generic component props
+type ListProps<T> = {
+  items: T[]
+  renderItem: (item: T, index: number) => ReactNode
+  keyExtractor: (item: T) => string
+}
+
+function List<T>({ items, renderItem, keyExtractor }: ListProps<T>) {
+  return (
+    <div>
+      {items.map((item, index) => (
+        <div key={keyExtractor(item)}>
+          {renderItem(item, index)}
+        </div>
+      ))}
+    </div>
+  )
+}
+
+// Usage
+<List
+  items={users}
+  renderItem={(user) => <UserCard user={user} />} // user is inferred as User
+  keyExtractor={(user) => user.id}
+/>
+```
+
+### Hooks Typing
+
+```typescript
+import { useState, useEffect, useCallback, useMemo } from "react"
+
+// useState with explicit type
+const [user, setUser] = useState<User | null>(null)
+const [loading, setLoading] = useState<boolean>(false)
+
+// useState with initial value (type inferred)
+const [count, setCount] = useState(0) // number
+const [name, setName] = useState("") // string
+
+// useEffect
+useEffect(() => {
+  // Effect logic
+  return () => {
+    // Cleanup
+  }
+}, [dependency])
+
+// useCallback with proper typing
+const handleClick = useCallback((id: string) => {
+  // Handle click logic
+}, [])
+
+// useMemo with explicit type
+const expensiveValue = useMemo<ComplexType>(() => {
+  return computeExpensiveValue()
+}, [dependency])
+
+// Custom hook typing
+function useApi<T>(url: string): {
+  data: T | null
+  loading: boolean
+  error: string | null
+} {
+  const [data, setData] = useState<T | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    // Fetch logic
+  }, [url])
+
+  return { data, loading, error }
+}
+
+// Usage
+const { data, loading, error } = useApi<User[]>("/api/users")
+```
+
+### Event Handling
+
+```typescript
+import { ChangeEvent, FormEvent, MouseEvent, KeyboardEvent } from "react"
+
+// Form events
+function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  event.preventDefault()
+  // Form logic
+}
+
+function handleInputChange(event: ChangeEvent<HTMLInputElement>) {
+  const value = event.target.value
+  // Input logic
+}
+
+// Mouse events
+function handleClick(event: MouseEvent<HTMLButtonElement>) {
+  event.stopPropagation()
+  // Click logic
+}
+
+// Keyboard events
+function handleKeyDown(event: KeyboardEvent<HTMLInputElement>) {
+  if (event.key === "Enter") {
+    // Enter key logic
+  }
+}
+
+// Generic event handler
+type EventHandler<T = HTMLElement> = (event: MouseEvent<T>) => void
+
+const handleButtonClick: EventHandler<HTMLButtonElement> = event => {
+  // Button specific logic
+}
+```
+
+---
+
+## Wzorce projektowe
+
+### DTO Pattern
+
+W naszym projekcie używamy DTO (Data Transfer Object) pattern:
+
+```typescript
+// DTO types w *-type.ts files
+export type UserDTO = {
+  id: string
+  name: string
+  email: string
+  role: "admin" | "user" | "moderator"
+  createdAt: string // ISO string from API
+  updatedAt?: string
+}
+
+export type CreateUserDTO = {
+  name: string
+  email: string
+  role?: "user" | "moderator" // admin can't be created via API
+}
+
+export type UpdateUserDTO = {
+  name?: string
+  email?: string
+}
+
+// Usage in components
+type UserCardProps = {
+  user: UserDTO
+  onEdit?: (user: UserDTO) => void
+}
+
+function UserCard({ user, onEdit }: UserCardProps) {
+  return (
+    <div>
+      <h3>{user.name}</h3>
+      <p>{user.email}</p>
+      <span>Role: {user.role}</span>
+      {onEdit && (
+        <button onClick={() => onEdit(user)}>
+          Edit
+        </button>
+      )}
+    </div>
+  )
+}
+```
+
+### Repository Pattern
+
+```typescript
+// Repository function types (defined in *-repo.ts)
+type CreateUserRepository = (data: CreateUserDTO) => Promise<UserDTO>
+type FindUserRepository = (id: string) => Promise<UserDTO | null>
+type UpdateUserRepository = (id: string, data: UpdateUserDTO) => Promise<UserDTO>
+
+// Repository implementation
+export async function createUserRepository(data: CreateUserDTO): Promise<UserDTO> {
+  const result = await client.mutate<CreateUserResponse>({
+    mutation: CREATE_USER_MUTATION,
+    variables: { data },
+  })
+
+  const mutationData = handleGraphQLMutation(result)
+
+  return {
+    id: mutationData.createUser.documentId,
+    name: mutationData.createUser.name,
+    email: mutationData.createUser.email,
+    role: mutationData.createUser.role,
+    createdAt: mutationData.createUser.createdAt,
+  }
+}
+
+// Internal Response types (NOT exported)
+type CreateUserResponse = {
+  createUser: {
+    documentId: string
+    name: string
+    email: string
+    role: string
+    createdAt: string
+  }
+}
+```
+
+### Use Case Pattern
+
+```typescript
+import { ClientResult, executePromise, clientError, clientValue } from "@/lib/error-handling"
+
+// Use Case function type
+type CreateUserUseCase = (props: {
+  context: {
+    createUser: CreateUserRepository
+    sendWelcomeEmail: SendEmailRepository
+  }
+  data: CreateUserDTO
+}) => Promise<ClientResult<UserDTO>>
+
+// Use Case implementation
+export async function createUserUseCase({
+  context,
+  data,
+}: {
+  context: {
+    createUser: CreateUserRepository
+    sendWelcomeEmail: SendEmailRepository
+  }
+  data: CreateUserDTO
+}): Promise<ClientResult<UserDTO>> {
+  // Step 1: Create user
+  const createResult = await executePromise(() => context.createUser(data))
+
+  if (createResult.isFailure) {
+    return clientError("Failed to create user")
+  }
+
+  // Step 2: Send welcome email (optional)
+  const emailResult = await executePromise(() =>
+    context.sendWelcomeEmail({
+      to: createResult.value.email,
+      name: createResult.value.name,
+    }),
+  )
+
+  if (emailResult.isFailure) {
+    // Log error but don't fail the whole operation
+    console.error("Failed to send welcome email:", emailResult.error)
+  }
+
+  return clientValue(createResult.value)
+}
+```
+
+---
+
+## Error Handling
+
+### Type Guards
+
+Type guards pomagają w bezpiecznym sprawdzaniu typów w runtime:
+
+```typescript
+// Basic type guards
+function isString(value: unknown): value is string {
+  return typeof value === "string"
+}
+
+function isNumber(value: unknown): value is number {
+  return typeof value === "number" && !isNaN(value)
+}
+
+// Object type guards
+function isUser(value: unknown): value is User {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "id" in value &&
+    "name" in value &&
+    "email" in value &&
+    typeof (value as any).id === "string" &&
+    typeof (value as any).name === "string" &&
+    typeof (value as any).email === "string"
+  )
+}
+
+// Usage
+function processData(data: unknown) {
+  if (isUser(data)) {
+    // TypeScript knows data is User here
+    console.log(`Processing user: ${data.name}`)
+  } else {
+    console.log("Invalid user data")
+  }
+}
+
+// Assertion functions
+function assertIsUser(value: unknown): asserts value is User {
+  if (!isUser(value)) {
+    throw new Error("Value is not a valid User")
+  }
+}
+
+// Usage
+function handleUserData(data: unknown) {
+  assertIsUser(data)
+  // TypeScript knows data is User after assertion
+  console.log(data.name)
+}
+```
+
+### Discriminated Unions
+
+Discriminated unions to potężny wzorzec w TypeScript:
+
+```typescript
+// API Response pattern
+type ApiResult<T> =
+  | { success: true; data: T }
+  | { success: false; error: string; code?: number }
+
+// Async State pattern
+type AsyncState<T, E = Error> =
+  | { status: "idle" }
+  | { status: "loading" }
+  | { status: "success"; data: T }
+  | { status: "error"; error: E }
+
+// Usage with exhaustive checking
+function renderAsyncState<T>(state: AsyncState<T>) {
+  switch (state.status) {
+    case "idle":
+      return <div>Click to load</div>
+    case "loading":
+      return <div>Loading...</div>
+    case "success":
+      return <div>Data: {JSON.stringify(state.data)}</div>
+    case "error":
+      return <div>Error: {state.error.message}</div>
+    default:
+      // TypeScript ensures we handle all cases
+      const _exhaustive: never = state
+      return _exhaustive
+  }
+}
+
+// Type guards for discriminated unions
+function isSuccessResult<T>(result: ApiResult<T>): result is { success: true; data: T } {
+  return result.success === true
+}
+
+function isErrorResult<T>(result: ApiResult<T>): result is { success: false; error: string; code?: number } {
+  return result.success === false
+}
+```
+
+### Result Pattern
+
+Nasz projekt używa Result pattern dla error handling:
+
+```typescript
+// ExecutionResult - internal use in Use Cases
+type ExecutionResult<T, E> =
+  | { success: true; isFailure: false; value: T }
+  | { success: false; isFailure: true; error: E }
+
+// ClientResult - for communication with Components
+type ClientResult<T> =
+  | { success: true; isFailure: false; value: T }
+  | { success: false; isFailure: true; error: string }
+
+// Helper functions
+function clientValue<T>(value: T): ClientResult<T> {
+  return { success: true, isFailure: false, value }
+}
+
+function clientError(error: string): ClientResult<never> {
+  return { success: false, isFailure: true, error }
+}
+
+// Usage in Use Cases
+export async function getUserUseCase(id: string): Promise<ClientResult<UserDTO>> {
+  const result = await executePromise(() => findUserRepository(id))
+
+  if (result.isFailure) {
+    return clientError("User not found")
+  }
+
+  if (!result.value) {
+    return clientError("User does not exist")
+  }
+
+  return clientValue(result.value)
+}
+
+// Usage in Components
+async function loadUser(id: string) {
+  const result = await getUserUseCase(id)
+
+  if (result.isFailure) {
+    setError(result.error)
+    return
+  }
+
+  setUser(result.value)
+}
+```
+
+---
+
+## Najlepsze praktyki
+
+### Naming Conventions
+
+```typescript
+// ✅ Types - PascalCase
+type UserProfile = {
+  id: string
+  name: string
+}
+
+// ✅ Interfaces - PascalCase (gdy używamy)
+interface DatabaseConnection {
+  connect(): Promise<void>
+}
+
+// ✅ Variables - camelCase
+const userName = "john"
+const isLoggedIn = true
+
+// ✅ Functions - camelCase
+function getUserById(id: string): User | null {
+  return null
+}
+
+// ✅ Constants - UPPER_CASE
+const API_BASE_URL = "https://api.example.com"
+const MAX_RETRY_ATTEMPTS = 3
+
+// ✅ Enums - PascalCase
+enum UserRole {
+  Admin = "admin",
+  User = "user",
+  Moderator = "moderator",
+}
+
+// ✅ Generic type parameters - single uppercase letter
+function identity<T>(arg: T): T {
+  return arg
+}
+
+// ✅ DTO suffix for data transfer objects
+type CreateOrderDTO = {
+  customerId: string
+  items: OrderItemDTO[]
+}
+
+// ✅ Props suffix for React component props
+type ButtonProps = {
+  children: ReactNode
+  onClick?: () => void
+}
+```
+
+### Code Organization
+
+```typescript
+// ✅ File organization pattern
+// 1. Imports
+import { useState, useEffect } from "react"
+import { z } from "zod"
+import { UserDTO } from "@/features/users/logic/user-type"
+
+// 2. Types and interfaces (local to file)
+type ComponentProps = {
+  user: UserDTO
+  onUpdate: (user: UserDTO) => void
+}
+
+type ComponentState = {
+  isEditing: boolean
+  error: string | null
+}
+
+// 3. Constants
+const VALIDATION_SCHEMA = z.object({
+  name: z.string().min(1),
+  email: z.string().email(),
+})
+
+// 4. Main component/function
+export function UserProfile({ user, onUpdate }: ComponentProps) {
+  // Implementation
+}
+
+// 5. Helper functions (if needed)
+function validateUserData(data: unknown) {
+  return VALIDATION_SCHEMA.safeParse(data)
+}
+```
+
+### Performance Tips
+
+```typescript
+// ✅ Use const assertions for better type inference
+const themes = ["light", "dark"] as const
+type Theme = (typeof themes)[number] // "light" | "dark"
+
+// ✅ Use satisfies operator for better type checking
+const config = {
+  apiUrl: "https://api.example.com",
+  timeout: 5000,
+  retries: 3,
+} satisfies Config
+
+// ✅ Prefer type over interface for performance
+type User = {
+  id: string
+  name: string
+}
+
+// ✅ Use branded types for better type safety
+type UserId = string & { readonly brand: unique symbol }
+type Email = string & { readonly brand: unique symbol }
+
+// ✅ Use template literal types for better IntelliSense
+type EventName = `on${Capitalize<string>}`
+type CSSProperty = `--${string}`
+
+// ✅ Use conditional types wisely
+type NonNullable<T> = T extends null | undefined ? never : T
+```
+
+---
+
+## Debugging i narzędzia
+
+### TypeScript Compiler
+
+```bash
+# Sprawdź typy bez kompilacji
+npx tsc --noEmit
+
+# Sprawdź konkretny plik
+npx tsc --noEmit src/components/Button.tsx
+
+# Watch mode
+npx tsc --noEmit --watch
+
+# Szczegółowe informacje o błędach
+npx tsc --noEmit --pretty
+```
+
+### IDE Integration
+
+**VS Code Extensions:**
+
+- TypeScript Importer
+- TypeScript Hero
+- Error Lens
+- Auto Rename Tag
+
+**Przydatne skróty:**
+
+- `Ctrl/Cmd + Click` - Go to definition
+- `F12` - Go to definition
+- `Shift + F12` - Find all references
+- `F2` - Rename symbol
+- `Ctrl/Cmd + .` - Quick fix
+
+### Common Errors
+
+```typescript
+// ❌ Error: Object is possibly 'null'
+function getName(user: User | null) {
+  return user.name // Error!
+}
+
+// ✅ Fix: Check for null
+function getName(user: User | null) {
+  return user?.name ?? "Unknown"
+}
+
+// ❌ Error: Property 'x' does not exist on type 'never'
+function process(value: string | number) {
+  if (typeof value !== "string" && typeof value !== "number") {
+    return value.x // Error! value is never
+  }
+}
+
+// ✅ Fix: Proper type narrowing
+function process(value: string | number) {
+  if (typeof value === "string") {
+    return value.length
+  } else {
+    return value.toFixed(2)
+  }
+}
+
+// ❌ Error: Argument of type 'unknown' is not assignable
+function handleData(data: unknown) {
+  console.log(data.name) // Error!
+}
+
+// ✅ Fix: Type guard
+function handleData(data: unknown) {
+  if (isUser(data)) {
+    console.log(data.name) // OK!
+  }
+}
+
+// ❌ Error: Type 'string | undefined' is not assignable to type 'string'
+const config = {
+  apiUrl: process.env.API_URL, // string | undefined
+}
+
+// ✅ Fix: Provide default or assert
+const config = {
+  apiUrl: process.env.API_URL ?? "http://localhost:3000",
+}
+
+// Or with assertion (if you're sure it exists)
+const config = {
+  apiUrl: process.env.API_URL!,
+}
+```
+
+---
+
+## Podsumowanie
+
+### Kluczowe zasady w naszym projekcie:
+
+1. **Strict TypeScript** - używamy strict mode i dodatkowych checks
+2. **Type over Interface** - preferujemy `type` nad `interface`
+3. **DTO Pattern** - wszystkie dane z API mają swoje DTO types
+4. **Result Pattern** - używamy `ClientResult<T>` dla error handling
+5. **Type Guards** - bezpieczne sprawdzanie typów w runtime
+6. **Generic Types** - reusable i type-safe kod
+7. **Discriminated Unions** - dla state management i API responses
+
+### Najważniejsze pliki do zrozumienia:
+
+- `lib/error-handling.ts` - Result pattern i error handling
+- `features/*/logic/*-type.ts` - DTO definitions
+- `features/*/logic/*-repo.ts` - Repository patterns
+- `features/*/logic/*-use-case.ts` - Business logic patterns
+
+### Następne kroki:
+
+1. Przeczytaj kod w `features/checkout/` jako przykład
+2. Praktykuj pisanie type guards
+3. Zrozum Result pattern w `lib/error-handling.ts`
+4. Eksperymentuj z generic types
+5. Używaj TypeScript strict mode od początku
+
+**Pamiętaj:** TypeScript to narzędzie, które ma Ci pomagać, nie przeszkadzać. Jeśli coś wydaje się zbyt skomplikowane, prawdopodobnie istnieje prostsze rozwiązanie!

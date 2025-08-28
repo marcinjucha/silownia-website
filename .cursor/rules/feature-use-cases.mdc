@@ -1,0 +1,338 @@
+---
+globs: features/**/logic/*-use-case.ts
+description: Use Case patterns and business logic rules for features/*/logic/*-use-case.ts files
+---
+
+# Use Cases Rules
+
+## 🎯 Use Cases Layer - Tylko Logika Biznesowa
+
+Use Cases są TYLKO do:
+
+- Orkiestracji logiki biznesowej
+- executePromise wrapper dla wszystkich operacji zewnętrznych
+- Konwersji ExecutionResult na ClientResult
+- Obsługi kontekstu dependency injection
+- Definicji typów funkcji Use Case (jeśli potrzebne)
+
+## ✅ OBOWIĄZKOWY Wzorzec Use Case
+
+```typescript
+import { executePromise, clientError, clientValue } from "@/lib/error-handling"
+import { ClientResult } from "@/lib/error-handling"
+
+export async function processUseCase(props: {
+  context: {
+    repository: (data: DTO) => Promise<DTO>
+    // Inne zależności...
+  }
+  data: InputDTO
+}): Promise<ClientResult<OutputDTO>> {
+  // 1. Wykonaj repository z executePromise wrapper
+  const result = await executePromise(() => props.context.repository(props.data))
+
+  // 2. Obsłuż niepowodzenie
+  if (result.isFailure) {
+    return clientError("Operation failed")
+  }
+
+  // 3. Logika biznesowa tutaj (jeśli potrzebna)
+  const processedData = businessLogicTransformation(result.value)
+
+  // 4. Zwróć sukces
+  return clientValue(processedData)
+}
+```
+
+## 🔧 Wymagane Importy
+
+```typescript
+import { executePromise, clientError, clientValue, ClientResult } from "@/lib/error-handling"
+```
+
+## 🎯 Wzorzec Kontekstu
+
+ZAWSZE otrzymuj zależności przez kontekst:
+
+```typescript
+export async function complexUseCase(props: {
+  context: {
+    createRepo: CreateFunction
+    updateRepo: UpdateFunction
+    sendEmail: SendEmailFunction
+    validateData: ValidateFunction
+  }
+  data: InputData
+}): Promise<ClientResult<OutputData>> {
+  // Używaj context.createRepo, context.updateRepo, itp.
+}
+```
+
+## ✅ executePromise Wrapper
+
+KAŻDA operacja zewnętrzna MUSI być opakowana:
+
+```typescript
+// ✅ Poprawnie
+const result = await executePromise(() => context.repository(data))
+
+// ❌ Źle - brak executePromise
+const result = await context.repository(data)
+```
+
+## 🔄 Wzorzec Wielu Operacji
+
+```typescript
+export async function multiStepUseCase(props): Promise<ClientResult<FinalDTO>> {
+  // Krok 1
+  const step1 = await executePromise(() => props.context.createOrder(props.data))
+  if (step1.isFailure) return clientError("Step 1 failed")
+
+  // Krok 2
+  const step2 = await executePromise(() => props.context.processPayment(step1.value))
+  if (step2.isFailure) return clientError("Step 2 failed")
+
+  // Krok 3
+  const step3 = await executePromise(() => props.context.sendConfirmation(step2.value))
+  if (step3.isFailure) return clientError("Step 3 failed")
+
+  return clientValue(step3.value)
+}
+```
+
+## ❌ ZABRONIONE w Use Cases
+
+- Bezpośrednie wywołania API (używaj repositories przez kontekst)
+- Bezpośrednie operacje na bazie danych
+- Logika UI lub concerns komponentów
+- Walidacja formularzy (należy do Actions)
+- Nawigacja/przekierowania (należy do Actions)
+- Zwracanie surowych danych bez ClientResult
+
+## 🎯 Praktyczne Przykłady
+
+### Prosty Use Case
+
+```typescript
+export async function createProductUseCase(props: {
+  context: {
+    createProduct: (data: CreateProductDTO) => Promise<ProductDTO>
+  }
+  data: CreateProductDTO
+}): Promise<ClientResult<ProductDTO>> {
+  const result = await executePromise(() => props.context.createProduct(props.data))
+
+  if (result.isFailure) {
+    return clientError("Failed to create product")
+  }
+
+  return clientValue(result.value)
+}
+```
+
+### Use Case z Logiką Biznesową
+
+```typescript
+export async function processOrderUseCase(props: {
+  context: {
+    createOrder: (data: CreateOrderDTO) => Promise<OrderDTO>
+    processPayment: (orderId: string, amount: number) => Promise<PaymentDTO>
+    sendConfirmation: (orderId: string) => Promise<void>
+  }
+  data: CreateOrderDTO
+}): Promise<ClientResult<OrderDTO>> {
+  // Krok 1: Utwórz zamówienie
+  const orderResult = await executePromise(() => props.context.createOrder(props.data))
+  if (orderResult.isFailure) {
+    return clientError("Failed to create order")
+  }
+
+  const order = orderResult.value
+
+  // Logika biznesowa: Oblicz całkowitą kwotę
+  const totalAmount = order.items.reduce((sum, item) => sum + item.price * item.quantity, 0)
+
+  // Krok 2: Przetwórz płatność
+  const paymentResult = await executePromise(() =>
+    props.context.processPayment(order.id, totalAmount),
+  )
+  if (paymentResult.isFailure) {
+    return clientError("Payment processing failed")
+  }
+
+  // Krok 3: Wyślij potwierdzenie
+  const confirmationResult = await executePromise(() => props.context.sendConfirmation(order.id))
+  if (confirmationResult.isFailure) {
+    // Płatność przeszła, ale potwierdzenie nie - loguj błąd ale nie fail
+    console.error("Failed to send confirmation for order:", order.id)
+  }
+
+  // Zwróć zamówienie z zaktualizowanym statusem
+  return clientValue({
+    ...order,
+    status: "confirmed" as const,
+    totalAmount,
+  })
+}
+```
+
+### Use Case z Walidacją Biznesową
+
+```typescript
+export async function updateUserProfileUseCase(props: {
+  context: {
+    fetchUser: (id: string) => Promise<UserDTO>
+    updateUser: (id: string, data: UpdateUserDTO) => Promise<UserDTO>
+    checkEmailAvailability: (email: string, excludeUserId: string) => Promise<boolean>
+  }
+  data: {
+    userId: string
+    updates: UpdateUserDTO
+  }
+}): Promise<ClientResult<UserDTO>> {
+  // Pobierz obecnego użytkownika
+  const userResult = await executePromise(() => props.context.fetchUser(props.data.userId))
+  if (userResult.isFailure) {
+    return clientError("User not found")
+  }
+
+  const currentUser = userResult.value
+
+  // Walidacja biznesowa: Sprawdź dostępność emaila jeśli się zmienia
+  if (props.data.updates.email && props.data.updates.email !== currentUser.email) {
+    const emailAvailableResult = await executePromise(() =>
+      props.context.checkEmailAvailability(props.data.updates.email!, props.data.userId),
+    )
+
+    if (emailAvailableResult.isFailure) {
+      return clientError("Failed to check email availability")
+    }
+
+    if (!emailAvailableResult.value) {
+      return clientError("Email is already taken")
+    }
+  }
+
+  // Aktualizuj użytkownika
+  const updateResult = await executePromise(() =>
+    props.context.updateUser(props.data.userId, props.data.updates),
+  )
+
+  if (updateResult.isFailure) {
+    return clientError("Failed to update user profile")
+  }
+
+  return clientValue(updateResult.value)
+}
+```
+
+### Use Case z Obsługą Plików
+
+```typescript
+export async function createPostWithImageUseCase(props: {
+  context: {
+    uploadImage: (file: File) => Promise<string>
+    createPost: (data: CreatePostDTO) => Promise<PostDTO>
+  }
+  data: {
+    title: string
+    content: string
+    image?: File
+  }
+}): Promise<ClientResult<PostDTO>> {
+  let imageUrl: string | undefined
+
+  // Opcjonalnie prześlij obraz
+  if (props.data.image) {
+    const uploadResult = await executePromise(() => props.context.uploadImage(props.data.image!))
+    if (uploadResult.isFailure) {
+      return clientError("Failed to upload image")
+    }
+    imageUrl = uploadResult.value
+  }
+
+  // Utwórz post z URL obrazu
+  const postData: CreatePostDTO = {
+    title: props.data.title,
+    content: props.data.content,
+    imageUrl,
+  }
+
+  const createResult = await executePromise(() => props.context.createPost(postData))
+  if (createResult.isFailure) {
+    return clientError("Failed to create post")
+  }
+
+  return clientValue(createResult.value)
+}
+```
+
+## 📋 Odpowiedzialności Use Case
+
+1. **Orkiestruj** operacje biznesowe
+2. **Opakuj** wszystkie wywołania zewnętrzne w executePromise
+3. **Obsługuj** ExecutionResult z repositories
+4. **Konwertuj** na ClientResult dla Actions
+5. **Implementuj** reguły biznesowe i logikę
+
+## 🔍 Pliki Referencyjne
+
+- `features/checkout/logic/checkout-use-case.ts`
+- `features/contact/logic/contact-use-case.ts`
+
+## 💡 Wskazówki dla Początkujących
+
+### 1. Zawsze Używaj executePromise
+
+```typescript
+// ✅ Poprawnie - opakuj w executePromise
+const result = await executePromise(() => context.repository(data))
+
+// ❌ Źle - bezpośrednie wywołanie
+const result = await context.repository(data)
+```
+
+### 2. Zawsze Zwracaj ClientResult
+
+```typescript
+// ✅ Poprawnie - zwróć ClientResult
+return clientValue(processedData)
+
+// ❌ Źle - zwróć surowe dane
+return processedData
+```
+
+### 3. Obsługuj Błędy na Każdym Kroku
+
+```typescript
+// ✅ Poprawnie - sprawdź każdy krok
+const step1 = await executePromise(() => context.step1())
+if (step1.isFailure) return clientError("Step 1 failed")
+
+const step2 = await executePromise(() => context.step2(step1.value))
+if (step2.isFailure) return clientError("Step 2 failed")
+
+// ❌ Źle - nie sprawdzaj błędów
+const step1 = await executePromise(() => context.step1())
+const step2 = await executePromise(() => context.step2(step1.value))
+```
+
+### 4. Używaj Dependency Injection
+
+```typescript
+// ✅ Poprawnie - otrzymuj przez kontekst
+export async function useCase(props: {
+  context: {
+    repository: RepositoryFunction
+  }
+  data: InputData
+}) {
+  // Używaj props.context.repository
+}
+
+// ❌ Źle - bezpośredni import
+import { repository } from "./repo"
+export async function useCase(data: InputData) {
+  // Używaj repository bezpośrednio
+}
+```

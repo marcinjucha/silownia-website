@@ -1,0 +1,201 @@
+---
+globs: features/**/actions/*.ts
+description: Server Actions patterns and rules for features/*/actions/ files
+---
+
+# Server Actions Rules
+
+## 🎯 Actions Layer - Tylko Koordynacja
+
+Actions są TYLKO do:
+
+- Walidacji danych z schematami Zod
+- Dependency injection dla Use Cases
+- Obsługi wyników i przekierowań
+- Koordynacji Server Actions
+
+## ✅ OBOWIĄZKOWY Wzorzec Action
+
+```typescript
+"use server"
+
+import { z } from "zod"
+import { redirect } from "next/navigation"
+import { clientError } from "@/lib/error-handling"
+
+const schema = z.object({
+  // Definicja schematu walidacji
+})
+
+export async function processAction(formData: FormData) {
+  // 1. Walidacja
+  const parsed = schema.safeParse(Object.fromEntries(formData))
+  if (!parsed.success) {
+    return clientError("Validation failed")
+  }
+
+  // 2. Dependency injection + wywołanie Use Case
+  const result = await useCase({
+    context: {
+      repository: repositoryFunction,
+    },
+    data: parsed.data,
+  })
+
+  // 3. Obsługa wyniku
+  if (result.isFailure) return result
+
+  // 4. Przekierowanie po sukcesie
+  redirect(`/success/${result.value.id}`)
+}
+```
+
+## 🔧 Wymagane Importy
+
+```typescript
+"use server"
+import { redirect } from "next/navigation"
+import { z } from "zod"
+import { clientError } from "@/lib/error-handling"
+```
+
+## ❌ ZABRONIONE w Actions
+
+- Logika biznesowa (należy do Use Cases)
+- Bezpośrednie wywołania API (używaj repositories przez Use Cases)
+- Bezpośrednie operacje na bazie danych
+- Złożone transformacje danych
+- Obsługa błędów poza ClientResult
+- Zarządzanie stanem
+
+## 🎯 Wzorzec Dependency Injection
+
+ZAWSZE wstrzykuj zależności do Use Cases:
+
+```typescript
+const result = await useCase({
+  context: {
+    createRepo: createRepository,
+    updateRepo: updateRepository,
+    sendEmail: sendEmailRepository,
+  },
+  data: validatedData,
+})
+```
+
+## 📋 Odpowiedzialności Actions
+
+1. **Waliduj** dane formularza z Zod
+2. **Wstrzyknij** zależności repository
+3. **Wywołaj** Use Case z kontekstem
+4. **Obsłuż** odpowiedź ClientResult
+5. **Przekieruj** po sukcesie lub zwróć błąd
+
+## 🎯 Praktyczne Przykłady
+
+### Prosty Formularz
+
+```typescript
+const contactSchema = z.object({
+  name: z.string().min(2, "Name too short"),
+  email: z.string().email("Invalid email"),
+  message: z.string().min(10, "Message too short"),
+})
+
+export async function submitContactAction(formData: FormData) {
+  const parsed = contactSchema.safeParse(Object.fromEntries(formData))
+  if (!parsed.success) {
+    return clientError("Please check your input")
+  }
+
+  const result = await sendContactUseCase({
+    context: {
+      sendEmail: sendEmailRepository,
+    },
+    data: parsed.data,
+  })
+
+  if (result.isFailure) return result
+
+  redirect("/contact/success")
+}
+```
+
+### Formularz z Plikami
+
+```typescript
+const productSchema = z.object({
+  title: z.string().min(1),
+  description: z.string().min(10),
+  price: z.string().transform(val => parseFloat(val)),
+})
+
+export async function createProductAction(formData: FormData) {
+  // Walidacja podstawowych pól
+  const parsed = productSchema.safeParse(Object.fromEntries(formData))
+  if (!parsed.success) {
+    return clientError("Invalid product data")
+  }
+
+  // Obsługa pliku
+  const image = formData.get("image") as File
+  if (!image || image.size === 0) {
+    return clientError("Image is required")
+  }
+
+  const result = await createProductUseCase({
+    context: {
+      createProduct: createProductRepository,
+      uploadImage: uploadImageRepository,
+    },
+    data: { ...parsed.data, image },
+  })
+
+  if (result.isFailure) return result
+
+  redirect(`/products/${result.value.id}`)
+}
+```
+
+## 🔍 Pliki Referencyjne
+
+- `features/checkout/actions/checkout-actions.ts`
+- `features/contact/actions/contact-actions.ts`
+
+## 💡 Wskazówki dla Początkujących
+
+### 1. Zawsze Waliduj Dane
+
+```typescript
+// ✅ Poprawnie - waliduj przed użyciem
+const parsed = schema.safeParse(data)
+if (!parsed.success) {
+  return clientError("Validation failed")
+}
+
+// ❌ Źle - używanie surowych danych
+const result = await useCase({ data: formData })
+```
+
+### 2. Używaj Dependency Injection
+
+```typescript
+// ✅ Poprawnie - wstrzykuj zależności
+const result = await useCase({
+  context: { repository: repositoryFunction },
+  data: parsed.data,
+})
+
+// ❌ Źle - bezpośrednie wywołanie
+const result = await repositoryFunction(parsed.data)
+```
+
+### 3. Obsługuj Błędy Właściwie
+
+```typescript
+// ✅ Poprawnie - zwróć ClientResult
+if (result.isFailure) return result
+
+// ❌ Źle - rzucanie błędów
+if (result.isFailure) throw new Error(result.error)
+```

@@ -1,0 +1,342 @@
+---
+globs: features/**/logic/*-repo.ts
+description: Repository patterns and external communication rules for features/*/logic/*-repo.ts files
+---
+
+# Repository Rules
+
+## 🎯 Repository Layer - Tylko Komunikacja Zewnętrzna
+
+Repositories są TYLKO do:
+
+- Wywołań API (GraphQL, REST, itp.)
+- Mapowania Response → DTO
+- Rzucania wyjątków (łapanych przez executePromise)
+- Definicji wewnętrznych typów Response
+- Definicji typów funkcji repository (jeśli potrzebne)
+
+## ✅ OBOWIĄZKOWY Wzorzec Repository
+
+```typescript
+import client, { gql } from "@/lib/graph-ql/client"
+import { handleGraphQLMutation, handleGraphQLQuery } from "@/lib/graph-ql/graphql-utils"
+
+// Wewnętrzne typy Response (NIE eksportowane)
+type CreateResponse = {
+  create: {
+    documentId: string
+    createdAt: string
+    // Inne pola response...
+  }
+}
+
+export async function createRepository(data: DTO): Promise<DTO> {
+  // 1. Wykonaj mutację GraphQL
+  const result = await client.mutate<CreateResponse>({
+    mutation: CREATE_MUTATION,
+    variables: { data },
+  })
+
+  // 2. Obsłuż odpowiedź GraphQL (rzuca błąd przy błędzie)
+  const mutationData = handleGraphQLMutation(result)
+
+  // 3. Mapuj response na DTO
+  return {
+    id: mutationData.create.documentId,
+    createdAt: mutationData.create.createdAt,
+    ...data,
+  }
+}
+```
+
+## 🔧 Wymagane Importy
+
+```typescript
+import client, { gql } from "@/lib/graph-ql/client"
+import { handleGraphQLMutation, handleGraphQLQuery } from "@/lib/graph-ql/graphql-utils"
+import { makeAssetUrl } from "@/features/common/common-repos"
+```
+
+## 🎯 Wzorce GraphQL
+
+### Mutacje
+
+```typescript
+const CREATE_MUTATION = gql`
+  mutation CreateItem($data: ItemInput!) {
+    createItem(data: $data) {
+      documentId
+      createdAt
+      # Inne pola...
+    }
+  }
+`
+
+export async function createItemRepository(data: ItemDTO): Promise<ItemDTO> {
+  const result = await client.mutate<CreateResponse>({
+    mutation: CREATE_MUTATION,
+    variables: { data },
+  })
+
+  const mutationData = handleGraphQLMutation(result)
+  return mapResponseToDTO(mutationData)
+}
+```
+
+### Zapytania
+
+```typescript
+const LIST_QUERY = gql`
+  query ListItems($filters: ItemFiltersInput) {
+    items(filters: $filters) {
+      documentId
+      # Inne pola...
+    }
+  }
+`
+
+export async function fetchItemsRepository(filters?: FilterDTO): Promise<ItemDTO[]> {
+  const result = await client.query<ListResponse>({
+    query: LIST_QUERY,
+    variables: { filters },
+    fetchPolicy: "cache-first",
+  })
+
+  const queryData = handleGraphQLQuery(result)
+  return queryData.items.map(mapResponseToDTO)
+}
+```
+
+## 🔄 Wzorzec Mapowania Response
+
+```typescript
+function mapResponseToDTO(response: ItemResponse): ItemDTO {
+  return {
+    id: response.documentId,
+    title: response.title,
+    description: response.description,
+    imageUrl: response.image ? makeAssetUrl(response.image.url) : undefined,
+    createdAt: response.createdAt,
+  }
+}
+```
+
+## 📝 Wzorzec Typów Wewnętrznych
+
+```typescript
+// Wewnętrzne typy Response - NIE eksportowane z tego pliku
+type ItemResponse = {
+  documentId: string
+  title: string
+  description?: string
+  image?: {
+    url: string
+    alternativeText?: string
+  }
+  createdAt: string
+}
+
+type ListResponse = {
+  items: ItemResponse[]
+}
+
+type CreateResponse = {
+  createItem: ItemResponse
+}
+
+// Typy funkcji repository (jeśli potrzebne dla złożonych przypadków)
+type CreateItemRepository = (data: ItemDTO) => Promise<ItemDTO>
+type FetchItemsRepository = (filters?: FilterDTO) => Promise<ItemDTO[]>
+```
+
+## ❌ ZABRONIONE w Repositories
+
+- Logika biznesowa (należy do Use Cases)
+- Obsługa błędów poza rzucaniem wyjątków
+- Zwracanie ClientResult (należy do Use Cases)
+- Używanie executePromise (należy do Use Cases)
+- Eksportowanie typów Response (trzymaj wewnętrznie)
+- Bezpośrednie concerns komponentów
+
+## 🎯 Obsługa Błędów
+
+Repositories powinny RZUCAĆ wyjątki:
+
+```typescript
+// ✅ Poprawnie - pozwól handleGraphQLMutation rzucić błąd
+export async function createRepository(data: DTO): Promise<DTO> {
+  const result = await client.mutate({ mutation: CREATE })
+  const mutationData = handleGraphQLMutation(result) // Rzuca błąd przy błędzie
+  return mapResponseToDTO(mutationData)
+}
+
+// ❌ Źle - nie łap błędów w repositories
+export async function createRepository(data: DTO): Promise<DTO> {
+  try {
+    const result = await client.mutate({ mutation: CREATE })
+    return mapResponseToDTO(result.data)
+  } catch (error) {
+    // Nie rób tego - pozwól Use Cases obsłużyć błędy
+  }
+}
+```
+
+## 🎯 Praktyczne Przykłady
+
+### Repository dla Produktów
+
+```typescript
+const PRODUCT_FRAGMENT = gql`
+  fragment ProductFields on Product {
+    documentId
+    title
+    description
+    price
+    image {
+      url
+      alternativeText
+    }
+    createdAt
+  }
+`
+
+const CREATE_PRODUCT = gql`
+  ${PRODUCT_FRAGMENT}
+  mutation CreateProduct($data: ProductInput!) {
+    createProduct(data: $data) {
+      ...ProductFields
+    }
+  }
+`
+
+const LIST_PRODUCTS = gql`
+  ${PRODUCT_FRAGMENT}
+  query ListProducts($filters: ProductFiltersInput) {
+    products(filters: $filters) {
+      ...ProductFields
+    }
+  }
+`
+
+type ProductResponse = {
+  documentId: string
+  title: string
+  description?: string
+  price: number
+  image?: {
+    url: string
+    alternativeText?: string
+  }
+  createdAt: string
+}
+
+function mapProductResponseToDTO(response: ProductResponse): ProductDTO {
+  return {
+    id: response.documentId,
+    title: response.title,
+    description: response.description,
+    price: response.price,
+    imageUrl: response.image ? makeAssetUrl(response.image.url) : undefined,
+    createdAt: response.createdAt,
+  }
+}
+
+export async function createProductRepository(data: CreateProductDTO): Promise<ProductDTO> {
+  const result = await client.mutate<{ createProduct: ProductResponse }>({
+    mutation: CREATE_PRODUCT,
+    variables: { data },
+  })
+
+  const mutationData = handleGraphQLMutation(result)
+  return mapProductResponseToDTO(mutationData.createProduct)
+}
+
+export async function fetchProductsRepository(filters?: ProductFiltersDTO): Promise<ProductDTO[]> {
+  const result = await client.query<{ products: ProductResponse[] }>({
+    query: LIST_PRODUCTS,
+    variables: { filters },
+    fetchPolicy: "cache-first",
+  })
+
+  const queryData = handleGraphQLQuery(result)
+  return queryData.products.map(mapProductResponseToDTO)
+}
+```
+
+### Repository z Plikami
+
+```typescript
+export async function uploadImageRepository(file: File): Promise<string> {
+  const formData = new FormData()
+  formData.append("files", file)
+
+  const response = await fetch("/api/upload", {
+    method: "POST",
+    body: formData,
+  })
+
+  if (!response.ok) {
+    throw new Error(`Upload failed: ${response.statusText}`)
+  }
+
+  const data = await response.json()
+  return data.url
+}
+```
+
+## 📋 Odpowiedzialności Repository
+
+1. **Wykonuj** zewnętrzne wywołania API
+2. **Obsługuj** odpowiedzi GraphQL z narzędziami
+3. **Mapuj** typy Response na typy DTO
+4. **Rzucaj** wyjątki (łapane przez executePromise w Use Cases)
+5. **Definiuj** wewnętrzne typy Response
+
+## 🔍 Pliki Referencyjne
+
+- `features/checkout/logic/checkout-repo.ts`
+- `features/seo/logic/json-ld-repo.ts`
+
+## 💡 Wskazówki dla Początkujących
+
+### 1. Używaj Narzędzi GraphQL
+
+```typescript
+// ✅ Poprawnie - używaj narzędzi
+const mutationData = handleGraphQLMutation(result)
+
+// ❌ Źle - ręczna obsługa
+if (result.errors) {
+  throw new Error(result.errors[0].message)
+}
+```
+
+### 2. Mapuj Response na DTO
+
+```typescript
+// ✅ Poprawnie - mapuj na DTO
+return {
+  id: response.documentId,
+  title: response.title,
+  createdAt: response.createdAt,
+}
+
+// ❌ Źle - zwracaj surowy response
+return response
+```
+
+### 3. Trzymaj Typy Response Wewnętrznie
+
+```typescript
+// ✅ Poprawnie - wewnętrzny typ
+type ProductResponse = {
+  documentId: string
+  title: string
+}
+
+// ❌ Źle - eksportowany typ Response
+export type ProductResponse = {
+  documentId: string
+  title: string
+}
+```

@@ -1,0 +1,2886 @@
+<!-- ---
+description: Kompletny przewodnik React dla tego projektu - od podstaw do zaawansowanych wzorców
+globs: *.ts,*.tsx,*.jsx,*.js
+alwaysApply: true
+--- -->
+
+# React - Przewodnik od Podstaw do Zaawansowanych
+
+## 📋 Spis Treści
+
+1. [Wprowadzenie do React](#wprowadzenie-do-react)
+   - [Czym jest React](#czym-jest-react)
+   - [Historia i zalety](#historia-i-zalety)
+   - [React vs inne frameworki](#react-vs-inne-frameworki)
+2. [Podstawy React](#podstawy-react)
+   - [JSX - składnia](#jsx---składnia)
+   - [Komponenty funkcyjne](#komponenty-funkcyjne)
+   - [Props i dzieci](#props-i-dzieci)
+   - [Renderowanie warunkowe](#renderowanie-warunkowe)
+3. [Stan komponentów](#stan-komponentów)
+   - [useState Hook](#usestate-hook)
+   - [Zarządzanie stanem](#zarządzanie-stanem)
+   - [State patterns](#state-patterns)
+4. [Effect Hook i lifecycle](#effect-hook-i-lifecycle)
+   - [useEffect podstawy](#useeffect-podstawy)
+   - [Cleanup i dependencies](#cleanup-i-dependencies)
+   - [Custom hooks](#custom-hooks)
+5. [Zaawansowane hooks](#zaawansowane-hooks)
+   - [useCallback i useMemo](#usecallback-i-usememo)
+   - [useContext](#usecontext)
+   - [useReducer](#usereducer)
+6. [Komponenty i wzorce](#komponenty-i-wzorce)
+   - [Kompozycja komponentów](#kompozycja-komponentów)
+   - [Children patterns](#children-patterns)
+   - [Render props](#render-props)
+7. [Formularze i walidacja](#formularze-i-walidacja)
+   - [Controlled components](#controlled-components)
+   - [Form handling](#form-handling)
+   - [Validation patterns](#validation-patterns)
+8. [Stylowanie komponentów](#stylowanie-komponentów)
+   - [CSS Modules](#css-modules)
+   - [Styled components](#styled-components)
+   - [Tailwind integration](#tailwind-integration)
+9. [Performance optimization](#performance-optimization)
+   - [React.memo](#reactmemo)
+   - [Virtualization](#virtualization)
+   - [Code splitting](#code-splitting)
+10. [Testing React](#testing-react)
+    - [Jest i React Testing Library](#jest-i-react-testing-library)
+    - [Component testing](#component-testing)
+    - [Mocking strategies](#mocking-strategies)
+11. [TypeScript + React](#typescript--react)
+    - [Component typing](#component-typing)
+    - [Props interfaces](#props-interfaces)
+    - [Event handling](#event-handling)
+12. [Najlepsze praktyki](#najlepsze-praktyki)
+    - [Code organization](#code-organization)
+    - [Error boundaries](#error-boundaries)
+    - [Security patterns](#security-patterns)
+
+---
+
+## Wprowadzenie do React
+
+### Czym jest React
+
+React to **biblioteka JavaScript** do budowy interfejsów użytkownika, stworzona przez Facebook (Meta). Główne cechy:
+
+- **Komponentowa architektura** - UI składa się z reusable komponentów
+- **Virtual DOM** - wydajna aktualizacja interfejsu
+- **Jednokierunkowy przepływ danych** - predictable state management
+- **Deklaratywny styl** - opisujesz co chcesz osiągnąć, nie jak
+
+```jsx
+// Prosty komponent React
+function Welcome({ name }) {
+  return <h1>Hello, {name}!</h1>
+}
+
+// Użycie
+function App() {
+  return (
+    <div>
+      <Welcome name="World" />
+      <Welcome name="React" />
+    </div>
+  )
+}
+```
+
+### Historia i zalety
+
+**Historia:**
+
+- **2013** - Pierwsza publiczna wersja
+- **2015** - React Native
+- **2016** - React 15 (znaczące usprawnienia)
+- **2018** - React 16 (Hooks, Concurrent Mode)
+- **2022** - React 18 (Concurrent Features)
+- **2024** - React 19 (React Compiler, Server Components)
+
+**Zalety React:**
+
+- ✅ **Reusable komponenty** - pisz raz, używaj wszędzie
+- ✅ **Virtual DOM** - wydajne renderowanie
+- ✅ **Ekosystem** - bogaty zestaw bibliotek
+- ✅ **Developer tools** - doskonałe narzędzia do debugowania
+- ✅ **Community** - aktywna społeczność
+- ✅ **Job market** - wysokie zapotrzebowanie na rynku
+
+### React vs inne frameworki
+
+```jsx
+// React - explicit i flexible
+function Counter() {
+  const [count, setCount] = useState(0)
+
+  return (
+    <div>
+      <p>Count: {count}</p>
+      <button onClick={() => setCount(count + 1)}>+</button>
+    </div>
+  )
+}
+
+// Vue - template-based
+// <template>
+//   <div>
+//     <p>Count: {{ count }}</p>
+//     <button @click="increment">+</button>
+//   </div>
+// </template>
+
+// Angular - class-based
+// @Component({
+//   template: `
+//     <div>
+//       <p>Count: {{ count }}</p>
+//       <button (click)="increment()">+</button>
+//     </div>
+//   `
+// })
+// export class CounterComponent { ... }
+```
+
+**Porównanie:**
+
+- **React**: Flexibilny, explicit, duża swoboda
+- **Vue**: Template-based, łatwy start, mniej boilerplate
+- **Angular**: Opinionated, enterprise-ready, steep learning curve
+- **Svelte**: Compile-time optimizations, mały bundle size
+
+---
+
+## Podstawy React
+
+### JSX - składnia
+
+JSX to rozszerzenie JavaScript pozwalające pisać HTML-like syntax w JS:
+
+```jsx
+// ✅ Basic JSX
+function BasicComponent() {
+  const name = "React"
+  const isVisible = true
+
+  return (
+    <div className="container">
+      <h1>Hello {name}!</h1>
+      {isVisible && <p>This is visible</p>}
+      <ul>
+        {[1, 2, 3].map(num => (
+          <li key={num}>Item {num}</li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+
+// ✅ JSX rules
+function JSXRules() {
+  return (
+    // Must return single root element (or Fragment)
+    <>
+      <h1>Title</h1>
+      <p>Content</p>
+
+      {/* Use className instead of class */}
+      <div className="my-class">
+        {/* Self-closing tags must have closing slash */}
+        <img src="image.jpg" alt="description" />
+        <br />
+
+        {/* Use camelCase for attributes */}
+        <label htmlFor="email">Email:</label>
+        <input id="email" type="email" onChange={handleChange} onFocus={handleFocus} />
+      </div>
+
+      {/* JavaScript expressions in curly braces */}
+      <div style={{ color: "blue", fontSize: 16 }}>{/* Inline styles as objects */}</div>
+    </>
+  )
+}
+
+// ✅ JSX without JSX (createElement)
+function WithoutJSX() {
+  return React.createElement(
+    "div",
+    { className: "container" },
+    React.createElement("h1", null, "Hello React!"),
+  )
+}
+```
+
+### Komponenty funkcyjne
+
+W naszym projekcie używamy **wyłącznie komponentów funkcyjnych**:
+
+```tsx
+// ✅ Basic functional component
+function Greeting() {
+  return <h1>Hello World!</h1>
+}
+
+// ✅ Component with props
+type UserCardProps = {
+  name: string
+  email: string
+  avatar?: string
+}
+
+function UserCard({ name, email, avatar }: UserCardProps) {
+  return (
+    <div className="user-card">
+      {avatar && <img src={avatar} alt={name} />}
+      <h3>{name}</h3>
+      <p>{email}</p>
+    </div>
+  )
+}
+
+// ✅ Component with default props
+type ButtonProps = {
+  children: React.ReactNode
+  variant?: "primary" | "secondary"
+  size?: "sm" | "md" | "lg"
+  onClick?: () => void
+}
+
+function Button({ children, variant = "primary", size = "md", onClick }: ButtonProps) {
+  return (
+    <button className={`btn btn-${variant} btn-${size}`} onClick={onClick}>
+      {children}
+    </button>
+  )
+}
+
+// ✅ Export patterns
+export default Button // Default export for main component
+export { UserCard } // Named export for additional components
+export type { ButtonProps, UserCardProps } // Export types
+```
+
+### Props i dzieci
+
+```tsx
+// ✅ Children prop patterns
+type ContainerProps = {
+  children: React.ReactNode // Najczęściej używany
+  className?: string
+}
+
+function Container({ children, className }: ContainerProps) {
+  return <div className={`container ${className || ""}`}>{children}</div>
+}
+
+// ✅ Different children types
+type LayoutProps = {
+  children: React.ReactNode // Any React content
+  header?: React.ReactElement // Specific React element
+  sidebar?: JSX.Element // JSX element
+  footer?: () => JSX.Element // Function returning JSX
+}
+
+function Layout({ children, header, sidebar, footer }: LayoutProps) {
+  return (
+    <div className="layout">
+      {header}
+      <div className="main-content">
+        {sidebar && <aside>{sidebar}</aside>}
+        <main>{children}</main>
+      </div>
+      {footer && footer()}
+    </div>
+  )
+}
+
+// ✅ Props spreading and rest parameters
+type BaseButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement>
+
+type CustomButtonProps = BaseButtonProps & {
+  variant?: "primary" | "secondary"
+  isLoading?: boolean
+}
+
+function CustomButton({
+  variant = "primary",
+  isLoading,
+  children,
+  className,
+  ...buttonProps
+}: CustomButtonProps) {
+  return (
+    <button
+      className={`btn btn-${variant} ${className || ""}`}
+      disabled={isLoading || buttonProps.disabled}
+      {...buttonProps}
+    >
+      {isLoading ? "Loading..." : children}
+    </button>
+  )
+}
+
+// ✅ Prop validation with TypeScript
+type ProductProps = {
+  id: string
+  name: string
+  price: number
+  onAddToCart: (id: string) => void
+  discount?: {
+    amount: number
+    type: "percentage" | "fixed"
+  }
+}
+
+function Product({ id, name, price, onAddToCart, discount }: ProductProps) {
+  const finalPrice = discount
+    ? discount.type === "percentage"
+      ? price * (1 - discount.amount / 100)
+      : price - discount.amount
+    : price
+
+  return (
+    <div className="product">
+      <h3>{name}</h3>
+      <div className="price">
+        {discount && <span className="original-price">${price}</span>}
+        <span className="final-price">${finalPrice.toFixed(2)}</span>
+      </div>
+      <button onClick={() => onAddToCart(id)}>Add to Cart</button>
+    </div>
+  )
+}
+```
+
+### Renderowanie warunkowe
+
+```tsx
+// ✅ Podstawowe renderowanie warunkowe
+function UserProfile({ user, isOwner }) {
+  return (
+    <div className="profile">
+      <h1>{user.name}</h1>
+
+      {/* Conditional rendering with && */}
+      {isOwner && <button>Edit Profile</button>}
+
+      {/* Conditional rendering with ternary */}
+      {user.isOnline ? (
+        <span className="status online">Online</span>
+      ) : (
+        <span className="status offline">Offline</span>
+      )}
+
+      {/* Multiple conditions */}
+      {user.role === "admin" && user.permissions.includes("delete") && (
+        <button className="danger">Delete User</button>
+      )}
+    </div>
+  )
+}
+
+// ✅ Switch-like pattern with early returns
+function NotificationBadge({ type, count }) {
+  if (count === 0) {
+    return null // Don't render anything
+  }
+
+  if (type === "error") {
+    return <span className="badge error">{count}</span>
+  }
+
+  if (type === "warning") {
+    return <span className="badge warning">{count}</span>
+  }
+
+  return <span className="badge info">{count}</span>
+}
+
+// ✅ Complex conditional rendering
+function Dashboard({ user, features, permissions }) {
+  const canViewAnalytics = permissions.includes("analytics")
+  const canManageUsers = user.role === "admin"
+  const hasPremium = features.premium === true
+
+  return (
+    <div className="dashboard">
+      <h1>Welcome, {user.name}</h1>
+
+      {/* Nested conditions */}
+      {hasPremium && canViewAnalytics && (
+        <section className="analytics">
+          <h2>Analytics</h2>
+          {user.lastLogin ? <p>Last login: {user.lastLogin}</p> : <p>First time here! Welcome!</p>}
+        </section>
+      )}
+
+      {/* Function-based conditional rendering */}
+      {(() => {
+        if (!user.isVerified) {
+          return <VerificationBanner user={user} />
+        }
+
+        if (user.subscription.isExpired) {
+          return <RenewalBanner subscription={user.subscription} />
+        }
+
+        return <WelcomeBanner user={user} />
+      })()}
+
+      {/* Admin section */}
+      {canManageUsers && <AdminPanel permissions={permissions} />}
+    </div>
+  )
+}
+
+// ✅ List rendering patterns
+function TodoList({ todos, filter }) {
+  const filteredTodos = todos.filter(todo => {
+    if (filter === "completed") return todo.completed
+    if (filter === "pending") return !todo.completed
+    return true // 'all'
+  })
+
+  if (filteredTodos.length === 0) {
+    return (
+      <div className="empty-state">
+        <p>No {filter === "all" ? "" : filter} todos found</p>
+      </div>
+    )
+  }
+
+  return (
+    <ul className="todo-list">
+      {filteredTodos.map(todo => (
+        <li key={todo.id} className={todo.completed ? "completed" : ""}>
+          <span>{todo.title}</span>
+          {todo.priority === "high" && <span className="priority-badge">High Priority</span>}
+        </li>
+      ))}
+    </ul>
+  )
+}
+```
+
+---
+
+## Stan komponentów
+
+### useState Hook
+
+`useState` to podstawowy hook do zarządzania stanem w komponentach funkcyjnych:
+
+```tsx
+import { useState } from "react"
+
+// ✅ Basic useState
+function Counter() {
+  const [count, setCount] = useState(0) // Initial value: 0
+
+  return (
+    <div>
+      <p>Count: {count}</p>
+      <button onClick={() => setCount(count + 1)}>+</button>
+      <button onClick={() => setCount(count - 1)}>-</button>
+      <button onClick={() => setCount(0)}>Reset</button>
+    </div>
+  )
+}
+
+// ✅ useState with different types
+function UserForm() {
+  const [name, setName] = useState<string>("") // String
+  const [age, setAge] = useState<number>(0) // Number
+  const [isActive, setIsActive] = useState<boolean>(false) // Boolean
+  const [tags, setTags] = useState<string[]>([]) // Array
+  const [user, setUser] = useState<User | null>(null) // Object or null
+
+  // Complex state object
+  const [form, setForm] = useState({
+    email: "",
+    password: "",
+    confirmPassword: "",
+  })
+
+  return (
+    <form>
+      <input value={name} onChange={e => setName(e.target.value)} placeholder="Name" />
+
+      <input
+        type="number"
+        value={age}
+        onChange={e => setAge(parseInt(e.target.value))}
+        placeholder="Age"
+      />
+
+      <label>
+        <input type="checkbox" checked={isActive} onChange={e => setIsActive(e.target.checked)} />
+        Active
+      </label>
+
+      {/* Complex state updates */}
+      <input
+        value={form.email}
+        onChange={e =>
+          setForm(prev => ({
+            ...prev,
+            email: e.target.value,
+          }))
+        }
+        placeholder="Email"
+      />
+    </form>
+  )
+}
+
+// ✅ Functional state updates (important!)
+function SafeCounter() {
+  const [count, setCount] = useState(0)
+
+  // ❌ Wrong - can cause stale state issues
+  function incrementTwice() {
+    setCount(count + 1) // Uses stale count
+    setCount(count + 1) // Uses same stale count
+  }
+
+  // ✅ Correct - uses functional update
+  function incrementTwiceSafe() {
+    setCount(prev => prev + 1) // Uses fresh prev
+    setCount(prev => prev + 1) // Uses updated prev
+  }
+
+  return (
+    <div>
+      <p>Count: {count}</p>
+      <button onClick={incrementTwiceSafe}>+2</button>
+    </div>
+  )
+}
+```
+
+### Zarządzanie stanem
+
+```tsx
+// ✅ Complex state management patterns
+type TodoState = {
+  todos: Todo[]
+  filter: "all" | "completed" | "pending"
+  isLoading: boolean
+  error: string | null
+}
+
+function TodoApp() {
+  const [state, setState] = useState<TodoState>({
+    todos: [],
+    filter: "all",
+    isLoading: false,
+    error: null,
+  })
+
+  // Helper functions for state updates
+  const updateTodos = (updater: (todos: Todo[]) => Todo[]) => {
+    setState(prev => ({
+      ...prev,
+      todos: updater(prev.todos),
+    }))
+  }
+
+  const setLoading = (isLoading: boolean) => {
+    setState(prev => ({ ...prev, isLoading }))
+  }
+
+  const setError = (error: string | null) => {
+    setState(prev => ({ ...prev, error }))
+  }
+
+  // Actions
+  const addTodo = (title: string) => {
+    const newTodo: Todo = {
+      id: Date.now().toString(),
+      title,
+      completed: false,
+      createdAt: new Date(),
+    }
+
+    updateTodos(todos => [...todos, newTodo])
+  }
+
+  const toggleTodo = (id: string) => {
+    updateTodos(todos =>
+      todos.map(todo => (todo.id === id ? { ...todo, completed: !todo.completed } : todo)),
+    )
+  }
+
+  const deleteTodo = (id: string) => {
+    updateTodos(todos => todos.filter(todo => todo.id !== id))
+  }
+
+  return (
+    <div className="todo-app">
+      {state.error && <div className="error">{state.error}</div>}
+
+      <TodoInput onAdd={addTodo} disabled={state.isLoading} />
+
+      <TodoFilter
+        current={state.filter}
+        onChange={filter => setState(prev => ({ ...prev, filter }))}
+      />
+
+      <TodoList
+        todos={state.todos}
+        filter={state.filter}
+        onToggle={toggleTodo}
+        onDelete={deleteTodo}
+      />
+    </div>
+  )
+}
+
+// ✅ Custom hook for complex state
+function useTodoState() {
+  const [state, setState] = useState<TodoState>({
+    todos: [],
+    filter: "all",
+    isLoading: false,
+    error: null,
+  })
+
+  const actions = {
+    addTodo: (title: string) => {
+      // Implementation
+    },
+    toggleTodo: (id: string) => {
+      // Implementation
+    },
+    deleteTodo: (id: string) => {
+      // Implementation
+    },
+    setFilter: (filter: TodoState["filter"]) => {
+      setState(prev => ({ ...prev, filter }))
+    },
+    setLoading: (isLoading: boolean) => {
+      setState(prev => ({ ...prev, isLoading }))
+    },
+    setError: (error: string | null) => {
+      setState(prev => ({ ...prev, error }))
+    },
+  }
+
+  return { state, actions }
+}
+
+// Usage
+function TodoAppWithCustomHook() {
+  const { state, actions } = useTodoState()
+
+  return <div>{/* Use state and actions */}</div>
+}
+```
+
+### State patterns
+
+```tsx
+// ✅ Loading states pattern
+type AsyncState<T> = {
+  data: T | null
+  isLoading: boolean
+  error: string | null
+}
+
+function useAsyncData<T>(fetchFn: () => Promise<T>) {
+  const [state, setState] = useState<AsyncState<T>>({
+    data: null,
+    isLoading: false,
+    error: null,
+  })
+
+  const fetch = async () => {
+    setState(prev => ({ ...prev, isLoading: true, error: null }))
+
+    try {
+      const data = await fetchFn()
+      setState({ data, isLoading: false, error: null })
+    } catch (error) {
+      setState(prev => ({
+        ...prev,
+        isLoading: false,
+        error: error instanceof Error ? error.message : "Unknown error",
+      }))
+    }
+  }
+
+  return { ...state, fetch, refetch: fetch }
+}
+
+// ✅ Form state pattern
+type FormState<T> = {
+  values: T
+  errors: Partial<Record<keyof T, string>>
+  touched: Partial<Record<keyof T, boolean>>
+  isSubmitting: boolean
+}
+
+function useFormState<T extends Record<string, any>>(initialValues: T) {
+  const [state, setState] = useState<FormState<T>>({
+    values: initialValues,
+    errors: {},
+    touched: {},
+    isSubmitting: false,
+  })
+
+  const setValue = (field: keyof T, value: T[keyof T]) => {
+    setState(prev => ({
+      ...prev,
+      values: { ...prev.values, [field]: value },
+      touched: { ...prev.touched, [field]: true },
+    }))
+  }
+
+  const setError = (field: keyof T, error: string) => {
+    setState(prev => ({
+      ...prev,
+      errors: { ...prev.errors, [field]: error },
+    }))
+  }
+
+  const clearError = (field: keyof T) => {
+    setState(prev => ({
+      ...prev,
+      errors: { ...prev.errors, [field]: undefined },
+    }))
+  }
+
+  return {
+    ...state,
+    setValue,
+    setError,
+    clearError,
+    setSubmitting: (isSubmitting: boolean) => setState(prev => ({ ...prev, isSubmitting })),
+  }
+}
+
+// ✅ Modal state pattern
+function useModal() {
+  const [isOpen, setIsOpen] = useState(false)
+  const [data, setData] = useState<any>(null)
+
+  const open = (modalData?: any) => {
+    setData(modalData)
+    setIsOpen(true)
+  }
+
+  const close = () => {
+    setIsOpen(false)
+    setData(null)
+  }
+
+  return { isOpen, data, open, close }
+}
+
+// Usage
+function UserList({ users }) {
+  const deleteModal = useModal()
+  const editModal = useModal()
+
+  return (
+    <div>
+      {users.map(user => (
+        <div key={user.id}>
+          <span>{user.name}</span>
+          <button onClick={() => editModal.open(user)}>Edit</button>
+          <button onClick={() => deleteModal.open(user)}>Delete</button>
+        </div>
+      ))}
+
+      {editModal.isOpen && <EditUserModal user={editModal.data} onClose={editModal.close} />}
+
+      {deleteModal.isOpen && (
+        <ConfirmDeleteModal user={deleteModal.data} onClose={deleteModal.close} />
+      )}
+    </div>
+  )
+}
+```
+
+---
+
+## Effect Hook i lifecycle
+
+### useEffect podstawy
+
+`useEffect` pozwala na wykonywanie side effects w komponentach funkcyjnych:
+
+```tsx
+import { useState, useEffect } from "react"
+
+// ✅ Basic useEffect patterns
+function UserProfile({ userId }) {
+  const [user, setUser] = useState(null)
+  const [loading, setLoading] = useState(true)
+
+  // Effect without dependencies - runs after every render
+  useEffect(() => {
+    console.log("Component rendered")
+  })
+
+  // Effect with empty dependencies - runs only once (mount)
+  useEffect(() => {
+    console.log("Component mounted")
+
+    // Cleanup function (unmount)
+    return () => {
+      console.log("Component unmounted")
+    }
+  }, [])
+
+  // Effect with dependencies - runs when dependencies change
+  useEffect(() => {
+    async function fetchUser() {
+      setLoading(true)
+      try {
+        const response = await fetch(`/api/users/${userId}`)
+        const userData = await response.json()
+        setUser(userData)
+      } catch (error) {
+        console.error("Failed to fetch user:", error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    if (userId) {
+      fetchUser()
+    }
+  }, [userId]) // Re-run when userId changes
+
+  if (loading) return <div>Loading...</div>
+  if (!user) return <div>User not found</div>
+
+  return (
+    <div>
+      <h1>{user.name}</h1>
+      <p>{user.email}</p>
+    </div>
+  )
+}
+
+// ✅ Multiple effects for separation of concerns
+function Dashboard({ user }) {
+  const [posts, setPosts] = useState([])
+  const [notifications, setNotifications] = useState([])
+
+  // Effect 1: Fetch posts
+  useEffect(() => {
+    async function fetchPosts() {
+      const response = await fetch("/api/posts")
+      const postsData = await response.json()
+      setPosts(postsData)
+    }
+
+    fetchPosts()
+  }, [])
+
+  // Effect 2: Setup notifications
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      const response = await fetch("/api/notifications")
+      const notificationsData = await response.json()
+      setNotifications(notificationsData)
+    }, 30000) // Every 30 seconds
+
+    return () => clearInterval(interval)
+  }, [])
+
+  // Effect 3: Document title
+  useEffect(() => {
+    document.title = `Dashboard - ${user.name}`
+
+    return () => {
+      document.title = "My App"
+    }
+  }, [user.name])
+
+  return <div>{/* Dashboard content */}</div>
+}
+```
+
+### Cleanup i dependencies
+
+```tsx
+// ✅ Event listeners cleanup
+function WindowSizeTracker() {
+  const [windowSize, setWindowSize] = useState({
+    width: 0,
+    height: 0,
+  })
+
+  useEffect(() => {
+    function handleResize() {
+      setWindowSize({
+        width: window.innerWidth,
+        height: window.innerHeight,
+      })
+    }
+
+    // Initial size
+    handleResize()
+
+    // Add event listener
+    window.addEventListener("resize", handleResize)
+
+    // Cleanup - remove event listener
+    return () => {
+      window.removeEventListener("resize", handleResize)
+    }
+  }, []) // Empty dependencies - setup once
+
+  return (
+    <div>
+      <p>
+        Window size: {windowSize.width} x {windowSize.height}
+      </p>
+    </div>
+  )
+}
+
+// ✅ Timer cleanup
+function Timer() {
+  const [seconds, setSeconds] = useState(0)
+  const [isRunning, setIsRunning] = useState(false)
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout | null = null
+
+    if (isRunning) {
+      interval = setInterval(() => {
+        setSeconds(prev => prev + 1)
+      }, 1000)
+    }
+
+    // Cleanup function
+    return () => {
+      if (interval) {
+        clearInterval(interval)
+      }
+    }
+  }, [isRunning]) // Re-run when isRunning changes
+
+  return (
+    <div>
+      <p>Time: {seconds}s</p>
+      <button onClick={() => setIsRunning(!isRunning)}>{isRunning ? "Stop" : "Start"}</button>
+      <button onClick={() => setSeconds(0)}>Reset</button>
+    </div>
+  )
+}
+
+// ✅ AbortController for async cleanup
+function SearchComponent() {
+  const [query, setQuery] = useState("")
+  const [results, setResults] = useState([])
+  const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    if (!query.trim()) {
+      setResults([])
+      return
+    }
+
+    const abortController = new AbortController()
+
+    async function search() {
+      setLoading(true)
+
+      try {
+        const response = await fetch(`/api/search?q=${query}`, {
+          signal: abortController.signal,
+        })
+
+        if (!response.ok) throw new Error("Search failed")
+
+        const data = await response.json()
+        setResults(data.results)
+      } catch (error) {
+        if (error.name !== "AbortError") {
+          console.error("Search error:", error)
+        }
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    // Debounce search
+    const timeout = setTimeout(search, 300)
+
+    // Cleanup function
+    return () => {
+      clearTimeout(timeout)
+      abortController.abort() // Cancel ongoing request
+    }
+  }, [query])
+
+  return (
+    <div>
+      <input value={query} onChange={e => setQuery(e.target.value)} placeholder="Search..." />
+
+      {loading && <div>Searching...</div>}
+
+      <ul>
+        {results.map(result => (
+          <li key={result.id}>{result.title}</li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+```
+
+### Custom hooks
+
+```tsx
+// ✅ Custom hooks for reusable logic
+function useLocalStorage<T>(key: string, initialValue: T) {
+  const [storedValue, setStoredValue] = useState<T>(() => {
+    try {
+      const item = window.localStorage.getItem(key)
+      return item ? JSON.parse(item) : initialValue
+    } catch (error) {
+      console.error(`Error reading localStorage key "${key}":`, error)
+      return initialValue
+    }
+  })
+
+  const setValue = (value: T | ((val: T) => T)) => {
+    try {
+      const valueToStore = value instanceof Function ? value(storedValue) : value
+      setStoredValue(valueToStore)
+      window.localStorage.setItem(key, JSON.stringify(valueToStore))
+    } catch (error) {
+      console.error(`Error setting localStorage key "${key}":`, error)
+    }
+  }
+
+  return [storedValue, setValue] as const
+}
+
+// ✅ API data fetching hook
+function useApi<T>(url: string) {
+  const [data, setData] = useState<T | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const fetchData = useCallback(async () => {
+    setLoading(true)
+    setError(null)
+
+    try {
+      const response = await fetch(url)
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      const result = await response.json()
+      setData(result)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unknown error")
+    } finally {
+      setLoading(false)
+    }
+  }, [url])
+
+  useEffect(() => {
+    fetchData()
+  }, [fetchData])
+
+  return { data, loading, error, refetch: fetchData }
+}
+
+// Usage
+function UsersList() {
+  const { data: users, loading, error, refetch } = useApi<User[]>("/api/users")
+  const [favorites, setFavorites] = useLocalStorage<string[]>("favoriteUsers", [])
+
+  if (loading) return <div>Loading...</div>
+  if (error) return <div>Error: {error}</div>
+  if (!users) return <div>No users found</div>
+
+  return (
+    <div>
+      <button onClick={refetch}>Refresh</button>
+      {users.map(user => (
+        <UserCard
+          key={user.id}
+          user={user}
+          isFavorite={favorites.includes(user.id)}
+          onToggleFavorite={id => {
+            setFavorites(prev =>
+              prev.includes(id) ? prev.filter(favId => favId !== id) : [...prev, id],
+            )
+          }}
+        />
+      ))}
+    </div>
+  )
+}
+```
+
+---
+
+## Zaawansowane hooks
+
+### useCallback i useMemo
+
+```tsx
+import { useState, useCallback, useMemo, memo } from "react"
+
+// ✅ Optimization with React.memo
+const ExpensiveComponent = memo(function ExpensiveComponent({
+  data,
+  onUpdate,
+}: {
+  data: ComplexData[]
+  onUpdate: (id: string, newData: any) => void
+}) {
+  console.log("ExpensiveComponent rendered") // Won't re-render unnecessarily
+
+  return (
+    <div>
+      {data.map(item => (
+        <div key={item.id}>
+          <span>{item.name}</span>
+          <button onClick={() => onUpdate(item.id, { ...item, updated: true })}>Update</button>
+        </div>
+      ))}
+    </div>
+  )
+})
+
+function OptimizedParent() {
+  const [items, setItems] = useState<ComplexData[]>([])
+  const [filter, setFilter] = useState("")
+
+  // ✅ useMemo for expensive filtering
+  const filteredItems = useMemo(() => {
+    console.log("Filtering items...") // Only runs when items or filter change
+
+    if (!filter) return items
+
+    return items.filter(item => item.name.toLowerCase().includes(filter.toLowerCase()))
+  }, [items, filter])
+
+  // ✅ useCallback for stable function reference
+  const handleUpdate = useCallback((id: string, newData: any) => {
+    setItems(prev => prev.map(item => (item.id === id ? { ...item, ...newData } : item)))
+  }, []) // No dependencies needed
+
+  return (
+    <div>
+      <input
+        value={filter}
+        onChange={e => setFilter(e.target.value)}
+        placeholder="Filter items..."
+      />
+
+      <ExpensiveComponent
+        data={filteredItems}
+        onUpdate={handleUpdate} // Stable reference
+      />
+    </div>
+  )
+}
+
+// ✅ Performance monitoring
+function useRenderCount(componentName: string) {
+  const renderCount = useRef(0)
+
+  useEffect(() => {
+    renderCount.current += 1
+    console.log(`${componentName} rendered ${renderCount.current} times`)
+  })
+
+  return renderCount.current
+}
+
+function PerformanceTrackedComponent() {
+  const renderCount = useRenderCount("PerformanceTrackedComponent")
+
+  return <div>Render count: {renderCount}</div>
+}
+```
+
+---
+
+## Performance optimization
+
+### React.memo
+
+```tsx
+// ✅ Basic React.memo usage
+const UserCard = memo(function UserCard({
+  user,
+  onEdit,
+}: {
+  user: User
+  onEdit: (user: User) => void
+}) {
+  console.log("UserCard rendered for:", user.name)
+
+  return (
+    <div className="user-card">
+      <h3>{user.name}</h3>
+      <p>{user.email}</p>
+      <button onClick={() => onEdit(user)}>Edit</button>
+    </div>
+  )
+})
+
+// ✅ Custom comparison function
+const ComplexComponent = memo(
+  function ComplexComponent({ data, config }: { data: ComplexData; config: AppConfig }) {
+    return <div>{/* Complex rendering logic */}</div>
+  },
+  (prevProps, nextProps) => {
+    // Custom comparison - return true if props are equal
+    return (
+      prevProps.data.id === nextProps.data.id &&
+      prevProps.data.lastModified === nextProps.data.lastModified &&
+      prevProps.config.theme === nextProps.config.theme
+    )
+  },
+)
+
+// ✅ When NOT to use React.memo
+const SimpleComponent = function SimpleComponent({ title }: { title: string }) {
+  // Don't memo this - it's too simple and changes often
+  return <h1>{title}</h1>
+}
+
+// ✅ Optimization patterns
+function OptimizedList({
+  items,
+  filter,
+  sortBy,
+}: {
+  items: Item[]
+  filter: string
+  sortBy: "name" | "date" | "priority"
+}) {
+  // Heavy computation with useMemo
+  const processedItems = useMemo(() => {
+    console.log("Processing items...")
+
+    return items
+      .filter(item => filter === "" || item.name.toLowerCase().includes(filter.toLowerCase()))
+      .sort((a, b) => {
+        switch (sortBy) {
+          case "name":
+            return a.name.localeCompare(b.name)
+          case "date":
+            return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          case "priority":
+            return b.priority - a.priority
+          default:
+            return 0
+        }
+      })
+  }, [items, filter, sortBy])
+
+  return (
+    <div>
+      {processedItems.map(item => (
+        <OptimizedItemCard key={item.id} item={item} />
+      ))}
+    </div>
+  )
+}
+
+const OptimizedItemCard = memo(function OptimizedItemCard({ item }: { item: Item }) {
+  return (
+    <div className="item-card">
+      <h3>{item.name}</h3>
+      <p>Priority: {item.priority}</p>
+      <small>{item.createdAt}</small>
+    </div>
+  )
+})
+```
+
+### Code splitting
+
+```tsx
+import { lazy, Suspense } from "react"
+
+// ✅ Dynamic imports with lazy
+const HeavyComponent = lazy(() => import("./HeavyComponent"))
+const AdminPanel = lazy(() => import("./AdminPanel"))
+const ChartComponent = lazy(() =>
+  import("./charts/ChartComponent").then(module => ({
+    default: module.LineChart, // Named export
+  })),
+)
+
+function App() {
+  const [showHeavy, setShowHeavy] = useState(false)
+  const { user } = useAuth()
+
+  return (
+    <div>
+      <h1>My App</h1>
+
+      <button onClick={() => setShowHeavy(!showHeavy)}>Toggle Heavy Component</button>
+
+      {/* Conditional loading */}
+      {showHeavy && (
+        <Suspense fallback={<div>Loading heavy component...</div>}>
+          <HeavyComponent />
+        </Suspense>
+      )}
+
+      {/* Role-based loading */}
+      {user?.role === "admin" && (
+        <Suspense fallback={<div>Loading admin panel...</div>}>
+          <AdminPanel />
+        </Suspense>
+      )}
+
+      {/* Chart with custom loading */}
+      <Suspense fallback={<ChartSkeleton />}>
+        <ChartComponent data={chartData} />
+      </Suspense>
+    </div>
+  )
+}
+
+// ✅ Route-based code splitting (with Next.js)
+// This would be in Next.js app router
+function DashboardLayout({ children }: { children: ReactNode }) {
+  return (
+    <div className="dashboard">
+      <nav>
+        <Link href="/dashboard">Overview</Link>
+        <Link href="/dashboard/analytics">Analytics</Link>
+        <Link href="/dashboard/settings">Settings</Link>
+      </nav>
+
+      <main>
+        <Suspense fallback={<PageSkeleton />}>{children}</Suspense>
+      </main>
+    </div>
+  )
+}
+
+// ✅ Custom suspense boundary
+function AsyncBoundary({
+  children,
+  fallback,
+  onError,
+}: {
+  children: ReactNode
+  fallback?: ReactNode
+  onError?: (error: Error) => void
+}) {
+  return (
+    <ErrorBoundary onError={onError}>
+      <Suspense fallback={fallback || <div>Loading...</div>}>{children}</Suspense>
+    </ErrorBoundary>
+  )
+}
+```
+
+---
+
+## Stylowanie komponentów
+
+### CSS Modules
+
+```tsx
+// ✅ CSS Modules pattern
+// styles/Button.module.css
+/*
+.button {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.primary {
+  background-color: #3b82f6;
+  color: white;
+}
+
+.secondary {
+  background-color: #6b7280;
+  color: white;
+}
+
+.small {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+}
+
+.large {
+  padding: 0.75rem 1.5rem;
+  font-size: 1.125rem;
+}
+*/
+
+import styles from "./Button.module.css"
+import { clsx } from "clsx" // Utility for conditional classes
+
+type ButtonProps = {
+  children: ReactNode
+  variant?: "primary" | "secondary"
+  size?: "small" | "medium" | "large"
+  className?: string
+  onClick?: () => void
+}
+
+function Button({
+  children,
+  variant = "primary",
+  size = "medium",
+  className,
+  onClick,
+}: ButtonProps) {
+  return (
+    <button
+      className={clsx(styles.button, styles[variant], size !== "medium" && styles[size], className)}
+      onClick={onClick}
+    >
+      {children}
+    </button>
+  )
+}
+
+// ✅ Dynamic styles with CSS Modules
+function ProgressBar({
+  progress,
+  color = "blue",
+}: {
+  progress: number
+  color?: "blue" | "green" | "red"
+}) {
+  return (
+    <div className={styles.progressContainer}>
+      <div
+        className={clsx(styles.progressBar, styles[`progress-${color}`])}
+        style={{ width: `${progress}%` }}
+      />
+      <span className={styles.progressText}>{progress}%</span>
+    </div>
+  )
+}
+```
+
+### Tailwind integration
+
+```tsx
+// ✅ Tailwind with conditional classes
+import { clsx } from "clsx"
+
+type AlertProps = {
+  children: ReactNode
+  type?: "info" | "success" | "warning" | "error"
+  onClose?: () => void
+}
+
+function Alert({ children, type = "info", onClose }: AlertProps) {
+  const alertClasses = clsx("p-4 rounded-lg border flex items-center justify-between", {
+    "bg-blue-50 text-blue-800 border-blue-200": type === "info",
+    "bg-green-50 text-green-800 border-green-200": type === "success",
+    "bg-yellow-50 text-yellow-800 border-yellow-200": type === "warning",
+    "bg-red-50 text-red-800 border-red-200": type === "error",
+  })
+
+  return (
+    <div className={alertClasses}>
+      <div className="flex items-center space-x-2">
+        <AlertIcon type={type} />
+        <span>{children}</span>
+      </div>
+
+      {onClose && (
+        <button onClick={onClose} className="text-current transition-opacity hover:opacity-70">
+          ×
+        </button>
+      )}
+    </div>
+  )
+}
+
+// ✅ Responsive design with Tailwind
+function ResponsiveCard({
+  title,
+  content,
+  image,
+}: {
+  title: string
+  content: string
+  image?: string
+}) {
+  return (
+    <div className="/* Mobile */ /* Tablet */ /* Desktop */ w-full overflow-hidden rounded-lg bg-white shadow-md transition-transform hover:scale-105 sm:max-w-sm lg:max-w-md xl:max-w-lg">
+      {image && <img src={image} alt={title} className="h-48 w-full object-cover" />}
+
+      <div className="p-6">
+        <h3 className="/* Dark mode */ mb-2 text-xl font-semibold text-gray-900 dark:text-white">
+          {title}
+        </h3>
+
+        <p className="/* Dark mode */ leading-relaxed text-gray-600 dark:text-gray-300">
+          {content}
+        </p>
+      </div>
+    </div>
+  )
+}
+
+// ✅ Tailwind with CSS-in-JS pattern
+function DynamicButton({
+  children,
+  primary = false,
+  disabled = false,
+  size = "md",
+}: {
+  children: ReactNode
+  primary?: boolean
+  disabled?: boolean
+  size?: "sm" | "md" | "lg"
+}) {
+  const baseClasses = "font-medium rounded-lg transition-colors focus:outline-none focus:ring-2"
+
+  const variantClasses = primary
+    ? "bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500"
+    : "bg-gray-200 text-gray-800 hover:bg-gray-300 focus:ring-gray-500"
+
+  const sizeClasses = {
+    sm: "px-3 py-1.5 text-sm",
+    md: "px-4 py-2 text-base",
+    lg: "px-6 py-3 text-lg",
+  }[size]
+
+  const disabledClasses = disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
+
+  return (
+    <button
+      className={clsx(baseClasses, variantClasses, sizeClasses, disabledClasses)}
+      disabled={disabled}
+    >
+      {children}
+    </button>
+  )
+}
+```
+
+---
+
+## Testing React
+
+### Component testing
+
+```tsx
+// ✅ React Testing Library patterns
+import { render, screen, fireEvent, waitFor } from "@testing-library/react"
+import userEvent from "@testing-library/user-event"
+import { UserCard } from "./UserCard"
+
+// ✅ Basic component test
+describe("UserCard", () => {
+  const mockUser = {
+    id: "1",
+    name: "John Doe",
+    email: "john@example.com",
+    role: "user" as const,
+  }
+
+  it("renders user information correctly", () => {
+    render(<UserCard user={mockUser} />)
+
+    expect(screen.getByText("John Doe")).toBeInTheDocument()
+    expect(screen.getByText("john@example.com")).toBeInTheDocument()
+    expect(screen.getByText("user")).toBeInTheDocument()
+  })
+
+  it("calls onEdit when edit button is clicked", async () => {
+    const onEdit = jest.fn()
+    const user = userEvent.setup()
+
+    render(<UserCard user={mockUser} onEdit={onEdit} />)
+
+    const editButton = screen.getByRole("button", { name: /edit/i })
+    await user.click(editButton)
+
+    expect(onEdit).toHaveBeenCalledWith(mockUser)
+    expect(onEdit).toHaveBeenCalledTimes(1)
+  })
+
+  it("does not show edit button when onEdit is not provided", () => {
+    render(<UserCard user={mockUser} />)
+
+    expect(screen.queryByRole("button", { name: /edit/i })).not.toBeInTheDocument()
+  })
+})
+
+// ✅ Testing hooks
+import { renderHook, act } from "@testing-library/react"
+import { useCounter } from "./useCounter"
+
+describe("useCounter", () => {
+  it("initializes with default value", () => {
+    const { result } = renderHook(() => useCounter())
+
+    expect(result.current.count).toBe(0)
+  })
+
+  it("initializes with custom value", () => {
+    const { result } = renderHook(() => useCounter(10))
+
+    expect(result.current.count).toBe(10)
+  })
+
+  it("increments count", () => {
+    const { result } = renderHook(() => useCounter())
+
+    act(() => {
+      result.current.increment()
+    })
+
+    expect(result.current.count).toBe(1)
+  })
+
+  it("decrements count", () => {
+    const { result } = renderHook(() => useCounter(5))
+
+    act(() => {
+      result.current.decrement()
+    })
+
+    expect(result.current.count).toBe(4)
+  })
+
+  it("resets count", () => {
+    const { result } = renderHook(() => useCounter(10))
+
+    act(() => {
+      result.current.increment()
+      result.current.increment()
+    })
+
+    expect(result.current.count).toBe(12)
+
+    act(() => {
+      result.current.reset()
+    })
+
+    expect(result.current.count).toBe(10)
+  })
+})
+
+// ✅ Testing async components
+import { waitFor } from "@testing-library/react"
+
+describe("AsyncUserProfile", () => {
+  beforeEach(() => {
+    // Reset mocks before each test
+    jest.clearAllMocks()
+  })
+
+  it("shows loading state initially", () => {
+    render(<AsyncUserProfile userId="1" />)
+
+    expect(screen.getByText("Loading...")).toBeInTheDocument()
+  })
+
+  it("renders user data after loading", async () => {
+    // Mock fetch
+    global.fetch = jest.fn(() =>
+      Promise.resolve({
+        ok: true,
+        json: () =>
+          Promise.resolve({
+            id: "1",
+            name: "John Doe",
+            email: "john@example.com",
+          }),
+      }),
+    ) as jest.Mock
+
+    render(<AsyncUserProfile userId="1" />)
+
+    // Wait for loading to finish
+    await waitFor(() => {
+      expect(screen.queryByText("Loading...")).not.toBeInTheDocument()
+    })
+
+    expect(screen.getByText("John Doe")).toBeInTheDocument()
+    expect(screen.getByText("john@example.com")).toBeInTheDocument()
+  })
+
+  it("handles fetch error", async () => {
+    // Mock fetch error
+    global.fetch = jest.fn(() => Promise.reject(new Error("Network error"))) as jest.Mock
+
+    render(<AsyncUserProfile userId="1" />)
+
+    await waitFor(() => {
+      expect(screen.getByText(/error/i)).toBeInTheDocument()
+    })
+  })
+})
+
+// ✅ Testing context providers
+import { AuthProvider } from "./AuthContext"
+
+function renderWithAuth(ui: ReactNode, { user = null } = {}) {
+  function Wrapper({ children }: { children: ReactNode }) {
+    return <AuthProvider initialUser={user}>{children}</AuthProvider>
+  }
+
+  return render(ui, { wrapper: Wrapper })
+}
+
+describe("ProtectedComponent", () => {
+  it("shows login form when not authenticated", () => {
+    renderWithAuth(<ProtectedComponent />)
+
+    expect(screen.getByText("Please log in")).toBeInTheDocument()
+  })
+
+  it("shows protected content when authenticated", () => {
+    const user = { id: "1", name: "John", email: "john@test.com", role: "user" as const }
+
+    renderWithAuth(<ProtectedComponent />, { user })
+
+    expect(screen.getByText("Welcome, John!")).toBeInTheDocument()
+  })
+})
+```
+
+---
+
+## React 19 - Najnowsze funkcje
+
+### React Compiler
+
+React 19 wprowadza **React Compiler** - automatyczny optimizer który eliminuje potrzebę ręcznej optymalizacji:
+
+```tsx
+// ✅ Przed React 19 - ręczna optymalizacja
+const ExpensiveComponent = memo(function ExpensiveComponent({ data, onUpdate }) {
+  const processedData = useMemo(() => {
+    return data.map(item => ({ ...item, processed: true }))
+  }, [data])
+
+  const handleUpdate = useCallback(
+    (id: string) => {
+      onUpdate(id)
+    },
+    [onUpdate],
+  )
+
+  return (
+    <div>
+      {processedData.map(item => (
+        <div key={item.id} onClick={() => handleUpdate(item.id)}>
+          {item.name}
+        </div>
+      ))}
+    </div>
+  )
+})
+
+// ✅ React 19 - Compiler automatycznie optymalizuje
+function ExpensiveComponent({ data, onUpdate }) {
+  // Compiler automatycznie dodaje memoization gdzie potrzeba
+  const processedData = data.map(item => ({ ...item, processed: true }))
+
+  const handleUpdate = (id: string) => {
+    onUpdate(id)
+  }
+
+  return (
+    <div>
+      {processedData.map(item => (
+        <div key={item.id} onClick={() => handleUpdate(item.id)}>
+          {item.name}
+        </div>
+      ))}
+    </div>
+  )
+}
+
+// ✅ Compiler rules - automatyczne optimizations
+;("use memo") // Compiler directive (experimental)
+
+function AutoOptimizedComponent({ users, filter }) {
+  // Compiler automatycznie wykrywa:
+  // 1. Które wartości need memoization
+  // 2. Które funkcje need useCallback
+  // 3. Które komponenty need React.memo
+
+  const filteredUsers = users.filter(user => user.name.includes(filter))
+
+  const handleClick = (userId: string) => {
+    console.log("Clicked user:", userId)
+  }
+
+  return (
+    <div>
+      {filteredUsers.map(user => (
+        <UserCard key={user.id} user={user} onClick={handleClick} />
+      ))}
+    </div>
+  )
+}
+```
+
+### Server Components
+
+React 19 stabilizuje **Server Components** - komponenty renderowane na serwerze:
+
+```tsx
+// ✅ Server Component - renderuje się na serwerze
+async function BlogPostList() {
+  // Może używać server-only APIs
+  const posts = await fetch("https://api.example.com/posts", {
+    headers: {
+      Authorization: `Bearer ${process.env.API_SECRET}`, // Server-only secret
+    },
+  }).then(res => res.json())
+
+  // Może używać file system, database, etc.
+  const fs = await import("fs/promises")
+  const config = await fs.readFile("./config.json", "utf-8")
+
+  return (
+    <div>
+      <h1>Blog Posts</h1>
+      {posts.map(post => (
+        <article key={post.id}>
+          <h2>{post.title}</h2>
+          <p>{post.excerpt}</p>
+
+          {/* Server Component może zawierać Client Components */}
+          <InteractiveButton postId={post.id} />
+        </article>
+      ))}
+    </div>
+  )
+}
+
+// ✅ Client Component - renderuje się w przeglądarce
+;("use client")
+
+import { useState } from "react"
+
+function InteractiveButton({ postId }: { postId: string }) {
+  const [liked, setLiked] = useState(false)
+
+  // Może używać browser APIs i hooks
+  const handleLike = () => {
+    setLiked(!liked)
+    localStorage.setItem(`liked-${postId}`, String(!liked))
+  }
+
+  return <button onClick={handleLike}>{liked ? "❤️ Liked" : "🤍 Like"}</button>
+}
+
+// ✅ Streaming Server Components
+async function StreamingComponent() {
+  return (
+    <div>
+      <h1>Fast Content</h1>
+
+      {/* Fast loading content renders immediately */}
+      <FastSection />
+
+      {/* Slow content streams in later */}
+      <Suspense fallback={<SlowSectionSkeleton />}>
+        <SlowSection />
+      </Suspense>
+    </div>
+  )
+}
+
+async function SlowSection() {
+  // Slow API call - but doesn't block fast content
+  await new Promise(resolve => setTimeout(resolve, 2000))
+  const data = await fetch("https://slow-api.example.com/data")
+
+  return <div>Slow loaded content...</div>
+}
+```
+
+### Actions i useActionState
+
+React 19 wprowadza **Actions** - uproszczone form handling:
+
+```tsx
+// ✅ useActionState - nowy hook dla form state
+import { useActionState } from "react"
+
+async function updateUserAction(prevState: any, formData: FormData) {
+  const name = formData.get("name") as string
+  const email = formData.get("email") as string
+
+  // Validation
+  if (!name || !email) {
+    return {
+      success: false,
+      error: "Name and email are required",
+      data: null,
+    }
+  }
+
+  try {
+    // API call
+    const response = await fetch("/api/users", {
+      method: "POST",
+      body: JSON.stringify({ name, email }),
+      headers: { "Content-Type": "application/json" },
+    })
+
+    if (!response.ok) {
+      throw new Error("Failed to update user")
+    }
+
+    const user = await response.json()
+
+    return {
+      success: true,
+      error: null,
+      data: user,
+    }
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error",
+      data: null,
+    }
+  }
+}
+
+function UserForm() {
+  const [state, formAction, isPending] = useActionState(updateUserAction, {
+    success: false,
+    error: null,
+    data: null,
+  })
+
+  return (
+    <form action={formAction}>
+      <div>
+        <input name="name" placeholder="Name" required disabled={isPending} />
+      </div>
+
+      <div>
+        <input name="email" type="email" placeholder="Email" required disabled={isPending} />
+      </div>
+
+      {state.error && <div className="error">{state.error}</div>}
+
+      {state.success && state.data && (
+        <div className="success">User {state.data.name} updated successfully!</div>
+      )}
+
+      <button type="submit" disabled={isPending}>
+        {isPending ? "Updating..." : "Update User"}
+      </button>
+    </form>
+  )
+}
+
+// ✅ useOptimistic - optimistic updates
+import { useOptimistic } from "react"
+
+function TodoList({ todos }: { todos: Todo[] }) {
+  const [optimisticTodos, addOptimisticTodo] = useOptimistic(
+    todos,
+    (currentTodos, newTodo: Todo) => [...currentTodos, newTodo],
+  )
+
+  const [state, formAction] = useActionState(createTodoAction, {
+    success: false,
+    error: null,
+  })
+
+  return (
+    <div>
+      <form
+        action={async formData => {
+          // Optimistic update - shows immediately
+          const title = formData.get("title") as string
+          addOptimisticTodo({
+            id: Date.now().toString(),
+            title,
+            completed: false,
+            createdAt: new Date(),
+          })
+
+          // Actual action - updates real state
+          return formAction(formData)
+        }}
+      >
+        <input name="title" placeholder="New todo..." required />
+        <button type="submit">Add Todo</button>
+      </form>
+
+      {state.error && <div className="error">{state.error}</div>}
+
+      <ul>
+        {optimisticTodos.map(todo => (
+          <li key={todo.id}>
+            {todo.title}
+            {/* Show pending state for optimistic items */}
+            {!todos.find(t => t.id === todo.id) && <span className="pending"> (pending...)</span>}
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+```
+
+### use() Hook
+
+Nowy `use()` hook pozwala na "unwrapping" Promises i Context:
+
+```tsx
+// ✅ use() Hook z Promises
+import { use, Suspense } from "react"
+
+function UserProfile({ userPromise }: { userPromise: Promise<User> }) {
+  // use() hook unwraps Promise
+  const user = use(userPromise)
+
+  return (
+    <div>
+      <h1>{user.name}</h1>
+      <p>{user.email}</p>
+    </div>
+  )
+}
+
+// ✅ use() Hook z Context
+function ThemeButton() {
+  // use() może zastąpić useContext
+  const theme = use(ThemeContext)
+
+  return (
+    <button className={`btn btn-${theme.current}`}>
+      Switch to {theme.current === "light" ? "dark" : "light"}
+    </button>
+  )
+}
+
+// ✅ Conditional use() - możliwe w React 19!
+function ConditionalDataComponent({
+  shouldLoad,
+  dataPromise,
+}: {
+  shouldLoad: boolean
+  dataPromise: Promise<any>
+}) {
+  if (!shouldLoad) {
+    return <div>Not loading data</div>
+  }
+
+  // Conditional hooks są możliwe z use()!
+  const data = use(dataPromise)
+
+  return <div>Data: {JSON.stringify(data)}</div>
+}
+
+// ✅ use() w pętlach
+function MultipleDataSources({ promises }: { promises: Promise<any>[] }) {
+  return (
+    <div>
+      {promises.map((promise, index) => (
+        <Suspense key={index} fallback={<div>Loading item {index}...</div>}>
+          <DataItem promise={promise} />
+        </Suspense>
+      ))}
+    </div>
+  )
+}
+
+function DataItem({ promise }: { promise: Promise<any> }) {
+  const data = use(promise) // Można używać w mapie!
+
+  return <div>{JSON.stringify(data)}</div>
+}
+
+// ✅ Error handling z use()
+function ErrorHandlingComponent({ dataPromise }: { dataPromise: Promise<User> }) {
+  try {
+    const user = use(dataPromise)
+    return <UserCard user={user} />
+  } catch (error) {
+    // use() throws errors, można je łapać
+    if (error instanceof Error) {
+      return <div>Error: {error.message}</div>
+    }
+    throw error // Re-throw unknown errors
+  }
+}
+```
+
+### Concurrent Features
+
+React 19 stabilizuje Concurrent Features:
+
+```tsx
+// ✅ Transition API - non-blocking updates
+import { useTransition, startTransition } from "react"
+
+function SearchableList({ items }: { items: Item[] }) {
+  const [query, setQuery] = useState("")
+  const [filteredItems, setFilteredItems] = useState(items)
+  const [isPending, startTransition] = useTransition()
+
+  const handleSearch = (newQuery: string) => {
+    setQuery(newQuery) // Urgent update - nie blokuje UI
+
+    // Non-urgent update - może być przerwane
+    startTransition(() => {
+      const filtered = items.filter(item =>
+        item.name.toLowerCase().includes(newQuery.toLowerCase()),
+      )
+      setFilteredItems(filtered)
+    })
+  }
+
+  return (
+    <div>
+      <input
+        value={query}
+        onChange={e => handleSearch(e.target.value)}
+        placeholder="Search items..."
+      />
+
+      {isPending && <div>Filtering...</div>}
+
+      <ul className={isPending ? "opacity-50" : ""}>
+        {filteredItems.map(item => (
+          <li key={item.id}>{item.name}</li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+
+// ✅ useDeferredValue - defer expensive computations
+import { useDeferredValue } from "react"
+
+function ExpensiveSearchResults({ query }: { query: string }) {
+  const deferredQuery = useDeferredValue(query)
+
+  // Expensive computation runs with deferred value
+  const results = useMemo(() => {
+    if (!deferredQuery) return []
+
+    // Simulate expensive search
+    return performExpensiveSearch(deferredQuery)
+  }, [deferredQuery])
+
+  return (
+    <div>
+      {/* Shows stale results while computing new ones */}
+      <h2>Results for: {deferredQuery}</h2>
+      {query !== deferredQuery && <div>Searching...</div>}
+
+      <ul>
+        {results.map(result => (
+          <li key={result.id}>{result.title}</li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+
+// ✅ Concurrent rendering with Suspense
+function ConcurrentApp() {
+  const [selectedTab, setSelectedTab] = useState("posts")
+
+  return (
+    <div>
+      <nav>
+        <button
+          onClick={() => setSelectedTab("posts")}
+          className={selectedTab === "posts" ? "active" : ""}
+        >
+          Posts
+        </button>
+        <button
+          onClick={() => setSelectedTab("users")}
+          className={selectedTab === "users" ? "active" : ""}
+        >
+          Users
+        </button>
+      </nav>
+
+      {/* Transitions make tab switching non-blocking */}
+      <main>
+        <Suspense fallback={<TabSkeleton />}>
+          {selectedTab === "posts" && <PostsTab />}
+          {selectedTab === "users" && <UsersTab />}
+        </Suspense>
+      </main>
+    </div>
+  )
+}
+
+// ✅ Time slicing - automatic in React 19
+function LargeList({ items }: { items: LargeItem[] }) {
+  const [selectedId, setSelectedId] = useState<string | null>(null)
+
+  return (
+    <div>
+      {/* React automatycznie dzieli renderowanie na chunks */}
+      {items.map(item => (
+        <div
+          key={item.id}
+          onClick={() => {
+            // Transition API sprawia że to nie blokuje UI
+            startTransition(() => {
+              setSelectedId(item.id)
+            })
+          }}
+          className={selectedId === item.id ? "selected" : ""}
+        >
+          <h3>{item.title}</h3>
+          <p>{item.description}</p>
+        </div>
+      ))}
+    </div>
+  )
+}
+```
+
+### Nowe API i funkcje
+
+```tsx
+// ✅ Form Actions - native form handling
+function ContactForm() {
+  async function submitAction(formData: FormData) {
+    "use server" // Server Action
+
+    const name = formData.get("name") as string
+    const email = formData.get("email") as string
+
+    // Server-side validation and processing
+    const result = await createContact({ name, email })
+
+    if (result.success) {
+      redirect("/thank-you")
+    }
+
+    return result
+  }
+
+  return (
+    <form action={submitAction}>
+      <input name="name" required />
+      <input name="email" type="email" required />
+      <button type="submit">Submit</button>
+    </form>
+  )
+}
+
+// ✅ Document Metadata API
+import { useTitle, useMeta } from "react"
+
+function BlogPost({ post }: { post: BlogPost }) {
+  // Declarative metadata updates
+  useTitle(`${post.title} | My Blog`)
+  useMeta([
+    { name: "description", content: post.excerpt },
+    { name: "keywords", content: post.tags.join(", ") },
+    { property: "og:title", content: post.title },
+    { property: "og:description", content: post.excerpt },
+    { property: "og:image", content: post.featuredImage },
+  ])
+
+  return (
+    <article>
+      <h1>{post.title}</h1>
+      <div>{post.content}</div>
+    </article>
+  )
+}
+
+// ✅ Asset Loading API
+import { preload, prefetchDNS } from "react-dom"
+
+function ResourceOptimizedComponent() {
+  useEffect(() => {
+    // Preload critical resources
+    preload("/critical-font.woff2", { as: "font", type: "font/woff2" })
+    preload("/hero-image.jpg", { as: "image" })
+
+    // Prefetch DNS for external resources
+    prefetchDNS("https://analytics.example.com")
+    prefetchDNS("https://cdn.example.com")
+  }, [])
+
+  return (
+    <div>
+      <h1 style={{ fontFamily: "CriticalFont" }}>Fast Loading Header</h1>
+      <img src="/hero-image.jpg" alt="Hero" />
+    </div>
+  )
+}
+
+// ✅ ref jako prop - nie trzeba forwardRef
+function InputComponent({
+  ref,
+  ...props
+}: {
+  ref: React.Ref<HTMLInputElement>
+  placeholder: string
+}) {
+  // ref jest teraz zwykłym prop w React 19!
+  return <input ref={ref} {...props} />
+}
+
+// Usage - no forwardRef needed
+function ParentComponent() {
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  return (
+    <div>
+      <InputComponent ref={inputRef} placeholder="Enter text..." />
+      <button onClick={() => inputRef.current?.focus()}>Focus Input</button>
+    </div>
+  )
+}
+
+// ✅ Context bez Provider wrapper
+const ThemeContext = createContext("light")
+
+function App() {
+  return (
+    // Można używać Context bez Provider w React 19
+    <ThemeContext value="dark">
+      <ThemedComponent />
+    </ThemeContext>
+  )
+}
+
+function ThemedComponent() {
+  const theme = use(ThemeContext) // use() hook
+
+  return <div className={`theme-${theme}`}>Themed content</div>
+}
+```
+
+### React 19 Migration
+
+```tsx
+// ✅ Gradual migration to React 19
+// package.json
+{
+  "dependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0"
+  }
+}
+
+// ✅ Compiler configuration
+// babel.config.js or next.config.js
+module.exports = {
+  experimental: {
+    reactCompiler: true, // Enable React Compiler
+    staleCacheTime: 60, // Cache stale time
+  },
+  compiler: {
+    removeConsole: process.env.NODE_ENV === 'production',
+  }
+}
+
+// ✅ Breaking changes w React 19
+// 1. StrictMode changes
+function StrictModeComponent() {
+  useEffect(() => {
+    // W React 19, effects w StrictMode nie są podwójnie wywoływane w production
+    console.log('Effect runs once in production')
+  }, [])
+
+  return <div>StrictMode component</div>
+}
+
+// 2. forwardRef nie jest potrzebny
+// ❌ React 18
+const OldButton = forwardRef<HTMLButtonElement, ButtonProps>((props, ref) => {
+  return <button ref={ref} {...props} />
+})
+
+// ✅ React 19
+function NewButton({ ref, ...props }: ButtonProps & { ref?: React.Ref<HTMLButtonElement> }) {
+  return <button ref={ref} {...props} />
+}
+
+// 3. defaultProps deprecated
+// ❌ React 18
+function OldComponent({ title = 'Default Title' }: { title?: string }) {
+  return <h1>{title}</h1>
+}
+OldComponent.defaultProps = { title: 'Default Title' }
+
+// ✅ React 19 - używaj ES6 default parameters
+function NewComponent({ title = 'Default Title' }: { title?: string }) {
+  return <h1>{title}</h1>
+}
+
+// ✅ Performance improvements w React 19
+function OptimizedComponent({ data }: { data: LargeDataSet }) {
+  // React 19 ma lepsze:
+  // - Memory management
+  // - Bundle size (automatic tree shaking)
+  // - Hydration performance
+  // - Concurrent rendering
+
+  return (
+    <div>
+      {/* React Compiler automatycznie optymalizuje ten kod */}
+      {data.items.map(item => (
+        <ItemCard key={item.id} item={item} />
+      ))}
+    </div>
+  )
+}
+```
+
+### React 19 Best Practices
+
+```tsx
+// ✅ Embrace Server Components
+// Przenieś jak najwięcej logic na serwer
+async function ProductPage({ id }: { id: string }) {
+  // Server-side data fetching
+  const [product, reviews, recommendations] = await Promise.all([
+    getProduct(id),
+    getProductReviews(id),
+    getRecommendations(id),
+  ])
+
+  return (
+    <div>
+      <ProductDetails product={product} />
+
+      {/* Client Component tylko gdzie potrzebna interakcja */}
+      <AddToCartButton productId={id} />
+
+      <ReviewsList reviews={reviews} />
+      <RecommendationsList products={recommendations} />
+    </div>
+  )
+}
+
+// ✅ Leverage Actions for forms
+function ModernForm() {
+  const [state, formAction, isPending] = useActionState(formSubmitAction, {
+    success: false,
+    errors: {},
+  })
+
+  return (
+    <form action={formAction}>
+      {/* Form fields */}
+
+      {/* Built-in pending state */}
+      <button type="submit" disabled={isPending}>
+        {isPending ? "Submitting..." : "Submit"}
+      </button>
+
+      {/* Built-in error handling */}
+      {state.errors.general && <div className="error">{state.errors.general}</div>}
+    </form>
+  )
+}
+
+// ✅ Use Compiler wisely
+function CompilerOptimizedComponent({ users, filter }) {
+  // Pozwól Compiler'owi zarządzać optimizations
+  // Nie używaj manual memo/useCallback chyba że naprawdę potrzebujesz
+
+  const filteredUsers = users.filter(user => user.name.toLowerCase().includes(filter.toLowerCase()))
+
+  const handleUserClick = (userId: string) => {
+    console.log("User clicked:", userId)
+  }
+
+  return (
+    <div>
+      {filteredUsers.map(user => (
+        <UserCard key={user.id} user={user} onClick={handleUserClick} />
+      ))}
+    </div>
+  )
+}
+
+// ✅ Gradual adoption strategy
+// 1. Zacznij od enablement React Compiler
+// 2. Usuń niepotrzebne memo/useCallback stopniowo
+// 3. Migruj forms do Actions
+// 4. Adopt Server Components gdzie to ma sens
+// 5. Używaj use() hook dla Promises i Context
+```
+
+---
+
+## Najlepsze praktyki
+
+### Error boundaries
+
+```tsx
+import { Component, ErrorInfo, ReactNode } from "react"
+
+// ✅ Class-based Error Boundary (hooks can't catch errors yet)
+type ErrorBoundaryState = {
+  hasError: boolean
+  error: Error | null
+  errorInfo: ErrorInfo | null
+}
+
+class ErrorBoundary extends Component<
+  { children: ReactNode; fallback?: ReactNode },
+  ErrorBoundaryState
+> {
+  constructor(props: { children: ReactNode; fallback?: ReactNode }) {
+    super(props)
+    this.state = {
+      hasError: false,
+      error: null,
+      errorInfo: null,
+    }
+  }
+
+  static getDerivedStateFromError(error: Error): Partial<ErrorBoundaryState> {
+    return {
+      hasError: true,
+      error,
+    }
+  }
+
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    console.error("Error boundary caught error:", error, errorInfo)
+
+    this.setState({
+      error,
+      errorInfo,
+    })
+
+    // Send error to monitoring service
+    // logErrorToService(error, errorInfo)
+  }
+
+  render() {
+    if (this.state.hasError) {
+      if (this.props.fallback) {
+        return this.props.fallback
+      }
+
+      return (
+        <div className="error-boundary">
+          <h2>Something went wrong</h2>
+          <p>{this.state.error?.message}</p>
+
+          <button onClick={() => window.location.reload()}>Reload page</button>
+
+          {process.env.NODE_ENV === "development" && (
+            <details style={{ marginTop: "1rem" }}>
+              <summary>Error details</summary>
+              <pre style={{ fontSize: "12px", marginTop: "0.5rem" }}>
+                {this.state.error?.stack}
+                {this.state.errorInfo?.componentStack}
+              </pre>
+            </details>
+          )}
+        </div>
+      )
+    }
+
+    return this.props.children
+  }
+}
+
+// ✅ Functional Error Boundary hook (React 19+)
+function useErrorBoundary() {
+  const [error, setError] = useState<Error | null>(null)
+
+  const resetError = () => setError(null)
+
+  const captureError = (error: Error) => {
+    setError(error)
+  }
+
+  if (error) {
+    throw error // This will trigger the nearest error boundary
+  }
+
+  return { captureError, resetError }
+}
+
+// ✅ Error boundary with retry logic
+function RetryErrorBoundary({
+  children,
+  maxRetries = 3,
+}: {
+  children: ReactNode
+  maxRetries?: number
+}) {
+  const [retryCount, setRetryCount] = useState(0)
+  const [hasError, setHasError] = useState(false)
+
+  const handleRetry = () => {
+    if (retryCount < maxRetries) {
+      setRetryCount(prev => prev + 1)
+      setHasError(false)
+    }
+  }
+
+  if (hasError) {
+    return (
+      <div className="error-boundary">
+        <h2>Something went wrong</h2>
+
+        {retryCount < maxRetries ? (
+          <div>
+            <p>
+              Attempt {retryCount + 1} of {maxRetries + 1}
+            </p>
+            <button onClick={handleRetry}>Try Again</button>
+          </div>
+        ) : (
+          <div>
+            <p>Maximum retry attempts reached</p>
+            <button onClick={() => window.location.reload()}>Reload Page</button>
+          </div>
+        )}
+      </div>
+    )
+  }
+
+  return (
+    <ErrorBoundary fallback={null} onError={() => setHasError(true)}>
+      {children}
+    </ErrorBoundary>
+  )
+}
+
+// ✅ Usage patterns
+function App() {
+  return (
+    <ErrorBoundary>
+      <Router>
+        <Header />
+
+        <main>
+          <ErrorBoundary fallback={<div>Failed to load content</div>}>
+            <Routes>
+              <Route path="/" element={<HomePage />} />
+              <Route
+                path="/dashboard"
+                element={
+                  <RetryErrorBoundary>
+                    <Dashboard />
+                  </RetryErrorBoundary>
+                }
+              />
+            </Routes>
+          </ErrorBoundary>
+        </main>
+
+        <Footer />
+      </Router>
+    </ErrorBoundary>
+  )
+}
+```
+
+### Security patterns
+
+```tsx
+// ✅ XSS Prevention
+function UserContent({ content }: { content: string }) {
+  // ❌ Dangerous - can cause XSS
+  // return <div dangerouslySetInnerHTML={{ __html: content }} />
+
+  // ✅ Safe - React escapes by default
+  return <div>{content}</div>
+
+  // ✅ If you need HTML, sanitize first
+  // import DOMPurify from 'dompurify'
+  // const sanitizedContent = DOMPurify.sanitize(content)
+  // return <div dangerouslySetInnerHTML={{ __html: sanitizedContent }} />
+}
+
+// ✅ Safe URL handling
+function SafeLink({ href, children }: { href: string; children: ReactNode }) {
+  // Validate URL before rendering
+  const isValidUrl = (url: string) => {
+    try {
+      const parsedUrl = new URL(url)
+      return ["http:", "https:", "mailto:"].includes(parsedUrl.protocol)
+    } catch {
+      return false
+    }
+  }
+
+  if (!isValidUrl(href)) {
+    return <span>{children}</span> // Render as text if invalid URL
+  }
+
+  // External links should open in new tab
+  const isExternal = !href.startsWith("/") && !href.startsWith("#")
+
+  return (
+    <a
+      href={href}
+      target={isExternal ? "_blank" : undefined}
+      rel={isExternal ? "noopener noreferrer" : undefined}
+    >
+      {children}
+    </a>
+  )
+}
+
+// ✅ Input validation and sanitization
+function SearchInput({ onSearch }: { onSearch: (query: string) => void }) {
+  const [query, setQuery] = useState("")
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+
+    // Sanitize input
+    const sanitizedQuery = query
+      .trim()
+      .replace(/[<>'"]/g, "") // Remove potentially dangerous characters
+      .substring(0, 100) // Limit length
+
+    if (sanitizedQuery.length >= 2) {
+      onSearch(sanitizedQuery)
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <input
+        type="text"
+        value={query}
+        onChange={e => setQuery(e.target.value)}
+        placeholder="Search..."
+        maxLength={100} // Browser-level validation
+      />
+      <button type="submit">Search</button>
+    </form>
+  )
+}
+
+// ✅ Protected routes pattern
+function ProtectedRoute({
+  children,
+  requiredRole,
+}: {
+  children: ReactNode
+  requiredRole?: string
+}) {
+  const { user, isLoading } = useAuth()
+
+  if (isLoading) {
+    return <div>Loading...</div>
+  }
+
+  if (!user) {
+    return <Navigate to="/login" replace />
+  }
+
+  if (requiredRole && user.role !== requiredRole) {
+    return <div>Access denied. Required role: {requiredRole}</div>
+  }
+
+  return <>{children}</>
+}
+
+// Usage
+function AdminPanel() {
+  return (
+    <ProtectedRoute requiredRole="admin">
+      <h1>Admin Panel</h1>
+      {/* Admin content */}
+    </ProtectedRoute>
+  )
+}
+```
+
+---
+
+## Podsumowanie
+
+### Kluczowe koncepty React:
+
+1. **Komponenty funkcyjne** - podstawowe building blocks
+2. **JSX** - syntax extension dla JavaScript
+3. **Props** - przekazywanie danych między komponentami
+4. **State** - zarządzanie stanem komponentu
+5. **Hooks** - reusable logic (useState, useEffect, custom hooks)
+6. **Context API** - globalne state management
+7. **Performance** - optimization z memo, useMemo, useCallback
+8. **React 19** - Compiler, Server Components, Actions, use() hook
+
+### Najważniejsze wzorce w naszym projekcie:
+
+1. **TypeScript strict mode** - pełna type safety
+2. **Functional components only** - no class components
+3. **Custom hooks** - reusable logic extraction
+4. **Composition over inheritance** - flexible component design
+5. **Error boundaries** - graceful error handling
+6. **Performance optimization** - React.memo i memoization
+7. **Testing** - comprehensive component testing
+
+### Najważniejsze pliki do zrozumienia:
+
+- `components/ui/` - Reusable UI components
+- `features/*/components/` - Feature-specific components
+- `components/*.stories.tsx` - Storybook documentation
+- `features/**/__tests__/` - Component tests
+- `lib/utils.ts` - Utility functions
+
+### Następne kroki:
+
+1. Przeczytaj kod w `components/` folder jako przykład
+2. Zrozum różnicę między controlled i uncontrolled components
+3. Praktykuj custom hooks i context API
+4. Eksperymentuj z performance optimization
+5. Napisz testy dla swoich komponentów
+6. Używaj TypeScript dla type safety
+7. **Nowe w React 19:** Eksperymentuj z React Compiler
+8. **Nowe w React 19:** Migruj do Actions dla form handling
+9. **Nowe w React 19:** Używaj use() hook zamiast useContext
+
+### Przydatne narzędzia:
+
+- **React DevTools** - browser extension dla debugowania
+- **Storybook** - dokumentacja i testowanie komponentów
+- **React Testing Library** - testing utilities
+- **React Hook Form** - advanced form handling
+- **Zustand/Redux** - global state management
+- **React 19 Compiler** - automatyczna optymalizacja (nowe!)
+- **Server Components** - server-side rendering (stabilne w React 19)
+- **Next.js 15** - pełne wsparcie dla React 19 features
+
+**Pamiętaj:** React to biblioteka, nie framework. Daje Ci swobodę w wyborze dodatkowych narzędzi i wzorców. Używaj tej swobody mądrze i wybieraj rozwiązania odpowiednie do wielkości i złożoności Twojego projektu!
+
+**Q1: Kiedy używać useCallback a kiedy useMemo w React 19?**
+W React 19 z Compiler często nie musisz ich używać! Compiler automatycznie optymalizuje kod. Używaj manual memoization tylko gdy Compiler nie wystarczy lub masz bardzo specyficzne performance requirements.
+
+**Q2: Czy powinienem migrować do React 19?**
+Tak, React 19 przynosi znaczące korzyści: automatyczną optymalizację (Compiler), lepsze form handling (Actions), Server Components, i use() hook. Migration jest stosunkowo łatwy - głównie usuwanie niepotrzebnego kodu!
+
+**Q3: Jakie są najważniejsze nowe funkcje React 19?**
+React Compiler (auto-optimization), useActionState (form handling), use() hook (Promises/Context), ref jako props (no forwardRef), Server Components (stable), i ulepszone Concurrent Features.

@@ -1,0 +1,1872 @@
+<!-- ---
+description: Kompletny przewodnik Next.js 15 dla tego projektu - od podstaw do zaawansowanych wzorców
+globs: *.ts,*.tsx,*.js,*.jsx
+alwaysApply: true
+--- -->
+
+# Next.js 15 - Przewodnik od Podstaw do Zaawansowanych
+
+## 📋 Spis Treści
+
+1. [Podstawy Next.js 15](#podstawy-nextjs-15)
+2. [Async Request APIs](#async-request-apis)
+3. [Routing i nawigacja](#routing-i-nawigacja)
+4. [Rendering patterns](#rendering-patterns)
+5. [Data fetching](#data-fetching)
+6. [Caching i zarządzanie cache](#caching-i-zarządzanie-cache)
+7. [Server Actions](#server-actions)
+8. [Styling i UI](#styling-i-ui)
+9. [Performance optimization](#performance-optimization)
+10. [Metadata i SEO](#metadata-i-seo)
+11. [Error handling](#error-handling-1)
+12. [Deployment i production](#deployment-i-production)
+13. [Migracja do Next.js 15](#migracja-do-nextjs-15)
+
+---
+
+## Podstawy Next.js 15
+
+### Czym jest Next.js 15
+
+Next.js 15 to najnowsza wersja **React framework** który dodaje wiele funkcjonalności do React:
+
+- **Server-Side Rendering (SSR)** - renderowanie na serwerze
+- **Static Site Generation (SSG)** - generowanie statycznych stron
+- **File-based routing** - routing oparty na strukturze plików
+- **API Routes** - backend endpoints w tym samym projekcie
+- **Image optimization** - automatyczna optymalizacja obrazów
+- **Performance optimization** - wbudowane optymalizacje
+- **⚡ Turbopack (stable)** - nowy bundler dla szybszego developmentu
+- **⚙️ Async Request APIs** - asynchroniczne API dla cookies, headers, params
+- **🚀 React 19 Support** - pełne wsparcie dla najnowszego React
+- **💾 Nowa semantyka cache** - zmienione domyślne zachowanie buforowania
+
+```typescript
+// Zwykły React component
+function HomePage() {
+  return <h1>Hello World</h1>
+}
+
+export default HomePage
+
+// Next.js automatycznie:
+// - Tworzy route /
+// - Renderuje na serwerze
+// - Optymalizuje bundle
+// - Dodaje prefetching
+```
+
+### Kluczowe zmiany w Next.js 15
+
+**🚀 Co nowego:**
+
+1. **Async Request APIs** - `cookies()`, `headers()`, `params`, `searchParams` są teraz asynchroniczne
+2. **Zmieniona semantyka cache** - `fetch()` nie jest już domyślnie cache'owany
+3. **Turbopack stable** - znaczne przyspieszenie developmentu
+4. **React 19 support** - najnowsze funkcje React
+5. **ESLint 9 support** - wsparcie dla najnowszego ESLint
+
+### App Router (zalecany)
+
+Nasz projekt używa **App Router** (Next.js 13+), który w wersji 15 zyskuje nowe funkcje:
+
+```bash
+# ✅ App Router (używamy)
+app/
+├── layout.tsx          # Root layout
+├── page.tsx           # Home page (/)
+├── loading.tsx        # Loading UI
+├── error.tsx          # Error UI
+├── not-found.tsx      # 404 page
+├── globals.css        # Global styles
+├── about/
+│   └── page.tsx       # /about
+└── blog/
+    ├── page.tsx       # /blog
+    └── [slug]/
+        └── page.tsx   # /blog/[slug]
+```
+
+---
+
+## Async Request APIs
+
+### Najważniejsza zmiana w Next.js 15
+
+W **Next.js 15** następujące APIs stały się **asynchroniczne** i wymagają użycia `await`:
+
+- `cookies()`
+- `headers()`
+- `draftMode()`
+- `params` (w Page i Layout components)
+- `searchParams` (w Page components)
+
+```typescript
+// ❌ Next.js 14 - synchroniczne
+import { cookies } from "next/headers"
+
+export default function ServerComponent() {
+  const cookieStore = cookies()
+  const token = cookieStore.get("auth-token")
+
+  return <div>Token: {token?.value}</div>
+}
+
+// ✅ Next.js 15 - asynchroniczne
+import { cookies } from "next/headers"
+
+export default async function ServerComponent() {
+  const cookieStore = await cookies()
+  const token = cookieStore.get("auth-token")
+
+  return <div>Token: {token?.value}</div>
+}
+```
+
+### Headers API
+
+```typescript
+// ✅ Next.js 15 - async headers
+import { headers } from "next/headers"
+
+export default async function ServerComponent() {
+  const headersList = await headers()
+  const userAgent = headersList.get("user-agent")
+
+  return <div>User Agent: {userAgent}</div>
+}
+
+// ✅ W middleware pozostaje synchroniczne
+import { headers } from "next/headers"
+
+export function middleware(request: NextRequest) {
+  const headersList = headers() // Synchroniczne w middleware
+  // ...
+}
+```
+
+### Dynamic Route Params
+
+```typescript
+// app/blog/[slug]/page.tsx
+interface PageProps {
+  params: Promise<{ slug: string }> // ✅ Promise w Next.js 15
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
+}
+
+// ❌ Next.js 14
+export default function BlogPost({ params, searchParams }: PageProps) {
+  const { slug } = params
+  return <h1>Post: {slug}</h1>
+}
+
+// ✅ Next.js 15
+export default async function BlogPost({ params, searchParams }: PageProps) {
+  const { slug } = await params
+  const search = await searchParams
+
+  return (
+    <div>
+      <h1>Post: {slug}</h1>
+      <p>Search: {JSON.stringify(search)}</p>
+    </div>
+  )
+}
+```
+
+### Layout z async params
+
+```typescript
+// app/blog/[category]/layout.tsx
+interface LayoutProps {
+  children: React.ReactNode
+  params: Promise<{ category: string }>
+}
+
+// ✅ Next.js 15 - async layout
+export default async function CategoryLayout({
+  children,
+  params,
+}: LayoutProps) {
+  const { category } = await params
+
+  return (
+    <div>
+      <nav>Category: {category}</nav>
+      {children}
+    </div>
+  )
+}
+```
+
+### generateMetadata z async params
+
+```typescript
+// ✅ generateMetadata też wymaga await
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { slug } = await params
+  const post = await getPost(slug)
+
+  return {
+    title: post.title,
+    description: post.excerpt,
+  }
+}
+```
+
+### Draft Mode
+
+```typescript
+// ✅ Next.js 15 - async draftMode
+import { draftMode } from "next/headers"
+
+export default async function PreviewBanner() {
+  const draft = await draftMode()
+
+  if (!draft.isEnabled) {
+    return null
+  }
+
+  return (
+    <div className="preview-banner">
+      Preview mode is enabled
+    </div>
+  )
+}
+```
+
+### Automatyczna migracja
+
+Użyj **codemod** do automatycznej aktualizacji kodu:
+
+```bash
+# ✅ Automatyczne dodawanie await do async APIs
+npx @next/codemod@canary next-async-request-api .
+
+# Lub dla konkretnego folderu
+npx @next/codemod@canary next-async-request-api ./app
+```
+
+### Error Handling z async APIs
+
+```typescript
+// ✅ Proper error handling
+export default async function ServerComponent() {
+  try {
+    const cookieStore = await cookies()
+    const headersList = await headers()
+
+    const authToken = cookieStore.get("auth")
+    const userAgent = headersList.get("user-agent")
+
+    return (
+      <div>
+        <p>Auth: {authToken?.value}</p>
+        <p>UA: {userAgent}</p>
+      </div>
+    )
+  } catch (error) {
+    console.error("Failed to read request data:", error)
+    return <div>Error loading data</div>
+  }
+}
+```
+
+---
+
+## Routing i nawigacja
+
+### File-based routing
+
+Next.js używa **file-based routing** - struktura plików = struktura URL:
+
+```bash
+app/
+├── page.tsx                    # /
+├── about/page.tsx             # /about
+├── blog/
+│   ├── page.tsx              # /blog
+│   └── [slug]/page.tsx       # /blog/hello-world
+├── shop/
+│   └── [category]/
+│       └── [product]/
+│           └── page.tsx      # /shop/electronics/laptop
+└── (auth)/                   # Route group (nie wpływa na URL)
+    ├── login/page.tsx        # /login
+    └── register/page.tsx     # /register
+```
+
+### Dynamic routes
+
+```typescript
+// app/blog/[slug]/page.tsx
+interface PageProps {
+  params: {
+    slug: string
+  }
+  searchParams: {
+    [key: string]: string | string[] | undefined
+  }
+}
+
+export default function BlogPost({ params, searchParams }: PageProps) {
+  const { slug } = params
+
+  return (
+    <div>
+      <h1>Blog Post: {slug}</h1>
+      <p>Search params: {JSON.stringify(searchParams)}</p>
+    </div>
+  )
+}
+
+// URL: /blog/hello-world?category=tech&tag=react
+// params: { slug: "hello-world" }
+// searchParams: { category: "tech", tag: "react" }
+```
+
+### Navigation
+
+```typescript
+import Link from "next/link"
+import { useRouter, usePathname, useSearchParams } from "next/navigation"
+
+// ✅ Link component - preferowany sposób
+function Navigation() {
+  return (
+    <nav>
+      <Link href="/">Home</Link>
+      <Link href="/about">About</Link>
+      <Link href="/blog">Blog</Link>
+
+      {/* Dynamic link */}
+      <Link href={`/blog/${slug}`}>Read more</Link>
+
+      {/* External link */}
+      <Link href="https://example.com" target="_blank">
+        External
+      </Link>
+    </nav>
+  )
+}
+
+// ✅ Programmatic navigation
+function LoginForm() {
+  const router = useRouter()
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
+
+  async function handleLogin(formData: FormData) {
+    const result = await loginAction(formData)
+
+    if (result.success) {
+      router.push("/dashboard") // Navigate
+      router.refresh() // Refresh server components
+    }
+  }
+
+  return (
+    <form action={handleLogin}>
+      {/* Form fields */}
+    </form>
+  )
+}
+```
+
+---
+
+## Rendering patterns
+
+### Server Components
+
+**Server Components** renderują się na serwerze (domyślnie w App Router):
+
+```typescript
+// app/blog/page.tsx - Server Component (default)
+import { getBlogPosts } from "@/lib/blog"
+
+export default async function BlogPage() {
+  // ✅ Można używać async/await
+  const posts = await getBlogPosts()
+
+  // ✅ Można używać server-only APIs
+  const fs = require("fs")
+
+  // ✅ Bezpośredni dostęp do bazy danych
+  // const posts = await db.posts.findMany()
+
+  return (
+    <div>
+      <h1>Blog Posts</h1>
+      {posts.map(post => (
+        <article key={post.id}>
+          <h2>{post.title}</h2>
+          <p>{post.excerpt}</p>
+        </article>
+      ))}
+    </div>
+  )
+}
+
+// ✅ Server Component benefits:
+// - Szybsze ładowanie (mniej JS)
+// - SEO friendly
+// - Bezpośredni dostęp do backend
+// - Automatyczne code splitting
+```
+
+### Client Components
+
+**Client Components** renderują się w przeglądarce:
+
+```typescript
+"use client" // ✅ Required directive
+
+import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
+
+export default function InteractiveComponent() {
+  // ✅ Można używać React hooks
+  const [count, setCount] = useState(0)
+  const router = useRouter()
+
+  // ✅ Można używać browser APIs
+  useEffect(() => {
+    const handleResize = () => {
+      console.log("Window resized")
+    }
+
+    window.addEventListener("resize", handleResize)
+    return () => window.removeEventListener("resize", handleResize)
+  }, [])
+
+  // ✅ Event handlers
+  function handleClick() {
+    setCount(c => c + 1)
+
+    // Browser API
+    localStorage.setItem("count", count.toString())
+  }
+
+  return (
+    <div>
+      <p>Count: {count}</p>
+      <button onClick={handleClick}>Increment</button>
+    </div>
+  )
+}
+```
+
+---
+
+## Data fetching
+
+### ⚠️ WAŻNE: Zmiany w Next.js 15
+
+W **Next.js 15** domyślne zachowanie `fetch()` uległo zmianie:
+
+- **❌ Next.js 14**: `fetch()` był domyślnie cache'owany (`cache: 'force-cache'`)
+- **✅ Next.js 15**: `fetch()` **nie jest** domyślnie cache'owany (`cache: 'no-store'`)
+
+### Server-side fetching z nowym zachowaniem
+
+```typescript
+// ⚠️ Next.js 15 - domyślnie NIE cache'owany
+export default async function PostsPage() {
+  // Te requesty będą wykonywane przy każdym renderowaniu
+  const [posts, categories] = await Promise.all([
+    fetch("https://api.example.com/posts"), // cache: 'no-store' (domyślnie)
+    fetch("https://api.example.com/categories"), // cache: 'no-store' (domyślnie)
+  ])
+
+  return (
+    <div>
+      <PostsList posts={posts} />
+      <CategoriesList categories={categories} />
+    </div>
+  )
+}
+
+// ✅ Jeśli chcesz cache'owanie - musisz to jawnie określić
+export default async function CachedPostsPage() {
+  const [posts, categories] = await Promise.all([
+    fetch("https://api.example.com/posts", { cache: "force-cache" }),
+    fetch("https://api.example.com/categories", { cache: "force-cache" }),
+  ])
+
+  return (
+    <div>
+      <PostsList posts={posts} />
+      <CategoriesList categories={categories} />
+    </div>
+  )
+}
+
+// ✅ With TypeScript
+interface Post {
+  id: string
+  title: string
+  content: string
+}
+
+export default async function TypedPostsPage() {
+  const response = await fetch("https://api.example.com/posts")
+  const posts: Post[] = await response.json()
+
+  return (
+    <div>
+      {posts.map(post => (
+        <article key={post.id}>
+          <h2>{post.title}</h2>
+          <p>{post.content}</p>
+        </article>
+      ))}
+    </div>
+  )
+}
+```
+
+### Caching strategies w Next.js 15
+
+```typescript
+// 🔄 ZMIENIONE: W Next.js 15 domyślnie NIE cache'uje
+const dynamicData = await fetch("https://api.example.com/dynamic") // cache: 'no-store' (domyślnie)
+
+// ✅ Jawne cache'owanie (trzeba określić)
+const staticData = await fetch("https://api.example.com/static", {
+  cache: "force-cache", // Wymagane dla cache'owania
+})
+
+// ✅ Explicit no cache (jak wcześniej, ale teraz domyślne)
+const freshData = await fetch("https://api.example.com/fresh", {
+  cache: "no-store", // Opcjonalne - to jest domyślne
+})
+
+// ✅ Time-based revalidation (bez zmian)
+const revalidatedData = await fetch("https://api.example.com/data", {
+  cache: "force-cache", // ⚠️ Teraz wymagane dla revalidation
+  next: {
+    revalidate: 3600, // 1 hour
+  },
+})
+
+// ✅ Tag-based revalidation (bez zmian)
+const taggedData = await fetch("https://api.example.com/posts", {
+  cache: "force-cache", // ⚠️ Teraz wymagane dla tags
+  next: {
+    tags: ["posts"],
+  },
+})
+```
+
+### Migracja z Next.js 14 do 15
+
+```typescript
+// ❌ Next.js 14 - automatyczne cache'owanie
+const oldWay = await fetch("https://api.example.com/data") // Było cache'owane
+
+// ✅ Next.js 15 - jawne cache'owanie
+const newWay = await fetch("https://api.example.com/data", {
+  cache: "force-cache", // Musisz dodać dla tego samego efektu
+})
+```
+
+---
+
+## Caching i zarządzanie cache
+
+### 🚨 BREAKING CHANGES w Next.js 15
+
+**Kluczowe zmiany w cache behavior:**
+
+1. **`fetch()` nie jest domyślnie cache'owany** - musisz jawnie dodać `cache: "force-cache"`
+2. **GET Route Handlers nie są cache'owane** - musisz dodać `export const dynamic = "force-static"`
+3. **Client Router Cache** - Page components nie są cache'owane podczas nawigacji
+
+### Rodzaje cache w Next.js 15
+
+Next.js ma **4 główne mechanizmy cache**:
+
+1. **Request Memoization** - deduplikacja requestów w czasie renderowania (bez zmian)
+2. **Data Cache** - persistent cache dla fetch requests (**ZMIENIONY** - domyślnie wyłączony)
+3. **Full Route Cache** - cache całych stron (**ZMIENIONY** - wpływa na niego Data Cache)
+4. **Router Cache** - client-side cache dla nawigacji (**ZMIENIONY** - Page components nie cache'owane)
+
+```typescript
+// ⚠️ Next.js 15 - Nowe zachowanie cache layers
+export default async function BlogPage() {
+  // 1. Request Memoization - te same requesty są deduplikowane (bez zmian)
+  const posts = await fetch("https://api.example.com/posts") // NIE cache'owany (nowe!)
+  const morePosts = await fetch("https://api.example.com/posts") // Deduplikowany w tym renderze
+
+  // 2. Data Cache - teraz domyślnie WYŁĄCZONY
+  const uncachedPosts = await fetch("https://api.example.com/posts") // NIE cache'owany
+
+  const cachedPosts = await fetch("https://api.example.com/posts", {
+    cache: "force-cache" // ✅ Jawnie cache'owany
+  })
+
+  // 3. Full Route Cache - wpływa na niego brak Data Cache
+  // Strona NIE będzie cache'owana, bo dane nie są cache'owane
+
+  return <PostsList posts={posts} />
+}
+```
+
+### Data Cache - fetch() caching w Next.js 15
+
+```typescript
+// 🔄 ZMIANA: Domyślnie no cache (było force-cache)
+const dynamicData = await fetch("https://api.example.com/dynamic") // cache: 'no-store' (domyślnie!)
+
+// ✅ Jawne cache'owanie (teraz wymagane)
+const staticData = await fetch("https://api.example.com/static", {
+  cache: "force-cache", // ⚠️ Musisz dodać jawnie
+})
+
+// ✅ Explicit no cache (opcjonalne - to jest domyślne)
+const freshData = await fetch("https://api.example.com/fresh", {
+  cache: "no-store", // Opcjonalne - to jest domyślne zachowanie
+})
+
+// ✅ Time-based revalidation - wymaga cache: "force-cache"
+const revalidatedData = await fetch("https://api.example.com/data", {
+  cache: "force-cache", // ⚠️ WYMAGANE dla revalidation
+  next: {
+    revalidate: 3600, // Revalidate every hour
+  },
+})
+
+// ✅ Tag-based revalidation - wymaga cache: "force-cache"
+const taggedData = await fetch("https://api.example.com/posts", {
+  cache: "force-cache", // ⚠️ WYMAGANE dla tags
+  next: {
+    tags: ["posts", "blog"],
+  },
+})
+
+// ✅ Kombinacja tags i revalidate
+const combinedData = await fetch("https://api.example.com/products", {
+  cache: "force-cache", // ⚠️ WYMAGANE
+  next: {
+    revalidate: 1800, // 30 minutes
+    tags: ["products", "inventory"],
+  },
+})
+```
+
+### Request Memoization
+
+```typescript
+// ✅ Request Memoization - automatyczne w czasie renderowania
+async function getUser(id: string) {
+  const response = await fetch(`https://api.example.com/users/${id}`)
+  return response.json()
+}
+
+export default async function UserProfile({ userId }: { userId: string }) {
+  // Te wywołania są automatycznie deduplikowane w czasie renderowania
+  const user = await getUser(userId)
+  const userAgain = await getUser(userId) // Cached!
+  const userThirdTime = await getUser(userId) // Cached!
+
+  return (
+    <div>
+      <UserCard user={user} />
+      <UserStats user={userAgain} />
+      <UserActivity user={userThirdTime} />
+    </div>
+  )
+}
+
+// ✅ Manual memoization z React cache
+import { cache } from "react"
+
+const getExpensiveData = cache(async (id: string) => {
+  console.log("Fetching expensive data for:", id) // Wywołane tylko raz
+  const response = await fetch(`https://api.example.com/expensive/${id}`)
+  return response.json()
+})
+
+export default async function ExpensivePage({ id }: { id: string }) {
+  const data1 = await getExpensiveData(id)
+  const data2 = await getExpensiveData(id) // Cached!
+
+  return <div>{/* Use data */}</div>
+}
+```
+
+### Route-level caching
+
+```typescript
+// ✅ Static route (Full Route Cache)
+export default async function StaticPage() {
+  const data = await fetch("https://api.example.com/static", {
+    cache: "force-cache"
+  })
+
+  return <div>{/* Static content - fully cached */}</div>
+}
+
+// ✅ Dynamic route (no Full Route Cache)
+export default async function DynamicPage() {
+  const data = await fetch("https://api.example.com/dynamic", {
+    cache: "no-store"
+  })
+
+  return <div>{/* Dynamic content - not cached */}</div>
+}
+
+// ✅ Mixed route (partial caching)
+export default async function MixedPage() {
+  // Static data - cached
+  const staticData = await fetch("https://api.example.com/static", {
+    cache: "force-cache"
+  })
+
+  // Dynamic data - not cached
+  const dynamicData = await fetch("https://api.example.com/dynamic", {
+    cache: "no-store"
+  })
+
+  return (
+    <div>
+      <StaticSection data={staticData} />
+      <DynamicSection data={dynamicData} />
+    </div>
+  )
+}
+
+// ✅ Force dynamic rendering
+export const dynamic = "force-dynamic" // Opt out of caching
+export const revalidate = 0 // Revalidate on every request
+
+export default async function AlwaysDynamicPage() {
+  return <div>{/* Always fresh */}</div>
+}
+
+// ✅ Force static rendering
+export const dynamic = "force-static" // Force static generation
+export const revalidate = 3600 // Revalidate every hour
+
+export default async function AlwaysStaticPage() {
+  return <div>{/* Always cached */}</div>
+}
+```
+
+### Revalidation strategies
+
+```typescript
+// ✅ Time-based revalidation (ISR)
+export const revalidate = 3600 // 1 hour
+
+export default async function ISRPage() {
+  const posts = await getPosts()
+  return <PostsList posts={posts} />
+}
+
+// ✅ On-demand revalidation
+import { revalidatePath, revalidateTag } from "next/cache"
+
+// Server Action
+export async function createPostAction(formData: FormData) {
+  const title = formData.get("title") as string
+
+  // Create post
+  const post = await db.posts.create({
+    data: { title }
+  })
+
+  // Revalidate specific path
+  revalidatePath("/posts")
+  revalidatePath(`/posts/${post.id}`)
+
+  // Revalidate by tag
+  revalidateTag("posts")
+  revalidateTag("blog")
+
+  return { success: true }
+}
+
+// ✅ API route for external revalidation
+// app/api/revalidate/route.ts
+import { revalidatePath, revalidateTag } from "next/cache"
+import { NextRequest } from "next/server"
+
+export async function POST(request: NextRequest) {
+  const secret = request.nextUrl.searchParams.get("secret")
+
+  // Verify secret
+  if (secret !== process.env.REVALIDATION_SECRET) {
+    return Response.json({ message: "Invalid secret" }, { status: 401 })
+  }
+
+  const path = request.nextUrl.searchParams.get("path")
+  const tag = request.nextUrl.searchParams.get("tag")
+
+  try {
+    if (path) {
+      revalidatePath(path)
+      return Response.json({ revalidated: true, path })
+    }
+
+    if (tag) {
+      revalidateTag(tag)
+      return Response.json({ revalidated: true, tag })
+    }
+
+    return Response.json({ message: "Missing path or tag" }, { status: 400 })
+  } catch (error) {
+    return Response.json({ message: "Error revalidating" }, { status: 500 })
+  }
+}
+
+// Usage:
+// POST /api/revalidate?secret=token&path=/posts
+// POST /api/revalidate?secret=token&tag=posts
+```
+
+### Cache debugging
+
+```typescript
+// ✅ Cache debugging w development
+export default async function DebugPage() {
+  const startTime = Date.now()
+
+  const data = await fetch("https://api.example.com/data", {
+    next: {
+      revalidate: 60,
+      tags: ["debug"]
+    }
+  })
+
+  const endTime = Date.now()
+  const fetchTime = endTime - startTime
+
+  console.log(`Fetch took ${fetchTime}ms`) // 0ms = cached, >0ms = fresh
+
+  return (
+    <div>
+      <p>Fetch time: {fetchTime}ms</p>
+      <p>Data: {JSON.stringify(data)}</p>
+    </div>
+  )
+}
+
+// ✅ Cache headers inspection
+export default async function CacheHeadersPage() {
+  const response = await fetch("https://api.example.com/data", {
+    next: { revalidate: 3600 }
+  })
+
+  // Inspect cache headers
+  console.log("Cache-Control:", response.headers.get("cache-control"))
+  console.log("ETag:", response.headers.get("etag"))
+  console.log("Last-Modified:", response.headers.get("last-modified"))
+
+  const data = await response.json()
+  return <div>{JSON.stringify(data)}</div>
+}
+
+// ✅ Cache status w response headers
+// next.config.js
+module.exports = {
+  async headers() {
+    return [
+      {
+        source: "/api/:path*",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, s-maxage=60, stale-while-revalidate=300"
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+### Router Cache (Client-side) w Next.js 15
+
+```typescript
+"use client"
+
+import { useRouter } from "next/navigation"
+
+export default function NavigationComponent() {
+  const router = useRouter()
+
+  // 🔄 ZMIANA: Router cache behavior w Next.js 15
+  function handleNavigation() {
+    // Soft navigation - Page components NIE SĄ cache'owane (nowe!)
+    router.push("/dashboard") // ⚠️ Page component zawsze fresh
+
+    // Layout components nadal cache'owane
+    // Shared UI components cache'owane
+
+    // Hard navigation - bypasses Router Cache (bez zmian)
+    window.location.href = "/dashboard" // Always fresh
+
+    // Refresh - invalidates Router Cache (bez zmian)
+    router.refresh() // Forces server re-render
+  }
+
+  return (
+    <div>
+      <button onClick={() => router.push("/posts")}>
+        Go to Posts (⚠️ page fresh, layout cached)
+      </button>
+      <button onClick={() => router.refresh()}>
+        Refresh (invalidate cache)
+      </button>
+    </div>
+  )
+}
+```
+
+### Przywracanie starego zachowania Router Cache
+
+```typescript
+// next.config.js - przywrócenie cache'owania Page components
+const nextConfig = {
+  experimental: {
+    staleTimes: {
+      dynamic: 30, // 30 seconds dla dynamic routes
+      static: 180, // 3 minutes dla static routes
+    },
+  },
+}
+
+export default nextConfig
+
+// ✅ Prefetching behavior
+import Link from "next/link"
+
+export default function PrefetchingExample() {
+  return (
+    <div>
+      {/* Automatic prefetching in production */}
+      <Link href="/dashboard">Dashboard</Link>
+
+      {/* Disable prefetching */}
+      <Link href="/heavy-page" prefetch={false}>
+        Heavy Page (no prefetch)
+      </Link>
+
+      {/* Force prefetching */}
+      <Link href="/important-page" prefetch={true}>
+        Important Page (prefetch)
+      </Link>
+    </div>
+  )
+}
+```
+
+### Cache best practices
+
+```typescript
+// ✅ Cache strategy per data type
+
+// Static content - cache indefinitely
+const staticContent = await fetch("https://api.example.com/config", {
+  cache: "force-cache",
+})
+
+// User-specific data - no cache
+const userData = await fetch(`https://api.example.com/users/${userId}`, {
+  cache: "no-store",
+})
+
+// Frequently updated content - short revalidation
+const news = await fetch("https://api.example.com/news", {
+  next: {
+    revalidate: 300, // 5 minutes
+    tags: ["news"],
+  },
+})
+
+// Rarely updated content - long revalidation
+const settings = await fetch("https://api.example.com/settings", {
+  next: {
+    revalidate: 86400, // 24 hours
+    tags: ["settings"],
+  },
+})
+
+// ✅ Conditional caching
+async function getPostData(slug: string, isPreview: boolean) {
+  const cacheOptions = isPreview
+    ? { cache: "no-store" as const }
+    : {
+        next: {
+          revalidate: 3600,
+          tags: ["posts", `post-${slug}`],
+        },
+      }
+
+  const response = await fetch(`https://api.example.com/posts/${slug}`, cacheOptions)
+  return response.json()
+}
+
+// ✅ Cache warming
+export async function generateStaticParams() {
+  // Pre-generate static pages (cache warming)
+  const posts = await fetch("https://api.example.com/posts", {
+    cache: "force-cache",
+  }).then(res => res.json())
+
+  return posts.map((post: any) => ({
+    slug: post.slug,
+  }))
+}
+
+// ✅ Cache invalidation patterns
+export async function updatePostAction(id: string, data: any) {
+  // Update post
+  await db.posts.update({
+    where: { id },
+    data,
+  })
+
+  // Invalidate related caches
+  revalidateTag("posts") // All posts
+  revalidateTag(`post-${id}`) // Specific post
+  revalidatePath("/posts") // Posts list page
+  revalidatePath(`/posts/${data.slug}`) // Specific post page
+
+  // Invalidate related pages
+  if (data.category) {
+    revalidateTag(`category-${data.category}`)
+    revalidatePath(`/categories/${data.category}`)
+  }
+}
+```
+
+### Cache monitoring
+
+```typescript
+// ✅ Cache hit/miss monitoring
+export async function monitoredFetch(url: string, options?: RequestInit) {
+  const startTime = performance.now()
+
+  const response = await fetch(url, options)
+
+  const endTime = performance.now()
+  const duration = endTime - startTime
+
+  // Log cache performance
+  console.log({
+    url,
+    duration,
+    cached: duration < 10, // Heuristic: < 10ms = likely cached
+    status: response.status,
+    cacheControl: response.headers.get("cache-control"),
+  })
+
+  // Send to monitoring service in production
+  if (process.env.NODE_ENV === "production") {
+    // analytics.track("cache_performance", { url, duration, cached })
+  }
+
+  return response
+}
+
+// ✅ Cache size monitoring
+export function getCacheStats() {
+  // Next.js doesn't expose cache size directly,
+  // but you can monitor via custom metrics
+
+  const stats = {
+    timestamp: Date.now(),
+    // Add custom cache metrics here
+  }
+
+  return stats
+}
+
+// ✅ Cache health check
+// app/api/cache-health/route.ts
+export async function GET() {
+  try {
+    // Test cache functionality
+    const testData = await fetch("https://api.example.com/health", {
+      next: { revalidate: 60 },
+    })
+
+    return Response.json({
+      status: "healthy",
+      timestamp: Date.now(),
+      cacheWorking: true,
+    })
+  } catch (error) {
+    return Response.json(
+      {
+        status: "unhealthy",
+        error: "Cache test failed",
+        timestamp: Date.now(),
+      },
+      { status: 500 },
+    )
+  }
+}
+```
+
+---
+
+## Server Actions
+
+### Czym są Server Actions
+
+Server Actions to **funkcje serwerowe** które można wywoływać bezpośrednio z komponentów:
+
+```typescript
+// ✅ Server Action definition
+"use server"
+
+import { redirect } from "next/navigation"
+import { revalidatePath } from "next/cache"
+
+export async function createPost(formData: FormData) {
+  const title = formData.get("title") as string
+  const content = formData.get("content") as string
+
+  // Server-side logic
+  const post = await db.posts.create({
+    data: { title, content },
+  })
+
+  // Revalidate and redirect
+  revalidatePath("/posts")
+  redirect(`/posts/${post.id}`)
+}
+
+// ✅ Usage in Server Component
+export default function CreatePostPage() {
+  return (
+    <form action={createPost}>
+      <input name="title" placeholder="Title" required />
+      <textarea name="content" placeholder="Content" required />
+      <button type="submit">Create Post</button>
+    </form>
+  )
+}
+```
+
+### Form handling
+
+```typescript
+"use server"
+
+import { z } from "zod"
+import { redirect } from "next/navigation"
+
+// ✅ Validation schema
+const createPostSchema = z.object({
+  title: z.string().min(1, "Title is required"),
+  content: z.string().min(10, "Content must be at least 10 characters"),
+  category: z.enum(["tech", "design", "business"]),
+})
+
+export async function createPostAction(formData: FormData) {
+  // ✅ Parse and validate
+  const rawData = {
+    title: formData.get("title"),
+    content: formData.get("content"),
+    category: formData.get("category"),
+  }
+
+  const parsed = createPostSchema.safeParse(rawData)
+
+  if (!parsed.success) {
+    // Return validation errors
+    return {
+      success: false,
+      errors: parsed.error.flatten().fieldErrors,
+    }
+  }
+
+  try {
+    // ✅ Create post
+    const post = await db.posts.create({
+      data: parsed.data,
+    })
+
+    // ✅ Revalidate cache
+    revalidatePath("/posts")
+
+    // ✅ Redirect to new post
+    redirect(`/posts/${post.id}`)
+  } catch (error) {
+    return {
+      success: false,
+      error: "Failed to create post",
+    }
+  }
+}
+```
+
+---
+
+## Performance optimization
+
+### 🚀 Turbopack (Stable w Next.js 15)
+
+**Turbopack** to nowy bundler od zespołu Vercel, który w Next.js 15 jest już **stabilny**:
+
+```bash
+# ✅ Włącz Turbopack dla dev server (znacznie szybszy!)
+npm run dev --turbo
+# lub
+yarn dev --turbo
+
+# ✅ W package.json
+{
+  "scripts": {
+    "dev": "next dev --turbo",
+    "build": "next build"
+  }
+}
+```
+
+**Korzyści Turbopack:**
+
+- **⚡ 10x szybszy** cold start
+- **🔄 5x szybszy** incremental builds
+- **💨 700x szybszy** niż Webpack dla dużych projektów
+- **🏎️ Optymalizacje** dla Rust-based bundling
+
+```javascript
+// next.config.js - konfiguracja Turbopack
+const nextConfig = {
+  // Turbopack jest domyślnie włączony w dev mode w Next.js 15
+  experimental: {
+    turbo: {
+      // Dodatkowe opcje Turbopack (jeśli potrzebujesz)
+    },
+  },
+}
+
+export default nextConfig
+```
+
+### React 19 Support
+
+Next.js 15 pełnie wspiera **React 19** z nowymi funkcjami:
+
+```typescript
+// ✅ React 19 - use() hook
+import { use } from "react"
+
+function UserProfile({ userPromise }: { userPromise: Promise<User> }) {
+  // use() hook pozwala na async data w komponentach
+  const user = use(userPromise)
+
+  return (
+    <div>
+      <h1>{user.name}</h1>
+      <p>{user.email}</p>
+    </div>
+  )
+}
+
+// ✅ React 19 - Actions i useActionState
+import { useActionState } from "react"
+
+function ContactForm() {
+  const [state, formAction] = useActionState(submitContactForm, {
+    message: "",
+    error: null,
+  })
+
+  return (
+    <form action={formAction}>
+      <input name="email" required />
+      <textarea name="message" required />
+      <button type="submit">Submit</button>
+      {state.error && <p>Error: {state.error}</p>}
+    </form>
+  )
+}
+
+// ✅ Server Action z React 19
+async function submitContactForm(prevState: any, formData: FormData) {
+  "use server"
+
+  try {
+    await sendEmail({
+      email: formData.get("email"),
+      message: formData.get("message"),
+    })
+
+    return { message: "Success!", error: null }
+  } catch (error) {
+    return { message: "", error: "Failed to send message" }
+  }
+}
+```
+
+### ESLint 9 Support
+
+```json
+// ✅ .eslintrc.json - Next.js 15 wspiera ESLint 9
+{
+  "extends": ["next/core-web-vitals"],
+  "rules": {
+    // Nowe reguły ESLint 9
+  }
+}
+
+// ✅ package.json - upgrade do ESLint 9
+{
+  "devDependencies": {
+    "eslint": "^9.0.0",
+    "eslint-config-next": "^15.0.0"
+  }
+}
+```
+
+### Image optimization
+
+```typescript
+import Image from "next/image"
+
+// ✅ Basic image optimization
+export default function Hero() {
+  return (
+    <div>
+      <Image
+        src="/hero-image.jpg"
+        alt="Hero image"
+        width={1200}
+        height={600}
+        priority // Load immediately (above fold)
+        placeholder="blur"
+        blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQ..."
+      />
+    </div>
+  )
+}
+
+// ✅ Responsive images
+export default function ResponsiveImage() {
+  return (
+    <Image
+      src="/responsive-image.jpg"
+      alt="Responsive image"
+      fill
+      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+      className="object-cover"
+    />
+  )
+}
+```
+
+### Code splitting
+
+```typescript
+import dynamic from "next/dynamic"
+
+// ✅ Dynamic imports for heavy components
+const HeavyChart = dynamic(() => import("./HeavyChart"), {
+  loading: () => <div>Loading chart...</div>,
+  ssr: false, // Disable SSR for client-only components
+})
+
+const AdminPanel = dynamic(
+  () => import("./AdminPanel").then(mod => ({ default: mod.AdminPanel })),
+  {
+    loading: () => <div>Loading admin panel...</div>,
+  }
+)
+
+// ✅ Conditional loading
+export default function Dashboard({ user }) {
+  return (
+    <div>
+      <h1>Dashboard</h1>
+
+      {/* Always loaded */}
+      <UserProfile user={user} />
+
+      {/* Conditionally loaded */}
+      {user.role === "admin" && <AdminPanel />}
+
+      {/* Heavy component - lazy loaded */}
+      <HeavyChart data={user.analytics} />
+    </div>
+  )
+}
+```
+
+---
+
+## Metadata i SEO
+
+### Static metadata
+
+```typescript
+// app/layout.tsx
+import type { Metadata } from "next"
+
+export const metadata: Metadata = {
+  title: {
+    template: "%s | My App",
+    default: "My App - Best App Ever",
+  },
+  description: "The best app for managing your tasks",
+  keywords: ["tasks", "productivity", "management"],
+  authors: [{ name: "John Doe", url: "https://johndoe.com" }],
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: "https://myapp.com",
+    siteName: "My App",
+    title: "My App - Best App Ever",
+    description: "The best app for managing your tasks",
+    images: [
+      {
+        url: "https://myapp.com/og-image.jpg",
+        width: 1200,
+        height: 630,
+        alt: "My App",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    site: "@myapp",
+    creator: "@johndoe",
+  },
+}
+```
+
+### Dynamic metadata
+
+```typescript
+// app/blog/[slug]/page.tsx
+import type { Metadata } from "next"
+
+interface PageProps {
+  params: { slug: string }
+}
+
+// ✅ Dynamic metadata generation
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const post = await getPost(params.slug)
+
+  if (!post) {
+    return {
+      title: "Post Not Found",
+    }
+  }
+
+  return {
+    title: post.title,
+    description: post.excerpt,
+    keywords: post.tags,
+    authors: [{ name: post.author.name }],
+    openGraph: {
+      title: post.title,
+      description: post.excerpt,
+      type: "article",
+      images: [
+        {
+          url: post.featuredImage,
+          width: 1200,
+          height: 630,
+          alt: post.title,
+        },
+      ],
+    },
+  }
+}
+```
+
+---
+
+## Error handling
+
+### Error boundaries
+
+```typescript
+// app/error.tsx - Page-level error boundary
+"use client"
+
+import { useEffect } from "react"
+
+interface ErrorProps {
+  error: Error & { digest?: string }
+  reset: () => void
+}
+
+export default function Error({ error, reset }: ErrorProps) {
+  useEffect(() => {
+    // Log error to monitoring service
+    console.error("Page error:", error)
+  }, [error])
+
+  return (
+    <div className="flex min-h-screen flex-col items-center justify-center">
+      <div className="text-center">
+        <h2 className="text-2xl font-bold text-gray-900 mb-4">Something went wrong!</h2>
+        <p className="text-gray-600 mb-6">{error.message || "An unexpected error occurred"}</p>
+        <button
+          onClick={reset}
+          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+        >
+          Try again
+        </button>
+      </div>
+    </div>
+  )
+}
+```
+
+### Not found pages
+
+```typescript
+// app/not-found.tsx - Global 404 page
+import Link from "next/link"
+
+export default function NotFound() {
+  return (
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="text-center">
+        <h1 className="text-6xl font-bold text-gray-900 mb-4">404</h1>
+        <h2 className="text-2xl font-semibold text-gray-700 mb-4">Page Not Found</h2>
+        <p className="text-gray-600 mb-8">The page you are looking for doesn't exist.</p>
+        <Link href="/" className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700">
+          Go Home
+        </Link>
+      </div>
+    </div>
+  )
+}
+
+// app/blog/[slug]/page.tsx - Conditional not found
+import { notFound } from "next/navigation"
+
+export default async function BlogPost({ params }: { params: { slug: string } }) {
+  const post = await getPost(params.slug)
+
+  if (!post) {
+    notFound() // Triggers not-found.tsx
+  }
+
+  return (
+    <article>
+      <h1>{post.title}</h1>
+      <p>{post.content}</p>
+    </article>
+  )
+}
+```
+
+---
+
+## Deployment i production
+
+### Build optimization
+
+```javascript
+// next.config.js
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  // Image optimization
+  images: {
+    domains: ["example.com", "cdn.example.com"],
+    formats: ["image/webp", "image/avif"],
+    minimumCacheTTL: 60,
+  },
+
+  // Compression
+  compress: true,
+
+  // Headers for security and performance
+  async headers() {
+    return [
+      {
+        source: "/(.*)",
+        headers: [
+          {
+            key: "X-Frame-Options",
+            value: "DENY",
+          },
+          {
+            key: "X-Content-Type-Options",
+            value: "nosniff",
+          },
+          {
+            key: "Referrer-Policy",
+            value: "origin-when-cross-origin",
+          },
+        ],
+      },
+    ]
+  },
+
+  // Redirects
+  async redirects() {
+    return [
+      {
+        source: "/old-blog/:slug",
+        destination: "/blog/:slug",
+        permanent: true,
+      },
+    ]
+  },
+}
+
+module.exports = nextConfig
+```
+
+### Environment variables
+
+```bash
+# .env.local (development)
+DATABASE_URL="postgresql://localhost:5432/myapp_dev"
+NEXTAUTH_SECRET="development-secret"
+NEXTAUTH_URL="http://localhost:3000"
+
+# .env.production (production)
+DATABASE_URL="postgresql://prod-server:5432/myapp_prod"
+NEXTAUTH_SECRET="super-secure-production-secret"
+NEXTAUTH_URL="https://myapp.com"
+
+# .env (shared)
+NEXT_PUBLIC_APP_NAME="My App"
+NEXT_PUBLIC_API_URL="https://api.myapp.com"
+```
+
+```typescript
+// lib/env.ts - Environment validation
+import { z } from "zod"
+
+const envSchema = z.object({
+  NODE_ENV: z.enum(["development", "production", "test"]),
+  DATABASE_URL: z.string().url(),
+  NEXTAUTH_SECRET: z.string().min(1),
+  NEXTAUTH_URL: z.string().url(),
+  NEXT_PUBLIC_APP_NAME: z.string().min(1),
+  NEXT_PUBLIC_API_URL: z.string().url(),
+})
+
+export const env = envSchema.parse(process.env)
+```
+
+---
+
+## Podsumowanie
+
+### Kluczowe koncepty Next.js:
+
+1. **App Router** - nowa architektura routingu (Next.js 13+)
+2. **Server Components** - renderowanie na serwerze (domyślnie)
+3. **Client Components** - interaktywność w przeglądarce ("use client")
+4. **Server Actions** - funkcje serwerowe wywoływane z komponentów
+5. **File-based routing** - struktura plików = struktura URL
+6. **Automatic optimization** - obrazy, fonty, bundle splitting
+
+### Najważniejsze wzorce w naszym projekcie:
+
+1. **Feature-based structure** - organizacja według funkcjonalności
+2. **Server Actions** - dla form handling i mutations
+3. **TypeScript strict mode** - pełna type safety
+4. **Error boundaries** - graceful error handling
+5. **Performance optimization** - Core Web Vitals
+6. **SEO optimization** - metadata i structured data
+
+### Najważniejsze pliki do zrozumienia:
+
+- `app/layout.tsx` - Root layout i global setup
+- `next.config.js` - Konfiguracja Next.js
+- `middleware.ts` - Request/response middleware
+- `app/*/page.tsx` - Route components
+- `app/*/loading.tsx` - Loading states
+- `app/*/error.tsx` - Error boundaries
+
+### Następne kroki:
+
+1. Przeczytaj kod w `app/` folder jako przykład
+2. Zrozum różnicę między Server i Client Components
+3. Praktykuj Server Actions z form handling
+4. Eksperymentuj z dynamic routing
+5. Optymalizuj performance z Image component
+
+---
+
+## Migracja do Next.js 15
+
+### Przed migracją
+
+**Sprawdź kompatybilność:**
+
+```bash
+# Sprawdź obecną wersję
+npx next info
+
+# Backup projektu
+git commit -am "Before Next.js 15 upgrade"
+```
+
+### Krok 1: Aktualizacja dependencies
+
+```bash
+# ✅ Aktualizacja do Next.js 15
+npm install next@latest react@latest react-dom@latest
+
+# ✅ Aktualizacja TypeScript types
+npm install --save-dev @types/react@latest @types/react-dom@latest
+
+# ✅ Aktualizacja ESLint (opcjonalne)
+npm install --save-dev eslint@9 eslint-config-next@latest
+```
+
+### Krok 2: Automatyczna migracja async APIs
+
+```bash
+# ✅ Codemod do automatycznego dodawania await
+npx @next/codemod@canary next-async-request-api .
+
+# ✅ Dla konkretnego folderu
+npx @next/codemod@canary next-async-request-api ./app
+```
+
+### Krok 3: Aktualizacja fetch() calls
+
+**Znajdź wszystkie fetch() bez cache:**
+
+```bash
+# Znajdź fetch() bez opcji cache
+grep -r "fetch(" --include="*.ts" --include="*.tsx" .
+```
+
+**Dodaj cache: "force-cache" gdzie potrzebne:**
+
+```typescript
+// ❌ Przed migracją - automatycznie cache'owane
+const data = await fetch("https://api.example.com/data")
+
+// ✅ Po migracji - jawne cache'owanie
+const data = await fetch("https://api.example.com/data", {
+  cache: "force-cache",
+})
+```
+
+### Krok 4: Aktualizacja Route Handlers
+
+```typescript
+// ❌ Route Handler przed Next.js 15
+export async function GET() {
+  const data = await fetch("https://api.example.com/data") // Był cache'owany
+  return Response.json(data)
+}
+
+// ✅ Route Handler w Next.js 15
+export const dynamic = "force-static" // Dla cache'owania
+
+export async function GET() {
+  const data = await fetch("https://api.example.com/data", {
+    cache: "force-cache", // Jawnie cache'uj
+  })
+  return Response.json(data)
+}
+```
+
+### Krok 5: Przywrócenie Router Cache (opcjonalne)
+
+```javascript
+// next.config.js
+const nextConfig = {
+  experimental: {
+    staleTimes: {
+      dynamic: 30, // 30s dla dynamic routes
+      static: 180, // 3min dla static routes
+    },
+  },
+}
+
+export default nextConfig
+```
+
+### Krok 6: Testowanie
+
+```bash
+# ✅ Testuj development mode z Turbopack
+npm run dev --turbo
+
+# ✅ Testuj build
+npm run build
+
+# ✅ Sprawdź czy wszystko działa
+npm run start
+```
+
+### Checklist migracji
+
+- [ ] Zaktualizowałem Next.js i React
+- [ ] Uruchomiłem codemod dla async APIs
+- [ ] Dodałem `cache: "force-cache"` gdzie potrzebne
+- [ ] Zaktualizowałem Route Handlers
+- [ ] Skonfigurowałem staleTimes (jeśli chcę stare zachowanie)
+- [ ] Przetestowałem dev mode z Turbopack
+- [ ] Przetestowałem production build
+- [ ] Sprawdziłem performance w production
+
+### Potencjalne problemy
+
+**1. TypeScript errors po async APIs:**
+
+```bash
+# ✅ Sprawdź czy wszystkie params/searchParams mają await
+npx tsc --noEmit
+```
+
+**2. Cache behavior się zmienił:**
+
+```typescript
+// Sprawdź czy strony ładują się za wolno
+// Dodaj cache: "force-cache" gdzie potrzebne
+```
+
+**3. Router navigation jest wolniejsze:**
+
+```javascript
+// Dodaj staleTimes w next.config.js
+experimental: {
+  staleTimes: { dynamic: 30, static: 180 }
+}
+```
+
+---
+
+## Podsumowanie Next.js 15
+
+### Najważniejsze zmiany:
+
+1. **🔄 Async Request APIs** - cookies, headers, params wymagają await
+2. **⚠️ Nowa semantyka cache** - fetch() nie jest domyślnie cache'owany
+3. **🚀 Turbopack stable** - znaczne przyspieszenie developmentu
+4. **⚛️ React 19 support** - nowe hooks jak use() i useActionState
+5. **🔧 ESLint 9** - wsparcie dla najnowszego ESLint
+
+### Kluczowe koncepty Next.js 15:
+
+1. **App Router** - zestabilizowany routing (Next.js 13+)
+2. **Server Components** - renderowanie na serwerze (domyślnie)
+3. **Client Components** - interaktywność w przeglądarce ("use client")
+4. **Server Actions** - funkcje serwerowe wywoływane z komponentów
+5. **Explicit caching** - jawne określanie strategii cache
+6. **Performance first** - Turbopack dla szybszego dev experience
+
+### Najważniejsze wzorce w naszym projekcie:
+
+1. **Feature-based structure** - organizacja według funkcjonalności
+2. **Server Actions** - dla form handling i mutations
+3. **TypeScript strict mode** - pełna type safety
+4. **Explicit caching** - jawne cache strategies
+5. **Performance optimization** - Core Web Vitals
+6. **SEO optimization** - metadata i structured data
+
+**Pamiętaj:** Next.js 15 to framework, który ma ułatwić development React aplikacji. Wykorzystuj jego built-in optimizations, ale pamiętaj o nowych explicit patterns dla cache!

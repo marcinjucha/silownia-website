@@ -1,0 +1,760 @@
+---
+globs: *.tsx,*.jsx
+description: React performance optimization patterns and anti-patterns
+---
+
+# React Performance Optimization
+
+## 🚀 Optymalizacja Komponentów
+
+### Memoizacja - Kiedy i Jak Używać
+
+```typescript
+import { memo, useMemo, useCallback } from "react"
+
+// ✅ Memo dla kosztownych komponentów
+const ExpensiveComponent = memo(function ExpensiveComponent({
+  data,
+  onAction
+}: {
+  data: ComplexData[]
+  onAction: (id: string) => void
+}) {
+  const processedData = useMemo(() => {
+    return data.map(item => ({
+      ...item,
+      computed: expensiveComputation(item)
+    }))
+  }, [data])
+
+  return (
+    <div>
+      {processedData.map(item => (
+        <div key={item.id} onClick={() => onAction(item.id)}>
+          {item.computed}
+        </div>
+      ))}
+    </div>
+  )
+})
+
+// ✅ Parent z useCallback
+export function ParentComponent({ items }: { items: ComplexData[] }) {
+  const [selectedId, setSelectedId] = useState<string | null>(null)
+
+  const handleAction = useCallback((id: string) => {
+    setSelectedId(id)
+    // Inna logika...
+  }, [])
+
+  return (
+    <ExpensiveComponent
+      data={items}
+      onAction={handleAction}
+    />
+  )
+}
+```
+
+### Custom Hooks dla Separacji Logiki
+
+```typescript
+// ✅ Custom hook dla złożonej logiki
+function useProductFilters(products: Product[]) {
+  const [filters, setFilters] = useState({
+    category: "",
+    priceRange: [0, 1000],
+    inStock: false,
+  })
+
+  const filteredProducts = useMemo(() => {
+    return products.filter(product => {
+      if (filters.category && product.category !== filters.category) return false
+      if (product.price < filters.priceRange[0] || product.price > filters.priceRange[1]) return false
+      if (filters.inStock && !product.inStock) return false
+      return true
+    })
+  }, [products, filters])
+
+  const updateFilter = useCallback((key: keyof typeof filters, value: any) => {
+    setFilters(prev => ({ ...prev, [key]: value }))
+  }, [])
+
+  return {
+    filters,
+    filteredProducts,
+    updateFilter,
+  }
+}
+
+// ✅ Czysty komponent używający custom hook
+export function ProductList({ products }: { products: Product[] }) {
+  const { filters, filteredProducts, updateFilter } = useProductFilters(products)
+
+  return (
+    <div>
+      <FilterControls filters={filters} onFilterChange={updateFilter} />
+      <ProductGrid products={filteredProducts} />
+    </div>
+  )
+}
+```
+
+## 🔄 Optymalizacja Zarządzania Stanem
+
+### Zustand dla Złożonego Stanu
+
+```typescript
+import { create } from "zustand"
+import { devtools, persist } from "zustand/middleware"
+import { immer } from "zustand/middleware/immer"
+
+interface CartItem {
+  id: string
+  name: string
+  price: number
+  quantity: number
+}
+
+interface CartStore {
+  // State
+  items: CartItem[]
+  total: number
+  isLoading: boolean
+  error: string | null
+
+  // Actions
+  addItem: (item: Omit<CartItem, "quantity">) => void
+  removeItem: (id: string) => void
+  updateQuantity: (id: string, quantity: number) => void
+  clearCart: () => void
+  setLoading: (loading: boolean) => void
+  setError: (error: string | null) => void
+
+  // Computed
+  itemCount: number
+}
+
+// ✅ Zustand store z middleware
+export const useCartStore = create<CartStore>()(
+  devtools(
+    persist(
+      immer((set, get) => ({
+        // Initial state
+        items: [],
+        total: 0,
+        isLoading: false,
+        error: null,
+        itemCount: 0,
+
+        // Actions
+        addItem: (newItem) => set((state) => {
+          const existingItem = state.items.find(item => item.id === newItem.id)
+
+          if (existingItem) {
+            existingItem.quantity += 1
+          } else {
+            state.items.push({ ...newItem, quantity: 1 })
+          }
+
+          state.total = state.items.reduce((sum, item) => sum + (item.price * item.quantity), 0)
+          state.itemCount = state.items.reduce((sum, item) => sum + item.quantity, 0)
+        }),
+
+        removeItem: (id) => set((state) => {
+          state.items = state.items.filter(item => item.id !== id)
+          state.total = state.items.reduce((sum, item) => sum + (item.price * item.quantity), 0)
+          state.itemCount = state.items.reduce((sum, item) => sum + item.quantity, 0)
+        }),
+
+        updateQuantity: (id, quantity) => set((state) => {
+          const item = state.items.find(item => item.id === id)
+          if (item) {
+            if (quantity <= 0) {
+              state.items = state.items.filter(item => item.id !== id)
+            } else {
+              item.quantity = quantity
+            }
+            state.total = state.items.reduce((sum, item) => sum + (item.price * item.quantity), 0)
+            state.itemCount = state.items.reduce((sum, item) => sum + item.quantity, 0)
+          }
+        }),
+
+        clearCart: () => set((state) => {
+          state.items = []
+          state.total = 0
+          state.itemCount = 0
+        }),
+
+        setLoading: (loading) => set((state) => {
+          state.isLoading = loading
+        }),
+
+        setError: (error) => set((state) => {
+          state.error = error
+        }),
+      })),
+      {
+        name: "cart-storage", // localStorage key
+        partialize: (state) => ({
+          items: state.items,
+          total: state.total,
+          itemCount: state.itemCount
+        }), // Only persist cart data
+      }
+    ),
+    { name: "cart-store" } // DevTools name
+  )
+)
+
+// ✅ Selectors dla performance
+export const useCartItems = () => useCartStore((state) => state.items)
+export const useCartTotal = () => useCartStore((state) => state.total)
+export const useCartActions = () => useCartStore((state) => ({
+  addItem: state.addItem,
+  removeItem: state.removeItem,
+  updateQuantity: state.updateQuantity,
+  clearCart: state.clearCart,
+}))
+
+// ✅ Użycie w komponencie
+function CartComponent() {
+  const items = useCartItems()
+  const total = useCartTotal()
+  const { addItem, removeItem, updateQuantity } = useCartActions()
+
+  return (
+    <div>
+      <h2>Cart ({items.length} items)</h2>
+      {items.map(item => (
+        <div key={item.id} className="cart-item">
+          <span>{item.name}</span>
+          <span>${item.price}</span>
+          <input
+            type="number"
+            value={item.quantity}
+            onChange={(e) => updateQuantity(item.id, parseInt(e.target.value))}
+            min="0"
+          />
+          <button onClick={() => removeItem(item.id)}>Remove</button>
+        </div>
+      ))}
+      <div className="cart-total">
+        Total: ${total.toFixed(2)}
+      </div>
+    </div>
+  )
+}
+```
+
+### Zaawansowane Wzorce Zustand
+
+```typescript
+// ✅ Zustand z async actions i error handling
+interface UserStore {
+  users: User[]
+  currentUser: User | null
+  isLoading: boolean
+  error: string | null
+
+  // Async actions
+  fetchUsers: () => Promise<void>
+  fetchUser: (id: string) => Promise<void>
+  updateUser: (id: string, data: Partial<User>) => Promise<void>
+
+  // Sync actions
+  setCurrentUser: (user: User | null) => void
+  clearError: () => void
+}
+
+export const useUserStore = create<UserStore>()(
+  devtools(
+    immer((set, get) => ({
+      users: [],
+      currentUser: null,
+      isLoading: false,
+      error: null,
+
+      fetchUsers: async () => {
+        set(state => {
+          state.isLoading = true
+          state.error = null
+        })
+
+        try {
+          const response = await fetch("/api/users")
+          if (!response.ok) throw new Error("Failed to fetch users")
+
+          const users = await response.json()
+
+          set(state => {
+            state.users = users
+            state.isLoading = false
+          })
+        } catch (error) {
+          set(state => {
+            state.error = error instanceof Error ? error.message : "Unknown error"
+            state.isLoading = false
+          })
+        }
+      },
+
+      updateUser: async (id, data) => {
+        set(state => {
+          state.isLoading = true
+          state.error = null
+        })
+
+        try {
+          const response = await fetch(`/api/users/${id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data),
+          })
+
+          if (!response.ok) throw new Error("Failed to update user")
+
+          const updatedUser = await response.json()
+
+          set(state => {
+            const index = state.users.findIndex(u => u.id === id)
+            if (index !== -1) {
+              state.users[index] = updatedUser
+            }
+            if (state.currentUser?.id === id) {
+              state.currentUser = updatedUser
+            }
+            state.isLoading = false
+          })
+        } catch (error) {
+          set(state => {
+            state.error = error instanceof Error ? error.message : "Unknown error"
+            state.isLoading = false
+          })
+        }
+      },
+
+      setCurrentUser: user =>
+        set(state => {
+          state.currentUser = user
+        }),
+
+      clearError: () =>
+        set(state => {
+          state.error = null
+        }),
+    })),
+    { name: "user-store" },
+  ),
+)
+
+// ✅ Computed selectors
+export const useUserSelectors = () => {
+  const users = useUserStore(state => state.users)
+  const currentUser = useUserStore(state => state.currentUser)
+
+  return {
+    users,
+    currentUser,
+    adminUsers: users.filter(user => user.role === "admin"),
+    activeUsers: users.filter(user => user.isActive),
+    userCount: users.length,
+  }
+}
+
+// ✅ Store slicing dla dużych aplikacji
+interface AppState {
+  auth: AuthSlice
+  cart: CartSlice
+  ui: UISlice
+}
+
+const createAuthSlice: StateCreator<AppState, [], [], AuthSlice> = (set, get) => ({
+  user: null,
+  isAuthenticated: false,
+  login: async credentials => {
+    // Login logic
+  },
+  logout: () =>
+    set(state => {
+      state.auth.user = null
+      state.auth.isAuthenticated = false
+    }),
+})
+
+const createCartSlice: StateCreator<AppState, [], [], CartSlice> = (set, get) => ({
+  items: [],
+  addItem: item => {
+    // Add item logic
+  },
+})
+
+export const useAppStore = create<AppState>()(
+  devtools(
+    immer((...a) => ({
+      auth: createAuthSlice(...a),
+      cart: createCartSlice(...a),
+      ui: createUISlice(...a),
+    })),
+  ),
+)
+```
+
+### State Colocation - Trzymaj Stan Blisko Użycia
+
+```typescript
+// ✅ Trzymaj stan blisko miejsca użycia
+function UserProfile({ userId }: { userId: string }) {
+  const [isEditing, setIsEditing] = useState(false)
+  const [userData, setUserData] = useState<User | null>(null)
+
+  return (
+    <div>
+      {isEditing ? (
+        <EditUserForm
+          user={userData}
+          onSave={() => setIsEditing(false)}
+        />
+      ) : (
+        <UserDisplay
+          user={userData}
+          onEdit={() => setIsEditing(true)}
+        />
+      )}
+    </div>
+  )
+}
+
+// ❌ Nie podnoś stanu niepotrzebnie wysoko
+function App() {
+  // Ten stan jest za wysoko jeśli tylko UserProfile go potrzebuje
+  const [isEditingUser, setIsEditingUser] = useState(false)
+
+  return (
+    <div>
+      <Header />
+      <UserProfile isEditing={isEditingUser} setIsEditing={setIsEditingUser} />
+      <Footer />
+    </div>
+  )
+}
+```
+
+## 📊 Optymalizacja List
+
+### Wirtualizacja dla Dużych List
+
+```typescript
+import { FixedSizeList as List } from "react-window"
+
+// ✅ Wirtualizowana lista dla dużych zbiorów danych
+function VirtualizedProductList({ products }: { products: Product[] }) {
+  const Row = ({ index, style }: { index: number; style: React.CSSProperties }) => (
+    <div style={style}>
+      <ProductCard product={products[index]} />
+    </div>
+  )
+
+  return (
+    <List
+      height={600}
+      itemCount={products.length}
+      itemSize={120}
+      width="100%"
+    >
+      {Row}
+    </List>
+  )
+}
+
+// ✅ Intersection Observer dla infinite scroll
+function useInfiniteScroll(callback: () => void) {
+  const [isFetching, setIsFetching] = useState(false)
+  const targetRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !isFetching) {
+          setIsFetching(true)
+          callback()
+        }
+      },
+      { threshold: 1.0 }
+    )
+
+    if (targetRef.current) {
+      observer.observe(targetRef.current)
+    }
+
+    return () => observer.disconnect()
+  }, [callback, isFetching])
+
+  return { targetRef, isFetching, setIsFetching }
+}
+```
+
+## 🎯 Optymalizacja Event Handling
+
+### Debounced Search z useDeferredValue
+
+```typescript
+import { useDeferredValue, useMemo } from "react"
+
+// ✅ Debounced search z useDeferredValue (React 18+)
+function SearchableProductList({ products }: { products: Product[] }) {
+  const [searchTerm, setSearchTerm] = useState("")
+  const deferredSearchTerm = useDeferredValue(searchTerm)
+
+  const filteredProducts = useMemo(() => {
+    if (!deferredSearchTerm) return products
+    return products.filter(product =>
+      product.name.toLowerCase().includes(deferredSearchTerm.toLowerCase())
+    )
+  }, [products, deferredSearchTerm])
+
+  return (
+    <div>
+      <input
+        type="text"
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+        placeholder="Search products..."
+      />
+      <ProductGrid products={filteredProducts} />
+    </div>
+  )
+}
+
+// ✅ Custom debounce hook (alternatywa)
+function useDebounce<T>(value: T, delay: number): T {
+  const [debouncedValue, setDebouncedValue] = useState<T>(value)
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value)
+    }, delay)
+
+    return () => {
+      clearTimeout(handler)
+    }
+  }, [value, delay])
+
+  return debouncedValue
+}
+```
+
+## 🔄 Async Operations z Suspense
+
+### Suspense i Error Boundaries
+
+```typescript
+import { Suspense } from "react"
+import { ErrorBoundary } from "react-error-boundary"
+
+// ✅ Async komponent z Suspense
+function AsyncProductList() {
+  // To rzuciłoby promise które Suspense łapie
+  const products = use(fetchProducts()) // React 18+ use hook
+
+  return (
+    <div>
+      {products.map(product => (
+        <ProductCard key={product.id} product={product} />
+      ))}
+    </div>
+  )
+}
+
+// ✅ Właściwa obsługa błędów i ładowania
+export function ProductListPage() {
+  return (
+    <ErrorBoundary
+      fallback={<div>Something went wrong loading products.</div>}
+      onError={(error) => console.error("Product list error:", error)}
+    >
+      <Suspense fallback={<ProductListSkeleton />}>
+        <AsyncProductList />
+      </Suspense>
+    </ErrorBoundary>
+  )
+}
+
+// ✅ Loading skeleton
+function ProductListSkeleton() {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {Array.from({ length: 6 }).map((_, i) => (
+        <div key={i} className="animate-pulse">
+          <div className="bg-gray-300 h-48 rounded-md mb-4"></div>
+          <div className="bg-gray-300 h-4 rounded mb-2"></div>
+          <div className="bg-gray-300 h-4 rounded w-2/3"></div>
+        </div>
+      ))}
+    </div>
+  )
+}
+```
+
+## ❌ Częste Błędy Performance
+
+### Unikaj Tych Wzorców
+
+```typescript
+// ❌ Tworzenie obiektów/funkcji w render
+function BadComponent({ items }: { items: Item[] }) {
+  return (
+    <div>
+      {items.map(item => (
+        <ItemComponent
+          key={item.id}
+          item={item}
+          // ❌ Nowa funkcja przy każdym render
+          onClick={() => handleClick(item.id)}
+          // ❌ Nowy obiekt przy każdym render
+          style={{ color: item.isActive ? "blue" : "gray" }}
+        />
+      ))}
+    </div>
+  )
+}
+
+// ✅ Zoptymalizowana wersja
+function GoodComponent({ items }: { items: Item[] }) {
+  const handleClick = useCallback((id: string) => {
+    // Logika obsługi kliknięcia
+  }, [])
+
+  const getItemStyle = useCallback((isActive: boolean) => ({
+    color: isActive ? "blue" : "gray"
+  }), [])
+
+  return (
+    <div>
+      {items.map(item => (
+        <ItemComponent
+          key={item.id}
+          item={item}
+          onClick={handleClick}
+          style={getItemStyle(item.isActive)}
+        />
+      ))}
+    </div>
+  )
+}
+
+// ❌ Niepotrzebne re-rendery
+function BadParent() {
+  const [count, setCount] = useState(0)
+
+  return (
+    <div>
+      <button onClick={() => setCount(c => c + 1)}>Count: {count}</button>
+      {/* ❌ To będzie się re-renderować mimo że nie używa count */}
+      <ExpensiveChild data={someData} />
+    </div>
+  )
+}
+
+// ✅ Zmemoizowane dziecko
+const ExpensiveChild = memo(function ExpensiveChild({ data }: { data: any }) {
+  // Kosztowna logika renderowania
+  return <div>{/* Złożone UI */}</div>
+})
+```
+
+## 🎯 Monitoring Performance
+
+### React DevTools Profiler
+
+```typescript
+// ✅ Dodaj profilowanie w development
+if (process.env.NODE_ENV === "development") {
+  const { Profiler } = await import("react")
+
+  function onRenderCallback(
+    id: string,
+    phase: "mount" | "update",
+    actualDuration: number,
+    baseDuration: number,
+    startTime: number,
+    commitTime: number
+  ) {
+    console.log("Profiler:", { id, phase, actualDuration, baseDuration })
+  }
+
+  // Opakowuj komponenty które chcesz profilować
+  <Profiler id="ProductList" onRender={onRenderCallback}>
+    <ProductList />
+  </Profiler>
+}
+```
+
+## 📊 Poziomy Zaawansowania
+
+### 🟢 Początkujący
+
+- Używaj `memo` dla komponentów które często się re-renderują
+- Używaj `useMemo` dla kosztownych obliczeń
+- Używaj `useCallback` dla funkcji przekazywanych jako props
+- Unikaj tworzenia obiektów/funkcji w JSX
+- Używaj Zustand z podstawowymi actions dla globalnego stanu
+- Implementuj basic selectors dla performance
+
+### 🟡 Średnio Zaawansowany
+
+- Implementuj custom hooks dla złożonej logiki
+- Używaj Zustand z middleware (persist, devtools, immer)
+- Implementuj async actions w Zustand stores
+- Implementuj proper loading i error states w store
+- Używaj Suspense dla async komponentów
+- Optymalizuj listy z wirtualizacją
+- Twórz computed selectors dla derived state
+
+### 🔴 Zaawansowany
+
+- Implementuj zaawansowane wzorce optymalizacji
+- Używaj React DevTools Profiler do identyfikacji bottlenecków
+- Implementuj store slicing dla dużych aplikacji z Zustand
+- Twórz custom Zustand middleware
+- Optymalizuj bundle size z code splitting
+- Implementuj zaawansowane wzorce state management z normalizacją danych
+- Używaj Zustand z TypeScript advanced patterns
+
+## 📋 Best Practices Summary
+
+### DO ✅
+
+- Używaj `memo` dla kosztownych komponentów
+- Używaj `useMemo` dla kosztownych obliczeń
+- Używaj `useCallback` dla stabilnych referencji funkcji
+- Używaj Zustand dla globalnego state management
+- Implementuj selectors w Zustand dla performance
+- Używaj middleware (persist, devtools, immer) w Zustand
+- Implementuj proper loading i error states w stores
+- Używaj Suspense dla async komponentów
+- Trzymaj lokalny stan blisko miejsca użycia
+- Używaj custom hooks dla złożonej logiki
+- Implementuj wirtualizację dla dużych list
+
+### DON'T ❌
+
+- Nie twórz obiektów/funkcji w render
+- Nie nadużywaj memoizacji (najpierw zmierz)
+- Nie podnoś stanu niepotrzebnie do globalnego store
+- Nie ignoruj key props w listach
+- Nie używaj index jako key dla dynamicznych list
+- Nie zapominaj o obsłudze loading/error states
+- Nie twórz niepotrzebnych re-renderów
+- Nie używaj Zustand dla bardzo prostego lokalnego stanu
+
+## 🔍 Narzędzia i Pliki Referencyjne
+
+- React DevTools Profiler - do identyfikacji problemów performance
+- `zustand` - nowoczesny state management
+- `zustand/middleware/immer` - immutable updates
+- `zustand/middleware/persist` - localStorage persistence
+- `zustand/middleware/devtools` - Redux DevTools integration
+- `react-window` - do wirtualizacji list
+- `react-error-boundary` - do obsługi błędów
+- `features/*/components/` - przykłady zoptymalizowanych komponentów

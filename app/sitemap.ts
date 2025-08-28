@@ -18,4 +18,21 @@ export default async function sitemap() {
     { url: "https://progressgymacademy.pl/kup-karnet" },
     ...offers,
   ]
+
+  try {
+    const offers = await fetchOfferList()
+
+    const offerUrls: MetadataRoute.Sitemap = offers.map(offer => ({
+      url: `${baseUrl}/specjalizacje/${offer.specId}`,
+      lastModified: new Date(),
+      changeFrequency: "monthly",
+      priority: 0.8,
+    }))
+
+    return [...staticUrls, ...offerUrls]
+  } catch (error) {
+    console.error("Error generating sitemap:", error)
+
+    return staticUrls
+  }
 }
