@@ -1,14 +1,15 @@
 import SectionContact from "@/components/section-contact"
+import { GoogleAnalytics } from "@/features/analytics/components/google-analytics"
+import { PlausibleAnalytics } from "@/features/analytics/components/plausible-analytics"
 import CookieConsent from "@/features/consent-cookie/cookie-consent"
 import Footer from "@/features/layout/footer"
 import Navigation from "@/features/layout/navigation"
 import { fetchSlider } from "@/features/layout/slider/actions/slider-actions"
 import SliderSection from "@/features/layout/slider/components/slider"
-import { fetchJSONLD } from "@/features/seo/action/json-ld-action"
 import { fetchSEOMetadata } from "@/features/seo/action/seo-action"
+import { JsonLdScripts } from "@/features/seo/components/json-ld-scripts"
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
-import Script from "next/script"
 import "./globals.css"
 
 const inter = Inter({ subsets: ["latin"] })
@@ -23,55 +24,17 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  const [slider, jsonLd] = await Promise.all([fetchSlider(), fetchJSONLD()])
+  const slider = await fetchSlider()
 
   return (
     <html lang="pl">
       <head>
-        {/* Plausible Analytics z env variables */}
-        {process.env.ANALYTICS_DOMAIN && process.env.ANALYTICS_URL && (
-          <>
-            <Script
-              defer
-              data-domain={process.env.ANALYTICS_DOMAIN}
-              src={process.env.ANALYTICS_URL}
-              strategy="afterInteractive"
-            />
-            <Script id="plausible-init" strategy="afterInteractive">
-              {`window.plausible = window.plausible || function() { (window.plausible.q = window.plausible.q || []).push(arguments) }`}
-            </Script>
-          </>
-        )}
-
-        {/* Google Analytics z env variables */}
-        {process.env.GOOGLE_ANALYTICS_ID && (
-          <>
-            <Script
-              src={`https://www.googletagmanager.com/gtag/js?id=${process.env.GOOGLE_ANALYTICS_ID}`}
-              strategy="afterInteractive"
-            />
-            <Script id="google-analytics" strategy="afterInteractive">
-              {`
-                window.dataLayer = window.dataLayer || [];
-                function gtag(){dataLayer.push(arguments);}
-                gtag('js', new Date());
-                gtag('config', '${process.env.GOOGLE_ANALYTICS_ID}');
-              `}
-            </Script>
-          </>
-        )}
+        {/* Analytics Components */}
+        <PlausibleAnalytics />
+        <GoogleAnalytics />
 
         {/* JSON-LD from CMS */}
-        {jsonLd &&
-          jsonLd.map((node, idx) => (
-            <Script
-              key={`json-ld-${idx}`}
-              id={`json-ld-${idx}`}
-              type="application/ld+json"
-              strategy="beforeInteractive"
-              dangerouslySetInnerHTML={{ __html: JSON.stringify(node) }}
-            />
-          ))}
+        <JsonLdScripts />
       </head>
       <body className="flex min-h-screen flex-col">
         <Navigation />
