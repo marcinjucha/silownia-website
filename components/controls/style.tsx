@@ -40,3 +40,4 @@ export type FontStyleDTO = {
 }
 
 export type FontStyleProps = FontStyleDTO
+export type FontStyleResponse = FontStyleDTO

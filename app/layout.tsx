@@ -2,15 +2,14 @@ import SectionContact from "@/components/section-contact"
 import CookieConsent from "@/features/consent-cookie/cookie-consent"
 import Footer from "@/features/layout/footer"
 import Navigation from "@/features/layout/navigation"
-import { fetchSEOMetadata } from "@/features/seo/action/seo-action"
-import { fetchSEOMetadata } from "@/features/seo/action/seo-action"
+import { fetchSlider } from "@/features/layout/slider/actions/slider-actions"
+import SliderSection from "@/features/layout/slider/components/slider"
 import { fetchJSONLD } from "@/features/seo/action/json-ld-action"
+import { fetchSEOMetadata } from "@/features/seo/action/seo-action"
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import Script from "next/script"
 import "./globals.css"
-import SliderSection from "@/features/layout/slider/components/slider"
-import { fetchSlider } from "@/features/layout/slider/actions/slider-actions"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -24,7 +23,7 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  const slider = await fetchSlider()
+  const [slider, jsonLd] = await Promise.all([fetchSlider(), fetchJSONLD()])
 
   return (
     <html lang="pl">

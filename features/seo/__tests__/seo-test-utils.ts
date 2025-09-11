@@ -236,7 +236,7 @@ import {
   JsonLdOrganizationDTO,
   JsonLdPersonDTO,
   JsonLdProductDTO,
-  JsonLdRecipeDTO
+  JsonLdRecipeDTO,
 } from "@/features/seo/logic/json-ld-type"
 
 export const createMockJsonLdArticleDTO = (

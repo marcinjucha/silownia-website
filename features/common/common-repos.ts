@@ -80,6 +80,13 @@ export function makeImageUrl(url: string) {
   return `${baseURL}${url}`
 }
 
+export function makeAssetUrl(url: string) {
+  const baseURL =
+    url.includes("http://") || url.includes("https://") ? "" : process.env.CMS_BASE_URL || ""
+
+  return `${baseURL}${url}`
+}
+
 export function createAPIResponse(statusCode: number, message?: string) {
   const response = match(statusCode)
     .when(
