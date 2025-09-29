@@ -1,0 +1,196 @@
+---
+globs: features/**/__tests__/*.ts,features/**/__tests__/*.tsx
+description: Testing patterns and rules for features/**/__tests__/ files
+---
+
+# Testing Rules
+
+## 🧪 Testing Strategy
+
+### Required Test Files
+
+1. `[feature]-actions.test.ts` - Mock Use Cases, verify dependency injection
+2. `[feature]-use-case.test.ts` - Mock external dependencies, use REAL repositories
+3. `[feature]-test-utils.ts` - Feature-specific test utilities
+
+### Optional Test Files
+
+4. `[feature]-repo.test.ts` - ONLY for VERY complex repositories with complex mapping logic
+
+### Key Testing Principles
+
+- **Actions**: Mock Use Cases (test coordination)
+- **Use Cases**: Mock external dependencies (GraphQL, APIs), use REAL repository functions
+- **Repositories**: Usually NOT tested - only if VERY complex mapping logic
+
+## ✅ MANDATORY Testing Patterns
+
+### Actions Tests - Mock Use Cases
+
+```typescript
+// Mock the Use Case
+vi.mock("../logic/feature-use-case", () => ({
+  featureUseCase: vi.fn(),
+}))
+
+describe("Feature Actions", () => {
+  // NO beforeEach needed - automatic cleanup in vitest.setup.ts
+
+  it("should process valid form data successfully", async () => {
+    // Arrange
+    const mockResult = { isFailure: false, value: { id: "123" } }
+    vi.mocked(featureUseCase).mockResolvedValue(mockResult)
+
+    // Act & Assert
+    expect(featureUseCase).toHaveBeenCalledWith({
+      context: expect.objectContaining({ repository: expect.any(Function) }),
+      data: expect.objectContaining({ field: "value" }),
+    })
+    expect(redirect).toHaveBeenCalledWith("/success/123")
+  })
+})
+```
+
+### Use Cases Tests - Mock External Dependencies, Use REAL Repositories
+
+```typescript
+import { createMockFeatureGraphQLResponse } from "./feature-test-utils"
+
+describe("Feature Use Case", () => {
+  it("should process data successfully", async () => {
+    // Arrange - Mock external GraphQL
+    vi.mocked(client.mutate).mockResolvedValue(createMockFeatureGraphQLResponse())
+
+    const context = { repository: createRepository } // REAL repository
+
+    // Act
+    const result = await featureUseCase({ context, data })
+
+    // Assert
+    expect(result.isFailure).toBe(false)
+    expect(result.value).toEqual(expectedDTO)
+  })
+
+  it("should handle external API failures", async () => {
+    vi.mocked(client.mutate).mockRejectedValue(new Error("GraphQL failed"))
+    // Test error handling...
+  })
+})
+```
+
+## 🔧 Test Setup and Utilities
+
+### Global Setup (vitest.setup.ts)
+
+✅ **Already configured globally - NO need to mock again:**
+
+- **Next.js navigation** (`redirect`, `notFound`)
+- **GraphQL client** (`client.query`, `client.mutate`)
+- **GraphQL utilities** (`handleGraphQLMutation`, `handleGraphQLQuery`)
+- **Encryption utilities** (`encrypt`, `decrypt`, `md5`)
+- **Storage** (`localStorage`, `sessionStorage`)
+- **Browser APIs** (`fetch`, `matchMedia`, `ResizeObserver`)
+- **Automatic cleanup** (`vi.resetAllMocks()`)
+
+### Shared Test Utilities (`features/__tests__/test-utils.ts`)
+
+```typescript
+// Available utilities:
+import {
+  createApolloResponse, // For GraphQL response mocks
+  randomInt,
+  randomBool, // Random data generators
+  randomEmail, // Random email generator
+  createdAtDate, // Standard test date
+  createURL, // URL creation helper
+} from "@/features/__tests__/test-utils"
+```
+
+### Feature Test Utils Pattern
+
+**MANDATORY**: Create `[feature]-test-utils.ts` for each feature:
+
+```typescript
+// features/[feature]/__tests__/[feature]-test-utils.ts
+import { createApolloResponse } from "@/features/__tests__/test-utils"
+
+export const createMockFeatureDTO = (override?: Partial<FeatureDTO>) => ({
+  id: "test-id",
+  title: "Test Title",
+  ...override,
+})
+
+export const createMockFeatureGraphQLResponse = (data?: Partial<FeatureResponse>) =>
+  createApolloResponse({
+    features: [createMockFeatureResponse(data)],
+  })
+
+export const createMockEmptyFeatureGraphQLResponse = () => createApolloResponse({ features: [] })
+```
+
+## 🎯 Focus on Essential Test Cases
+
+**MANDATORY**: Write only **3-4 essential test cases** per function:
+
+1. **✅ Success Path** - Happy path with valid data
+2. **❌ External API Error** - Network/GraphQL failures
+3. **❌ Validation Error** - Invalid input data
+4. **❌ Missing Data** - Empty responses (if applicable)
+
+**DON'T** test every possible edge case - focus on business-critical scenarios.
+
+## ❌ Testing Anti-Patterns
+
+- Testing implementation details instead of behavior
+- Not mocking external dependencies
+- Testing multiple layers in one test
+- **Writing too many test cases** - stick to essentials
+- **Using `beforeEach` when not needed** - global cleanup handles this
+- **Duplicating global mocks** from vitest.setup.ts
+
+## 🎯 What to Test
+
+### Actions Tests
+
+- ✅ Dependency injection to Use Cases
+- ✅ Form data validation with Zod
+- ✅ Success redirects
+- ✅ Error handling and ClientResult returns
+
+### Use Cases Tests
+
+- ✅ Business logic orchestration
+- ✅ executePromise wrapper functionality
+- ✅ ClientResult conversion from ExecutionResult
+- ✅ External API error handling (GraphQL, REST)
+- ✅ Real repository function integration
+
+### Repository Tests (Optional - VERY Complex Only)
+
+- ✅ ONLY for repositories with complex data transformation
+- ✅ ONLY for multiple API call coordination
+- ❌ NOT for simple CRUD operations
+
+## 📋 Key Patterns to Follow
+
+1. **No `beforeEach`** - automatic cleanup in vitest.setup.ts
+2. **Feature-specific test utils** - `[feature]-test-utils.ts`
+3. **Use `createApolloResponse`** - for all GraphQL mocks
+4. **3-4 essential tests** - success, API error, validation error, missing data
+5. **Real repository functions** - in Use Case tests
+6. **Mock Use Cases** - in Actions tests
+
+## 🔍 Reference Files
+
+### Example Implementations
+
+- `features/checkout/__tests__/checkout-actions.test.ts` - Actions patterns
+- `features/checkout/__tests__/checkout-use-case.test.ts` - Use Cases patterns
+- `features/seo/__tests__/seo-use-case.test.ts` - Simplified tests
+- `features/checkout/__tests__/checkout-test-utils.ts` - Feature utils example
+- `features/seo/__tests__/seo-test-utils.ts` - Feature utils example
+
+### Shared Utilities
+
+- `features/__tests__/test-utils.ts` - Shared utilities (`createApolloResponse`, random generators)
+- `vitest.setup.ts` - Global mocks and cleanup

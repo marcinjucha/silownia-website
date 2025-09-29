@@ -1,0 +1,545 @@
+<!-- ---
+description:
+globs:
+alwaysApply: true
+--- -->
+
+# Dokumentacja Architektury Aplikacji
+
+## 🚀 TL;DR - Kluczowe Zasady
+
+### **🏗️ Architektura: Strict Feature-Based**
+
+```
+Component → Action → Use Case → Repository → External Service
+```
+
+**Każda warstwa ma JEDNĄ odpowiedzialność:**
+
+- **Component**: TYLKO UI + wywołania Server Actions
+- **Action**: TYLKO walidacja + dependency injection + koordynacja
+- **Use Case**: TYLKO business logic + executePromise wrapper
+- **Repository**: TYLKO API calls + Response→DTO mapping
+
+---
+
+### **✅ OBOWIĄZKOWE wzorce:**
+
+```typescript
+// Use Case - ZAWSZE executePromise + ClientResult
+export async function createOrderUseCase({ context, data }): Promise<ClientResult<OrderDTO>> {
+  const result = await executePromise(() => context.createOrder(data))
+
+  if (result.isFailure) return clientError("Order failed")
+
+  return clientValue(result.value)
+}
+
+// Action - ZAWSZE dependency injection
+export async function processOrderAction(formData: FormData) {
+  const result = await createOrderUseCase({
+    context: {
+      createOrder: createOrderRepository,
+    },
+    data: parsed.data,
+  })
+
+  if (result.isFailure) return result
+
+  redirect(`/success/${result.value.id}`)
+}
+
+// Repository - throw errors (caught by executePromise)
+export async function createOrderRepository(data: OrderDTO): Promise<OrderDTO> {
+  const result = await client.mutate({ mutation: CREATE_ORDER })
+  const mutationData = handleGraphQLMutation(result)
+
+  return mapResponseToDTO(mutationData)
+}
+```
+
+---
+
+### **❌ ZABRONIONE:**
+
+- Use Cases returning raw data (bez ClientResult)
+- Operations bez executePromise
+- Business logic w Actions/Components
+- Response types w `*-type.ts`
+- Direct repository calls (bez dependency injection)
+
+---
+
+### **📁 Struktura Feature:**
+
+```bash
+features/[feature]/
+├── actions/[feature]-actions.ts      # Server Actions + schemas
+├── components/[feature]-form.tsx     # UI components
+├── logic/[feature]-use-case.ts       # Business logic
+├── logic/[feature]-repo.ts           # API communication
+├── logic/[feature]-type.ts           # DTO types only
+└── __tests__/[feature]-*.test.ts     # Actions + Use Cases tests (repos tylko jeśli complex)
+```
+
+---
+
+### **🔥 Reference Implementation:**
+
+- **📁 `features/checkout/`** - complete example to copy
+- **📁 `lib/error-handling.ts`** - executePromise + ClientResult
+- **📁 `vitest.setup.ts`** - test mocks and utilities
+
+---
+
+## Przepływ Danych
+
+### Architektura Warstw
+
+```mermaid
+sequenceDiagram
+    participant V as View/Component
+    participant A as Action
+    participant UC as Use Case
+    participant R as Repository
+    participant ES as External Service
+
+    V->>+A: processPayment(data)
+    Note over A: Data transformation & validation
+
+    A->>+UC: payuPaymentUseCase(context, data)
+    Note over UC: Business logic orchestration
+
+    UC->>+R: createPaymentOrder()
+    R->>+ES: GraphQL mutation
+    ES-->>-R: Payment order created
+    R-->>-UC: PaymentOrderDTO
+
+    Note over UC: executePromise wrapping
+    UC->>+R: invokePayment()
+    R->>+ES: PayU API call
+    ES-->>-R: Payment response
+    R-->>-UC: CreatePayuOrderDTO
+
+    UC->>+R: updatePaymentOrder()
+    R->>+ES: Update mutation
+    ES-->>-R: Update confirmed
+    R-->>-UC: Success
+
+    UC-->>-A: ClientResult~T~
+    A->>-V: redirect() or error
+
+    Note over V,ES: All operations wrapped in executePromise for error handling
+```
+
+**Odpowiedzialności warstw:**
+
+1. **Component** - UI + Server Actions calls
+2. **Action** - Validation + dependency injection + coordination
+3. **Use Case** - Business logic + executePromise wrapper
+4. **Repository** - API calls + Response→DTO mapping
+
+---
+
+## Obsługa Błędów
+
+**Dwa typy rezultatów:**
+
+- `ExecutionResult<T, E>` - wewnętrznie w Use Cases
+- `ClientResult<T>` - komunikacja z Components
+
+```typescript
+// 1. ExecutionResult<T, E> - TYLKO wewnętrznie w Use Cases
+type ExecutionResult<T, E> =
+  | { success: true; isFailure: false; value: T }
+  | { success: false; isFailure: true; error: E }
+
+// 2. ClientResult<T> - TYLKO do komunikacji z Components
+type ClientResult<T> =
+  | { success: true; isFailure: false; value: T }
+  | { success: false; isFailure: true; error: string }
+```
+
+**Flow:** Repository throws → executePromise catches → Use Case converts to ClientResult → Action handles
+
+```typescript
+// ✅ Repository: throw exceptions (catch w executePromise)
+export async function createPaymentRepository(data: PaymentDTO): Promise<PaymentDTO> {
+  const result = await client.mutate({ mutation: CREATE_PAYMENT })
+
+  const mutationData = handleGraphQLMutation(result)
+
+  return mapResponseToDTO(mutationData)
+}
+
+// ✅ Use Case: executePromise + ClientResult
+export async function createPaymentUseCase(props): Promise<ClientResult<PaymentDTO>> {
+  const result = await executePromise(() => createPaymentRepository(props.data))
+
+  if (result.isFailure) {
+    return clientError("Payment creation failed")
+  }
+
+  return clientValue(result.value)
+}
+
+// ✅ Action: handle ClientResult
+export async function processPaymentAction(formData: FormData) {
+  const result = await createPaymentUseCase(props)
+
+  if (result.isFailure) {
+    return result
+  }
+
+  redirect(`/success/${result.value.id}`)
+}
+```
+
+**📁 Zobacz pełne przykłady:** `lib/error-handling.ts`
+
+---
+
+**DLACZEGO ta separacja:**
+
+- `ExecutionResult` zawiera detailed error objects (nie serializable przez Next.js)
+- `ClientResult` zawiera tylko error strings (serializable do Client Components)
+- Use Cases są "conversion layer" między tymi typami
+
+## Struktura Warstw
+
+### Diagram Architektury Warstw
+
+```mermaid
+classDiagram
+    class View {
+        +onSubmit()
+        +handleClick()
+        +render()
+    }
+
+    class Action {
+        +processPayment()
+        +validateData()
+        +dependencyInjection()
+        +useServer()
+    }
+
+    class UseCase {
+        +executePromise()
+        +clientError()
+        +clientValue()
+        +orchestrateOperations()
+    }
+
+    class Repository {
+        +createPaymentOrder()
+        +updatePaymentOrder()
+        +callExternalAPI()
+    }
+
+    class ExternalService {
+        +GraphQLAPI()
+        +PayUAPI()
+        +Database()
+    }
+
+    class ErrorHandling {
+        +ExecutionResult()
+        +ClientResult()
+        +executePromise()
+        +execute()
+    }
+
+    View --> Action : calls server actions
+    Action --> UseCase : injects dependencies
+    UseCase --> Repository : wrapped in executePromise
+    Repository --> ExternalService : HTTP calls
+    UseCase --> ErrorHandling : uses error handling
+    Action --> ErrorHandling : returns ClientResult
+```
+
+### 1. Actions Layer - Coordination Only
+
+**Zasady:** Server Actions + Zod validation + dependency injection + result handling
+
+```typescript
+"use server"
+export async function processAction(formData: FormData) {
+  const parsed = schema.safeParse(Object.fromEntries(formData))
+
+  const result = await useCase({
+    context: { repo: repository },
+    data: parsed.data,
+  })
+
+  if (result.isFailure) return result
+
+  redirect(`/success/${result.value.id}`)
+}
+```
+
+**📁 Zobacz:** `features/checkout/actions/checkout-actions.ts`
+
+---
+
+### 2. Components Layer - UI Only
+
+**Zasady:** React hooks + Server Actions calls + local Props types + UI state
+
+```typescript
+"use client"
+export function Form({ data }: FormProps) {
+  const [state, setState] = useState({
+    loading: false,
+    errors: {}
+  })
+
+  async function handleSubmit(formData: FormData) {
+    const result = await processAction(formData)
+    // Handle result...
+  }
+
+  return <form action={handleSubmit}>...</form>
+}
+```
+
+**📁 Zobacz:** `features/checkout/components/checkout-form.tsx`
+
+---
+
+### 3. Logic Layer - Business Rules
+
+**Trzy obowiązkowe pliki:**
+
+1. `[feature]-type.ts` - Export DTO types only
+2. `[feature]-repo.ts` - Repository functions + internal Response types
+3. `[feature]-use-case.ts` - Business logic functions
+
+---
+
+#### A. Types File - DTO Definitions
+
+**Zasady:** Export DTO types + enums + business domain types (nie Response ani Props)
+
+```typescript
+export type OrderDTO = {
+  id: string
+  total: number
+  status: OrderStatus
+}
+
+export type OrderStatus = "pending" | "completed" | "failed"
+```
+
+**📁 Zobacz:** `features/checkout/logic/checkout-type.ts`
+
+---
+
+#### B. Use Cases File - Business Logic
+
+**Zasady:** executePromise wrapper + ClientResult return + dependency injection + business rules
+
+```typescript
+export async function processUseCase({ context, data }): Promise<ClientResult<DTO>> {
+  const result = await executePromise(() => context.repository(data))
+
+  if (result.isFailure) return clientError("Operation failed")
+
+  // Business rules here...
+  return clientValue(result.value)
+}
+```
+
+**📁 Zobacz:** `features/checkout/logic/checkout-use-case.ts`
+
+---
+
+#### C. Repository File - External Communication
+
+**Zasady:** API calls + Response→DTO mapping + throw exceptions + internal Response types
+
+```typescript
+type CreateResponse = {
+  create: {
+    documentId: string
+    createdAt: string
+  }
+}
+
+export async function createRepository(data: DTO): Promise<DTO> {
+  const result = await client.mutate<CreateResponse>({ mutation: CREATE })
+  const mutationData = handleGraphQLMutation(result)
+
+  return {
+    id: mutationData.create.documentId,
+    ...data,
+  }
+}
+```
+
+**📁 Zobacz:** `features/checkout/logic/checkout-repo.ts`
+
+---
+
+### 4. Tests Layer - Verification
+
+**Dwa główne pliki:**
+
+1. `[feature]-actions.test.ts` - Mock Use Cases, verify dependency injection
+2. `[feature]-use-case.test.ts` - Mock repositories, verify business logic
+
+**Opcjonalnie:** 3. `[feature]-repo.test.ts` - TYLKO dla skomplikowanych repositories z complex mapping logic
+
+---
+
+#### Testing Strategy
+
+- **Actions:** Mock Use Cases → test coordination
+- **Use Cases:** Mock repositories → test business logic + executePromise
+- **Repositories:** Zwykle NIE testujemy - logika testowana w Use Cases. Wyjątek: complex data transformation
+
+**📁 Zobacz:** `features/checkout/__tests__/` + `vitest.setup.ts`
+
+---
+
+## Testowanie i Setup
+
+### Vitest Configuration
+
+**📁 `vitest.setup.ts`** - Global test setup zawiera:
+
+- Mock dla Next.js navigation (`redirect`, `notFound`)
+- Mock dla GraphQL client (`@apollo/client`)
+- Mock dla encryption utilities
+- Mock dla localStorage/sessionStorage
+- Mock dla fetch API i window objects
+- Automatyczne czyszczenie po testach (`cleanup`, `vi.resetAllMocks`)
+
+---
+
+### Core Libraries
+
+- **📁 `lib/error-handling.ts`** - executePromise + ClientResult types
+- **📁 `lib/graph-ql/client.ts`** - Apollo Client setup
+- **📁 `features/__tests__/test-utils.ts`** - Shared test utilities
+
+---
+
+## Implementacja
+
+### Quick Start
+
+```bash
+# 1. Skopiuj checkout jako template
+cp -r features/checkout features/your-feature
+
+# 2. Rename files i imports
+# 3. Follow exact patterns from checkout
+```
+
+---
+
+### Zasady Zero-Exceptions
+
+- **Każdy Use Case** returns `Promise<ClientResult<T>>`
+- **Każda external operation** w `executePromise()`
+- **Każdy Action** używa dependency injection
+- **Każdy Repository** throws exceptions (caught by executePromise)
+- **Każdy typ** ma designated miejsce (DTO→type.ts, Response→repo.ts, Props→component)
+
+**⚠️ CRITICAL:** Kopiuj dokładnie wzorce z `features/checkout/` - zero deviations allowed.
+
+---
+
+## Diagram Error Handling Flow
+
+```mermaid
+flowchart TD
+    A[Repository Function] --> B{External Call}
+    B -->|Success| C[Return Data]
+    B -->|Error| D[Throw Exception]
+
+    E[Use Case] --> F["executePromise(repositoryFn)"]
+    F --> G{ExecutionResult}
+    G -->|isFailure = false| H["clientValue(result.value)"]
+    G -->|isFailure = true| I["clientError(message)"]
+
+    J[Action] --> K{ClientResult}
+    K -->|isFailure = false| L[Continue/Redirect]
+    K -->|isFailure = true| M[Return Error to Client]
+
+    N[Client Component] --> O{Received Result}
+    O -->|Success| P[Update UI]
+    O -->|Error| Q[Show Error Message]
+
+    classDef repoStyle fill:#fff3e0,stroke:#f57c00,stroke-width:2px,color:#000
+    classDef executeStyle fill:#ffeb3b,stroke:#f57c00,stroke-width:2px,color:#000
+    classDef successStyle fill:#4caf50,stroke:#2e7d32,stroke-width:2px,color:#fff
+    classDef errorStyle fill:#f44336,stroke:#c62828,stroke-width:2px,color:#fff
+    classDef decisionStyle fill:#2196f3,stroke:#1565c0,stroke-width:2px,color:#fff
+    classDef clientStyle fill:#e1f5fe,stroke:#0277bd,stroke-width:2px,color:#000
+
+    class A,C,D repoStyle
+    class E,J,N clientStyle
+    class F executeStyle
+    class H,L,P successStyle
+    class I,M,Q errorStyle
+    class B,G,K,O decisionStyle
+```
+
+## Organizacja Typów
+
+```mermaid
+graph TD
+    A[Component Props] -->|używane tylko w| B[Komponenty]
+    C[DTO Types] -->|używane w wielu miejscach| D[Use Cases]
+    C -->|używane w wielu miejscach| E[Actions]
+    C -->|używane w wielu miejscach| F[Components]
+    G[Response Types] -->|używane tylko w| H[Repositories]
+
+    I[*-type.ts] -->|zawiera| C
+    J[*-repo.ts] -->|zawiera| G
+    K[components/*.tsx] -->|zawiera| A
+
+    classDef propsStyle fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#000
+    classDef dtoStyle fill:#e8f5e8,stroke:#388e3c,stroke-width:2px,color:#000
+    classDef responseStyle fill:#fff3e0,stroke:#f57c00,stroke-width:2px,color:#000
+    classDef fileStyle fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#000
+
+    class A,B propsStyle
+    class C,D,E,F dtoStyle
+    class G,H responseStyle
+    class I,J,K fileStyle
+```
+
+### Zasady Typów
+
+1. **DTO Types** → `*-type.ts` (export, używane wszędzie)
+2. **Response Types** → `*-repo.ts` (internal, tylko w repo)
+3. **Props Types** → components (local, tylko w komponencie)
+
+---
+
+```mermaid
+graph LR
+    A[FormData] -->|validate| B[Schema]
+    B -->|transform| C[DTO]
+    C -->|use case| D[Entity]
+    D -->|repository| E[External API]
+    E -->|response| F[DTO]
+    F -->|transform| G[ClientResult]
+
+    classDef formStyle fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#000
+    classDef schemaStyle fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#000
+    classDef dtoStyle fill:#e8f5e8,stroke:#388e3c,stroke-width:2px,color:#000
+    classDef entityStyle fill:#fff3e0,stroke:#f57c00,stroke-width:2px,color:#000
+    classDef apiStyle fill:#ffebee,stroke:#d32f2f,stroke-width:2px,color:#000
+    classDef resultStyle fill:#fce4ec,stroke:#c2185b,stroke-width:2px,color:#000
+
+    class A formStyle
+    class B schemaStyle
+    class C,F dtoStyle
+    class D entityStyle
+    class E apiStyle
+    class G resultStyle
+```

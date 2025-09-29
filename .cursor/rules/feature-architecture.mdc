@@ -1,0 +1,147 @@
+---
+globs: features/**/*.ts,features/**/*.tsx
+description: Feature-based architecture rules for all files in features folder
+---
+
+# Feature-Based Architecture Rules
+
+## 🏗️ Architektura Warstwowa
+
+**OBOWIĄZKOWY Przepływ:** Component → Action → Use Case → Repository → External Service
+
+### Odpowiedzialności Warstw
+
+- **Component**: TYLKO UI + wywołania Server Actions
+- **Action**: TYLKO walidacja + dependency injection + koordynacja
+- **Use Case**: TYLKO logika biznesowa + executePromise wrapper
+- **Repository**: TYLKO wywołania API + mapowanie Response→DTO
+
+## 📁 Struktura Plików
+
+```bash
+features/[feature]/
+├── actions/[feature]-actions.ts      # Server Actions + schematy Zod
+├── components/[feature]-form.tsx     # Komponenty UI
+├── logic/[feature]-use-case.ts       # Logika biznesowa
+├── logic/[feature]-repo.ts           # Komunikacja z API
+├── logic/[feature]-type.ts           # Typy DTO
+└── __tests__/[feature]-*.test.ts     # Testy Actions + Use Cases
+```
+
+## ✅ OBOWIĄZKOWE Wzorce
+
+### Use Cases - ZAWSZE executePromise + ClientResult
+
+```typescript
+export async function createOrderUseCase({ context, data }): Promise<ClientResult<OrderDTO>> {
+  const result = await executePromise(() => context.createOrder(data))
+
+  if (result.isFailure) return clientError("Order failed")
+
+  return clientValue(result.value)
+}
+```
+
+### Actions - ZAWSZE dependency injection
+
+```typescript
+"use server"
+export async function processOrderAction(formData: FormData) {
+  const result = await createOrderUseCase({
+    context: {
+      createOrder: createOrderRepository,
+    },
+    data: parsed.data,
+  })
+
+  if (result.isFailure) return result
+
+  redirect(`/success/${result.value.id}`)
+}
+```
+
+### Repositories - rzucają błędy (łapane przez executePromise)
+
+```typescript
+export async function createOrderRepository(data: OrderDTO): Promise<OrderDTO> {
+  const result = await client.mutate({ mutation: CREATE_ORDER })
+  const mutationData = handleGraphQLMutation(result)
+
+  return mapResponseToDTO(mutationData)
+}
+```
+
+## ❌ ZABRONIONE Praktyki
+
+- Use Cases zwracające surowe dane (bez ClientResult)
+- Operacje bez executePromise wrapper
+- Logika biznesowa w Actions/Components
+- Typy Response w `*-type.ts` files
+- Bezpośrednie wywołania repository (bez dependency injection)
+- Typy Props w `*-type.ts` files
+
+## 🎯 Organizacja Typów
+
+1. **Typy DTO** → `*-type.ts` (eksportowane, używane wszędzie)
+2. **Typy Response** → `*-repo.ts` (wewnętrzne, tylko w repository)
+3. **Typy Props** → komponenty (lokalne, tylko w komponencie)
+
+## 🧪 Strategia Testowania
+
+- **Actions**: Mockuj Use Cases → testuj koordynację
+- **Use Cases**: Mockuj repositories → testuj logikę biznesową + executePromise
+- **Repositories**: Zazwyczaj NIE testowane - logika testowana w Use Cases
+
+## 📚 Implementacja Referencyjna
+
+Kopiuj wzorce z: `features/checkout/` - zero odchyleń dozwolonych.
+
+Używaj narzędzi z:
+
+- `lib/error-handling.ts` - executePromise + ClientResult
+- `lib/graph-ql/graphql-utils.ts` - handleGraphQLMutation/Query
+- `vitest.setup.ts` - mocki testowe i narzędzia
+
+## 🎯 Kluczowe Zasady dla Początkujących
+
+### 1. Zawsze Używaj Dependency Injection
+
+```typescript
+// ✅ Poprawnie - wstrzykuj zależności
+const result = await useCase({
+  context: {
+    repository: repositoryFunction,
+  },
+  data: validatedData,
+})
+
+// ❌ Źle - bezpośrednie wywołanie
+const result = await repositoryFunction(data)
+```
+
+### 2. Zawsze Używaj executePromise w Use Cases
+
+```typescript
+// ✅ Poprawnie
+const result = await executePromise(() => context.repository(data))
+
+// ❌ Źle
+const result = await context.repository(data)
+```
+
+### 3. Zawsze Zwracaj ClientResult z Use Cases
+
+```typescript
+// ✅ Poprawnie
+return clientValue(processedData)
+
+// ❌ Źle
+return processedData
+```
+
+## 🔍 Pliki Referencyjne
+
+- `features/checkout/` - kompletny przykład implementacji
+- `features/seo/` - uproszczone wzorce
+- `lib/error-handling.ts` - narzędzia do obsługi błędów
+- `lib/graph-ql/` - narzędzia GraphQL

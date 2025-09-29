@@ -1,0 +1,368 @@
+---
+globs: features/**/logic/*-type.ts
+description: Type definitions and DTO patterns for features/*/logic/*-type.ts files
+---
+
+# Types Rules
+
+## 🎯 Types Layer - Tylko Definicje DTO
+
+Pliki typów są TYLKO do:
+
+- Typów DTO (Data Transfer Object)
+- Enumów domeny biznesowej
+- Aliasów typów ClientResult (dla wygody)
+
+**Sygnatury funkcji** są definiowane tam, gdzie są używane:
+
+- Typy funkcji Repository → w plikach `*-repo.ts`
+- Typy funkcji Use Case → w plikach `*-use-case.ts`
+
+## ✅ OBOWIĄZKOWE Wzorce Typów
+
+### Typy DTO
+
+```typescript
+export type OrderDTO = {
+  id: string
+  customerId: string
+  total: number
+  status: OrderStatus
+  items: OrderItemDTO[]
+  createdAt: string
+  updatedAt?: string
+}
+
+export type OrderItemDTO = {
+  id: string
+  productId: string
+  quantity: number
+  price: number
+}
+```
+
+### Enumy
+
+```typescript
+export type OrderStatus = "pending" | "processing" | "completed" | "cancelled" | "failed"
+
+export type PaymentMethod = "card" | "paypal" | "bank_transfer"
+```
+
+### Aliasy ClientResult (Opcjonalne)
+
+```typescript
+// Aliasy ClientResult dla wygody - OPCJONALNE
+export type OrderClientResult = ClientResult<OrderDTO>
+export type OrdersClientResult = ClientResult<OrderDTO[]>
+```
+
+### DTO Input/Output
+
+```typescript
+export type CreateOrderDTO = {
+  customerId: string
+  items: CreateOrderItemDTO[]
+  paymentMethod: PaymentMethod
+}
+
+export type CreateOrderItemDTO = {
+  productId: string
+  quantity: number
+}
+
+export type UpdateOrderDTO = {
+  status?: OrderStatus
+  items?: OrderItemDTO[]
+}
+
+export type OrderFiltersDTO = {
+  customerId?: string
+  status?: OrderStatus
+  dateFrom?: string
+  dateTo?: string
+}
+```
+
+## 🔧 Wymagane Importy
+
+```typescript
+import { ClientResult } from "@/lib/error-handling"
+```
+
+## ❌ ZABRONIONE w Plikach Typów
+
+- Typy Response (należą do repositories jako typy wewnętrzne)
+- Typy Props (należą do komponentów jako typy lokalne)
+- Typy specyficzne dla komponentów
+- Interfejsy odpowiedzi API
+- Szczegóły implementacyjne
+- Logika biznesowa lub funkcje
+
+## 📝 Konwencje Nazewnictwa
+
+### Typy DTO
+
+- Zawsze sufiks `DTO`: `OrderDTO`, `UserDTO`, `ProductDTO`
+- Używaj PascalCase: `CreateOrderDTO`, `UpdateUserDTO`
+- Bądź opisowy: `OrderItemDTO` nie `ItemDTO`
+
+### Aliasy ClientResult
+
+- Używaj entity + "ClientResult": `OrderClientResult`, `ProductClientResult`
+- Opcjonalne - tylko jeśli używane często w wielu plikach
+- Trzymaj proste i opisowe
+
+### Enumy
+
+- Używaj opisowych nazw: `OrderStatus` nie `Status`
+- Używaj literałów string dla lepszego debugowania
+- Trzymaj wartości lowercase z podkreślnikami: `"in_progress"`
+
+## 🎯 Wzorzec Organizacji
+
+```typescript
+// 1. Główne DTO encji
+export type EntityDTO = {
+  /* ... */
+}
+
+// 2. Powiązane/zagnieżdżone DTO
+export type EntityItemDTO = {
+  /* ... */
+}
+
+// 3. DTO Input dla operacji
+export type CreateEntityDTO = {
+  /* ... */
+}
+export type UpdateEntityDTO = {
+  /* ... */
+}
+
+// 4. DTO Filter/query
+export type EntityFiltersDTO = {
+  /* ... */
+}
+
+// 5. Enumy i unie
+export type EntityStatus = "active" | "inactive"
+
+// 6. Aliasy ClientResult (opcjonalne)
+export type EntityClientResult = ClientResult<EntityDTO>
+```
+
+## 🎯 Praktyczne Przykłady
+
+### Kompletne Typy Feature
+
+```typescript
+import { ClientResult } from "@/lib/error-handling"
+
+// Główne DTO
+export type ProductDTO = {
+  id: string
+  name: string
+  description: string
+  price: number
+  category: ProductCategory
+  imageUrl?: string
+  inStock: boolean
+  createdAt: string
+}
+
+// DTO Input
+export type CreateProductDTO = {
+  name: string
+  description: string
+  price: number
+  category: ProductCategory
+  imageUrl?: string
+}
+
+export type UpdateProductDTO = Partial<CreateProductDTO>
+
+// DTO Filter
+export type ProductFiltersDTO = {
+  category?: ProductCategory
+  priceMin?: number
+  priceMax?: number
+  inStock?: boolean
+}
+
+// Enumy
+export type ProductCategory = "electronics" | "clothing" | "books" | "home"
+
+// Aliasy ClientResult (opcjonalne)
+export type ProductClientResult = ClientResult<ProductDTO>
+export type ProductsClientResult = ClientResult<ProductDTO[]>
+```
+
+### Złożone DTO z Relacjami
+
+```typescript
+export type UserDTO = {
+  id: string
+  name: string
+  email: string
+  role: UserRole
+  profile: UserProfileDTO
+  preferences: UserPreferencesDTO
+  createdAt: string
+  updatedAt?: string
+}
+
+export type UserProfileDTO = {
+  avatar?: string
+  bio?: string
+  location?: string
+  website?: string
+}
+
+export type UserPreferencesDTO = {
+  theme: "light" | "dark"
+  notifications: boolean
+  language: "en" | "pl" | "de"
+}
+
+export type UserRole = "admin" | "user" | "moderator"
+
+export type CreateUserDTO = {
+  name: string
+  email: string
+  password: string
+  role?: UserRole
+}
+
+export type UpdateUserDTO = {
+  name?: string
+  email?: string
+  profile?: Partial<UserProfileDTO>
+  preferences?: Partial<UserPreferencesDTO>
+}
+```
+
+### DTO z Walidacją
+
+```typescript
+// Typy bazowe
+export type ContactDTO = {
+  id: string
+  name: string
+  email: string
+  message: string
+  status: ContactStatus
+  createdAt: string
+}
+
+export type ContactStatus = "new" | "in_progress" | "resolved" | "closed"
+
+// DTO dla formularza (bez ID i metadanych)
+export type CreateContactDTO = {
+  name: string
+  email: string
+  message: string
+}
+
+// DTO dla aktualizacji (tylko status)
+export type UpdateContactDTO = {
+  status: ContactStatus
+}
+
+// DTO dla filtrowania
+export type ContactFiltersDTO = {
+  status?: ContactStatus
+  dateFrom?: string
+  dateTo?: string
+}
+```
+
+## 📋 Odpowiedzialności Plików Typów
+
+1. **Definiuj** typy DTO dla domeny feature
+2. **Eksportuj** enumy biznesowe i unie
+3. **Twórz** aliasy typów ClientResult (opcjonalne)
+4. **Organizuj** typy logicznie w pliku
+
+**Sygnatury funkcji** są definiowane w ich odpowiednich plikach:
+
+- Typy Repository → `*-repo.ts`
+- Typy Use Case → `*-use-case.ts`
+
+## 🔍 Pliki Referencyjne
+
+- `features/checkout/logic/checkout-type.ts`
+- `features/contact/logic/contact-type.ts`
+
+## 💡 Wskazówki dla Początkujących
+
+### 1. Zawsze Używaj Sufiksu DTO
+
+```typescript
+// ✅ Poprawnie - jasne nazewnictwo
+export type ProductDTO = {
+  id: string
+  name: string
+}
+
+// ❌ Źle - niejasne nazewnictwo
+export type Product = {
+  id: string
+  name: string
+}
+```
+
+### 2. Używaj Opisowych Enumów
+
+```typescript
+// ✅ Poprawnie - opisowe wartości
+export type OrderStatus = "pending" | "processing" | "completed"
+
+// ❌ Źle - skrócone wartości
+export type OrderStatus = "P" | "PR" | "C"
+```
+
+### 3. Organizuj DTO Logicznie
+
+```typescript
+// ✅ Poprawnie - od głównych do pomocniczych
+export type OrderDTO = {
+  /* główne DTO */
+}
+export type OrderItemDTO = {
+  /* zagnieżdżone DTO */
+}
+export type CreateOrderDTO = {
+  /* input DTO */
+}
+export type OrderFiltersDTO = {
+  /* filter DTO */
+}
+
+// ❌ Źle - chaotyczna organizacja
+export type CreateOrderDTO = {
+  /* ... */
+}
+export type OrderDTO = {
+  /* ... */
+}
+export type OrderItemDTO = {
+  /* ... */
+}
+```
+
+### 4. Nie Eksportuj Typów Response
+
+```typescript
+// ✅ Poprawnie - tylko DTO w *-type.ts
+export type ProductDTO = {
+  id: string
+  name: string
+}
+
+// ❌ Źle - typ Response w *-type.ts
+export type ProductResponse = {
+  documentId: string
+  title: string
+}
+```

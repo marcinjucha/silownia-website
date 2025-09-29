@@ -1,0 +1,499 @@
+---
+globs: *.ts,*.tsx
+description: TypeScript patterns and best practices for type safety and maintainability
+---
+
+# TypeScript Best Practices
+
+## 🎯 Type Safety Patterns
+
+### Strict Type Definitions
+
+```typescript
+// ✅ Używaj strict types zamiast any
+interface User {
+  readonly id: string
+  name: string
+  email: string
+  role: "admin" | "user" | "moderator"
+  preferences: {
+    theme: "light" | "dark"
+    notifications: boolean
+  }
+  createdAt: Date
+  updatedAt?: Date
+}
+
+// ✅ Generic constraints
+interface Repository<T extends { id: string }> {
+  findById(id: string): Promise<T | null>
+  create(data: Omit<T, "id">): Promise<T>
+  update(id: string, data: Partial<T>): Promise<T>
+  delete(id: string): Promise<void>
+}
+
+// ✅ Branded types dla lepszej type safety
+type UserId = string & { readonly brand: unique symbol }
+type Email = string & { readonly brand: unique symbol }
+
+function createUserId(id: string): UserId {
+  return id as UserId
+}
+
+function createEmail(email: string): Email {
+  if (!email.includes("@")) {
+    throw new Error("Invalid email format")
+  }
+  return email as Email
+}
+```
+
+### Utility Types Usage
+
+```typescript
+// ✅ Używaj wbudowanych utility types
+interface CreateUserRequest {
+  name: string
+  email: string
+  password: string
+}
+
+interface UpdateUserRequest extends Partial<Pick<CreateUserRequest, "name" | "email">> {
+  id: string
+}
+
+// ✅ Custom utility types
+type NonNullable<T> = T extends null | undefined ? never : T
+type DeepReadonly<T> = {
+  readonly [P in keyof T]: T[P] extends object ? DeepReadonly<T[P]> : T[P]
+}
+
+// ✅ Conditional types
+type ApiResponse<T> = T extends string ? { message: T } : T extends object ? { data: T } : never
+
+// ✅ Template literal types
+type EventName = `on${Capitalize<string>}`
+type HttpMethod = "GET" | "POST" | "PUT" | "DELETE"
+type ApiEndpoint = `/${string}`
+```
+
+### Discriminated Unions
+
+```typescript
+// ✅ Discriminated unions dla zarządzania stanem
+type AsyncState<T, E = Error> =
+  | { status: "idle" }
+  | { status: "loading" }
+  | { status: "success"; data: T }
+  | { status: "error"; error: E }
+
+function handleAsyncState<T>(state: AsyncState<T>) {
+  switch (state.status) {
+    case "idle":
+      return <div>Click to load</div>
+    case "loading":
+      return <div>Loading...</div>
+    case "success":
+      return <div>Data: {JSON.stringify(state.data)}</div>
+    case "error":
+      return <div>Error: {state.error.message}</div>
+    default:
+      // TypeScript zapewnia exhaustive checking
+      const _exhaustive: never = state
+      return _exhaustive
+  }
+}
+
+// ✅ Discriminated unions dla API responses
+type ApiResult<T> =
+  | { success: true; data: T }
+  | { success: false; error: string; code?: number }
+
+async function fetchUser(id: string): Promise<ApiResult<User>> {
+  try {
+    const response = await fetch(`/api/users/${id}`)
+    if (!response.ok) {
+      return {
+        success: false,
+        error: "Failed to fetch user",
+        code: response.status,
+      }
+    }
+    const data = await response.json()
+    return { success: true, data }
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error",
+    }
+  }
+}
+```
+
+## 🔧 Advanced Type Patterns
+
+### Type Guards i Narrowing
+
+```typescript
+// ✅ Type guards dla runtime type checking
+function isString(value: unknown): value is string {
+  return typeof value === "string"
+}
+
+function isUser(value: unknown): value is User {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "id" in value &&
+    "name" in value &&
+    "email" in value
+  )
+}
+
+// ✅ Assertion functions
+function assertIsNumber(value: unknown): asserts value is number {
+  if (typeof value !== "number") {
+    throw new Error(`Expected number, got ${typeof value}`)
+  }
+}
+
+// ✅ Używanie type guards
+function processUserData(data: unknown) {
+  if (isUser(data)) {
+    // TypeScript wie że data to User tutaj
+    console.log(data.name, data.email)
+  }
+}
+
+// ✅ Discriminated union type guards
+function isSuccessResult<T>(result: ApiResult<T>): result is { success: true; data: T } {
+  return result.success === true
+}
+
+function handleApiResult<T>(result: ApiResult<T>) {
+  if (isSuccessResult(result)) {
+    // TypeScript wie że result.data istnieje
+    return result.data
+  } else {
+    // TypeScript wie że result.error istnieje
+    throw new Error(result.error)
+  }
+}
+```
+
+### Mapped Types i Key Remapping
+
+```typescript
+// ✅ Mapped types dla transformacji
+type Optional<T> = {
+  [K in keyof T]?: T[K]
+}
+
+type Nullable<T> = {
+  [K in keyof T]: T[K] | null
+}
+
+// ✅ Key remapping
+type Getters<T> = {
+  [K in keyof T as `get${Capitalize<string & K>}`]: () => T[K]
+}
+
+type Setters<T> = {
+  [K in keyof T as `set${Capitalize<string & K>}`]: (value: T[K]) => void
+}
+
+// ✅ Template literal key remapping
+type EventHandlers<T> = {
+  [K in keyof T as `on${Capitalize<string & K>}Change`]: (value: T[K]) => void
+}
+
+interface FormData {
+  name: string
+  email: string
+  age: number
+}
+
+// Rezultat:
+// {
+//   onNameChange: (value: string) => void
+//   onEmailChange: (value: string) => void
+//   onAgeChange: (value: number) => void
+// }
+type FormHandlers = EventHandlers<FormData>
+```
+
+## 🎨 React + TypeScript Patterns
+
+### Component Props z Generics
+
+```typescript
+// ✅ Generic component props
+interface ListProps<T> {
+  items: T[]
+  renderItem: (item: T, index: number) => React.ReactNode
+  keyExtractor: (item: T) => string
+  emptyMessage?: string
+}
+
+function List<T>({ items, renderItem, keyExtractor, emptyMessage }: ListProps<T>) {
+  if (items.length === 0) {
+    return <div>{emptyMessage || "No items"}</div>
+  }
+
+  return (
+    <div>
+      {items.map((item, index) => (
+        <div key={keyExtractor(item)}>
+          {renderItem(item, index)}
+        </div>
+      ))}
+    </div>
+  )
+}
+
+// ✅ Użycie z type inference
+<List
+  items={users}
+  renderItem={(user) => <UserCard user={user} />} // user jest inferred jako User
+  keyExtractor={(user) => user.id}
+/>
+```
+
+### Polymorphic Components
+
+```typescript
+// ✅ Wzorzec polymorphic component
+type AsProp<C extends React.ElementType> = {
+  as?: C
+}
+
+type PropsToOmit<C extends React.ElementType, P> = keyof (AsProp<C> & P)
+
+type PolymorphicComponentProp<C extends React.ElementType, Props = {}> = React.PropsWithChildren<
+  Props & AsProp<C>
+> &
+  Omit<React.ComponentPropsWithoutRef<C>, PropsToOmit<C, Props>>
+
+interface ButtonProps {
+  variant?: "primary" | "secondary"
+  size?: "sm" | "md" | "lg"
+}
+
+type ButtonComponent = <C extends React.ElementType = "button">(
+  props: PolymorphicComponentProp<C, ButtonProps>
+) => React.ReactElement | null
+
+const Button: ButtonComponent = ({ as, variant = "primary", size = "md", ...props }) => {
+  const Component = as || "button"
+
+  return (
+    <Component
+      className={`btn btn-${variant} btn-${size}`}
+      {...props}
+    />
+  )
+}
+
+// ✅ Użycie - TypeScript infers poprawne props na podstawie 'as' prop
+<Button>Default button</Button>
+<Button as="a" href="/link">Link button</Button>
+<Button as={Link} to="/route">Router link</Button>
+```
+
+### Hook Type Patterns
+
+```typescript
+// ✅ Custom hook z proper typing
+interface UseApiOptions<T> {
+  initialData?: T
+  enabled?: boolean
+  onSuccess?: (data: T) => void
+  onError?: (error: Error) => void
+}
+
+interface UseApiReturn<T> {
+  data: T | undefined
+  error: Error | null
+  isLoading: boolean
+  refetch: () => Promise<void>
+}
+
+function useApi<T>(url: string, options: UseApiOptions<T> = {}): UseApiReturn<T> {
+  const [data, setData] = useState<T | undefined>(options.initialData)
+  const [error, setError] = useState<Error | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
+
+  const fetchData = useCallback(async () => {
+    if (!options.enabled) return
+
+    setIsLoading(true)
+    setError(null)
+
+    try {
+      const response = await fetch(url)
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      const result = await response.json()
+      setData(result)
+      options.onSuccess?.(result)
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error("Unknown error")
+      setError(error)
+      options.onError?.(error)
+    } finally {
+      setIsLoading(false)
+    }
+  }, [url, options.enabled])
+
+  useEffect(() => {
+    fetchData()
+  }, [fetchData])
+
+  return { data, error, isLoading, refetch: fetchData }
+}
+
+// ✅ Użycie z type inference
+const { data, error, isLoading } = useApi<User[]>("/api/users", {
+  enabled: true,
+  onSuccess: users => {
+    // users jest typed jako User[]
+    console.log(`Loaded ${users.length} users`)
+  },
+})
+```
+
+## 🔍 Type Assertion i Walidacja
+
+### Safe Type Assertions
+
+```typescript
+// ✅ Runtime walidacja z type assertions
+import { z } from "zod"
+
+const UserSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  email: z.string().email(),
+  role: z.enum(["admin", "user", "moderator"]),
+})
+
+type User = z.infer<typeof UserSchema>
+
+function parseUser(data: unknown): User {
+  return UserSchema.parse(data) // Rzuca błąd jeśli invalid
+}
+
+function safeParseUser(
+  data: unknown,
+): { success: true; data: User } | { success: false; error: string } {
+  const result = UserSchema.safeParse(data)
+  if (result.success) {
+    return { success: true, data: result.data }
+  } else {
+    return { success: false, error: result.error.message }
+  }
+}
+
+// ✅ Type-safe environment variables
+const EnvSchema = z.object({
+  NODE_ENV: z.enum(["development", "production", "test"]),
+  DATABASE_URL: z.string().url(),
+  API_KEY: z.string().min(1),
+})
+
+export const env = EnvSchema.parse(process.env)
+```
+
+## 📋 TypeScript Configuration
+
+### Strict tsconfig.json
+
+```json
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["dom", "dom.iterable", "es6"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "incremental": true,
+    "plugins": [{ "name": "next" }],
+    "baseUrl": ".",
+    "paths": { "@/*": ["./*"] },
+    // Strict options
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "exactOptionalPropertyTypes": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": true
+  },
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "exclude": ["node_modules"]
+}
+```
+
+## 📊 Poziomy Zaawansowania
+
+### 🟢 Początkujący
+
+- Używaj strict TypeScript configuration
+- Preferuj `interface` nad `type` dla kształtów obiektów
+- Używaj discriminated unions dla zarządzania stanem
+- Implementuj podstawowe type guards
+- Unikaj `any` type (używaj `unknown`)
+
+### 🟡 Średnio Zaawansowany
+
+- Używaj utility types zamiast ręcznej manipulacji typów
+- Waliduj zewnętrzne dane z runtime type checking
+- Używaj branded types dla lepszej type safety
+- Implementuj exhaustive checking z `never`
+- Twórz generic components i hooks
+
+### 🔴 Zaawansowany
+
+- Implementuj zaawansowane mapped types i conditional types
+- Twórz polymorphic components
+- Używaj template literal types dla type-safe APIs
+- Implementuj zaawansowane wzorce type inference
+- Twórz własne utility types dla specyficznych potrzeb
+
+## 🎯 Best Practices Summary
+
+### DO ✅
+
+- Używaj strict TypeScript configuration
+- Preferuj `interface` nad `type` dla kształtów obiektów
+- Używaj discriminated unions dla zarządzania stanem
+- Implementuj proper type guards
+- Używaj utility types zamiast ręcznej manipulacji typów
+- Waliduj zewnętrzne dane z runtime type checking
+- Używaj branded types dla lepszej type safety
+- Implementuj exhaustive checking z `never`
+
+### DON'T ❌
+
+- Nie używaj `any` type (używaj `unknown`)
+- Nie ignoruj błędów TypeScript z `@ts-ignore`
+- Nie używaj type assertions bez runtime walidacji
+- Nie twórz zbyt złożonych definicji typów
+- Nie używaj `Function` type (używaj specific function signatures)
+- Nie mutuj readonly types
+- Nie używaj non-null assertion (`!`) bez dobrego powodu
+
+## 🔍 Narzędzia i Pliki Referencyjne
+
+- `tsconfig.json` - strict configuration
+- `zod` - runtime type validation
+- TypeScript ESLint - dodatkowe reguły type safety
+- `features/*/logic/*-type.ts` - przykłady DTO types
+- `lib/error-handling.ts` - type-safe error handling patterns

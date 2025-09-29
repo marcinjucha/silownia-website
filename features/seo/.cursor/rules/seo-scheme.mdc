@@ -1,0 +1,535 @@
+---
+alwaysApply: true
+---
+## 2. Kolekcja JSON-LD (json_lds)
+
+### Główne pola:
+
+- `type` - typ structured data (dynamiczone)
+
+**Uwaga**: Kolekcja JSON-LD nie ma pola `context` - context jest zarządzany na poziomie aplikacji podczas generowania JSON-LD.
+
+### Dostępne typy JSON-LD w dynamiczone:
+
+- json-ld.article
+- json-ld.product
+- json-ld.person
+- json-ld.organization
+- json-ld.event
+- json-ld.recipe
+
+#### Article (json-ld.article) - Artykuł
+
+- `type` - typ artykułu (enum: Article, BlogPosting, NewsArticle, domyślnie: Article)
+- `headline` - nagłówek (wymagane)
+- `articleAuthor` - autor (OrganizationData, wymagane)
+- `datePublished` - data publikacji (wymagane)
+- `dateModified` - data modyfikacji
+- `description` - opis
+- `image` - obraz główny (media)
+  - `url` - URL obrazu (automatycznie)
+  - `alternativeText` - tekst alternatywny (accessibility)
+- `publisher` - wydawcy (Publisher, powtarzalne)
+- `wordCount` - liczba słów (min: 0)
+
+_Komponenty ArticleAuthor i Publisher są opisane w sekcji "Komponenty pomocnicze"_
+
+#### Product (json-ld.product) - Produkt
+
+- `type` - typ (wymagane, domyślnie: "Product")
+- `name` - nazwa (wymagane)
+- `description` - opis
+- `brand` - marka (Brand)
+- `sku` - SKU
+- `offers` - oferty (Offer, opcjonalne, min: 1)
+- `aggregateRating` - ocena (AggregateRating)
+- `image` - obraz (media)
+  - `url` - URL obrazu (automatycznie)
+  - `alternativeText` - tekst alternatywny (accessibility)
+
+**Brand:**
+
+- `type` - typ (wymagane, domyślnie: "Brand")
+- `name` - nazwa marki (wymagane)
+
+**Offer:**
+
+- `type` - typ (wymagane, domyślnie: "Offer")
+- `price` - cena (wymagane)
+- `priceCurrency` - waluta (wymagane, domyślnie: "PLN")
+- `availability` - dostępność (walidowany URL)
+
+**AggregateRating:**
+
+- `type` - typ (wymagane, domyślnie: "AggregateRating")
+- `ratingValue` - wartość oceny (wymagane)
+- `reviewCount` - liczba recenzji (wymagane)
+- `bestRating` - najwyższa ocena
+- `worstRating` - najniższa ocena
+
+#### Person (json-ld.person) - Osoba
+
+- `type` - typ (wymagane, domyślnie: "Person")
+- `name` - imię i nazwisko (wymagane)
+- `jobTitle` - stanowisko
+- `worksFor` - miejsce pracy (OrganizationData)
+- `url` - strona osoby (opcjonalne, walidowany URL, domyślnie: "url")
+- `sameAs` - profile społecznościowe (URLValue, powtarzalne)
+
+#### Organization (json-ld.organization) - Organizacja
+
+- `type` - typ (wymagane, domyślnie: "Organization")
+- `name` - nazwa (wymagane)
+- `url` - strona organizacji (opcjonalne, walidowany URL)
+- `logo` - logo (media, obrazy)
+  - `url` - URL logo (automatycznie)
+  - `alternativeText` - tekst alternatywny (accessibility)
+- `contactPoint` - punkt kontaktowy (ContactPoint)
+- `postalAddress` - adres (PostalAddress)
+- `sameAs` - profile społecznościowe (URLValue, powtarzalne)
+
+**ContactPoint:**
+
+- `type` - typ (wymagane, domyślnie: "ContactPoint")
+- `telephone` - telefon (wymagane)
+
+**PostalAddress:**
+
+- `type` - typ (wymagane, domyślnie: "PostalAddress")
+- `streetAddress` - ulica (wymagane)
+- `addressLocality` - miejscowość
+- `postalCode` - kod pocztowy
+- `addressCountry` - kraj
+
+#### Event (json-ld.event) - Wydarzenie
+
+- `type` - typ (wymagane, domyślnie: "Event")
+- `name` - nazwa (wymagane)
+- `description` - opis
+- `startDate` - data rozpoczęcia (wymagane)
+- `endDate` - data zakończenia
+- `location` - lokalizacja (Location, wymagane)
+- `organizer` - organizator (EventOrganizer)
+- `offers` - oferty (Offer, powtarzalne)
+
+**Location:**
+
+- `type` - typ (wymagane, domyślnie: "Place")
+- `name` - nazwa miejsca (wymagane)
+- `address` - adres (PostalAddress)
+- `geo` - współrzędne geograficzne (GeoCoordinates)
+
+**EventOrganizer:**
+
+- `type` - typ (wymagane, domyślnie: "Organization")
+- `name` - nazwa organizatora (wymagane)
+
+#### Recipe (json-ld.recipe) - Przepis
+
+- `type` - typ (wymagane, domyślnie: "Recipe")
+- `name` - nazwa przepisu (wymagane)
+- `description` - opis
+- `imageURL` - zdjęcie (walidowany URL)
+- `author` - autor (PersonData)
+- `recipeIngredient` - składniki (TextArray, wymagane, powtarzalne)
+- `recipeInstructions` - instrukcje (HowToStep, powtarzalne)
+- `keywords` - słowa kluczowe (TextArray, powtarzalne)
+- `aggregateRating` - ocena (AggregateRating)
+
+**HowToStep:**
+
+- `type` - typ (wymagane, domyślnie: "HowToStep")
+- `name` - nazwa kroku (wymagane)
+- `text` - opis kroku (wymagane, domyślnie: "text")
+
+---
+
+## 3. Komponenty pomocnicze
+
+### Utils (utils)
+
+#### TextArray (utils.text-array)
+
+- `text` - tekst (wymagane, min. 1 znak)
+
+#### URLValue (utils.url-value)
+
+- `url` - URL (wymagane, walidowany)
+
+#### EmailValue (utils.email-value)
+
+- `email` - email (wymagane, walidowany)
+
+### JSON-LD pomocnicze komponenty
+
+#### OrganizationData (json-ld.organization-data)
+
+- `type` - typ (wymagane, domyślnie: "Person/Organization")
+- `name` - nazwa (wymagane)
+- `url` - logo/zdjęcie (media, obrazy)
+- `sameAs` - profile społecznościowe (URLValue, powtarzalne)
+
+#### PersonData (json-ld.person-data)
+
+- `type` - typ (wymagane, domyślnie: "Person")
+- `name` - imię i nazwisko (wymagane)
+- `url` - strona osoby (walidowany URL)
+- `imageURL` - zdjęcie (walidowany URL)
+- `email` - email (walidowany email)
+- `telephone` - telefon
+- `address` - adres (PostalAddress)
+
+#### Publisher (json-ld.publisher)
+
+- `type` - typ (wymagane, domyślnie: "Organization")
+- `name` - nazwa (wymagane)
+- `url` - URL organizacji (walidowany URL)
+- `logo` - logo (media, obrazy i pliki)
+  - `url` - URL logo (automatycznie)
+  - `alternativeText` - tekst alternatywny (accessibility)
+
+#### GeoCoordinates (json-ld.geo-coordinates)
+
+- `type` - typ (wymagane, domyślnie: "GeoCoordinates")
+- `latitude` - szerokość geograficzna (wymagane, decimal)
+- `longitude` - długość geograficzna (wymagane, decimal)
+
+---
+
+## 4. GraphQL Query z rozwiązaniem konfliktów typów
+
+```graphql
+fragment JsonLdOfferFragment on ComponentJsonLdOffer {
+  type
+  price
+  priceCurrency
+  availability
+}
+
+fragment JsonLdBrandFragment on ComponentJsonLdBrand {
+  type
+  name
+}
+
+fragment JsonLdAggregateRatingFragment on ComponentJsonLdAggregateRating {
+  type
+  ratingValue
+  reviewCount
+  bestRating
+  worstRating
+}
+
+fragment JsonLdOrganizationDataFragment on ComponentJsonLdOrganizationData {
+  type
+  name
+  url {
+    url
+    alternativeText
+  }
+  sameAs {
+    url
+  }
+}
+
+fragment JsonLdPublisherFragment on ComponentJsonLdPublisher {
+  type
+  name
+  url
+  logo {
+    url
+    alternativeText
+  }
+}
+
+fragment JsonLdPersonDataFragment on ComponentJsonLdPersonData {
+  type
+  name
+  url
+  imageURL
+  email
+  telephone
+  address {
+    ...JsonLdPostalAddressFragment
+  }
+}
+
+fragment JsonLdPostalAddressFragment on ComponentJsonLdPostalAddress {
+  type
+  streetAddress
+  addressLocality
+  postalCode
+  addressCountry
+}
+
+fragment JsonLdContactPointFragment on ComponentJsonLdContactPoint {
+  type
+  telephone
+}
+
+fragment JsonLdHowToStepFragment on ComponentJsonLdHowToStep {
+  type
+  name
+  text
+}
+
+fragment JsonLdLocationFragment on ComponentJsonLdLocation {
+  type
+  name
+  address {
+    ...JsonLdPostalAddressFragment
+  }
+  geo {
+    ...JsonLdGeoCoordinatesFragment
+  }
+}
+
+fragment JsonLdGeoCoordinatesFragment on ComponentJsonLdGeoCoordinates {
+  type
+  latitude
+  longitude
+}
+
+fragment JsonLdEventOrganizerFragment on ComponentJsonLdEventOrganizer {
+  type
+  name
+}
+
+query JsonLds {
+  jsonLds {
+    type {
+      ... on ComponentJsonLdArticle {
+        articleType: type # ALIAS - enum type
+        headline
+        articleAuthor {
+          ...JsonLdOrganizationDataFragment
+        }
+        datePublished
+        dateModified
+        description
+        image {
+          url
+          alternativeText
+        }
+        publisher {
+          ...JsonLdPublisherFragment
+        }
+        wordCount
+      }
+
+      ... on ComponentJsonLdProduct {
+        productType: type # ALIAS - string type
+        name
+        description
+        brand {
+          ...JsonLdBrandFragment
+        }
+        sku
+        offers {
+          ...JsonLdOfferFragment
+        }
+        aggregateRating {
+          ...JsonLdAggregateRatingFragment
+        }
+        image {
+          url
+          alternativeText
+        }
+      }
+
+      ... on ComponentJsonLdPerson {
+        personType: type # ALIAS - string type
+        name
+        jobTitle
+        worksFor {
+          ...JsonLdOrganizationDataFragment
+        }
+        personUrl: url # ALIAS - optional url
+        sameAs {
+          url
+        }
+      }
+
+      ... on ComponentJsonLdOrganization {
+        organizationType: type # ALIAS - string type
+        name
+        organizationUrl: url # ALIAS - optional url
+        logo {
+          url
+          alternativeText
+        }
+        contactPoint {
+          ...JsonLdContactPointFragment
+        }
+        postalAddress {
+          ...JsonLdPostalAddressFragment
+        }
+        sameAs {
+          url
+        }
+      }
+
+      ... on ComponentJsonLdEvent {
+        eventType: type # ALIAS - string type
+        name
+        description
+        startDate
+        endDate
+        location {
+          ...JsonLdLocationFragment
+        }
+        organizer {
+          ...JsonLdEventOrganizerFragment
+        }
+        offers {
+          ...JsonLdOfferFragment
+        }
+      }
+
+      ... on ComponentJsonLdRecipe {
+        recipeType: type # ALIAS - string type
+        name
+        description
+        imageURL
+        author {
+          ...JsonLdPersonDataFragment
+        }
+        recipeIngredient {
+          text
+        }
+        recipeInstructions {
+          ...JsonLdHowToStepFragment
+        }
+        keywords {
+          text
+        }
+        aggregateRating {
+          ...JsonLdAggregateRatingFragment
+        }
+      }
+    }
+  }
+}
+```
+
+### **Rozwiązanie konfliktów GraphQL:**
+
+#### **Type field conflicts:**
+
+- `articleType` - Article enum (Article|BlogPosting|NewsArticle)
+- `productType` - Product string ("Product")
+- `personType` - Person string ("Person")
+- `organizationType` - Organization string ("Organization")
+- `eventType` - Event string ("Event")
+- `recipeType` - Recipe string ("Recipe")
+
+#### **URL field conflicts:**
+
+- `personUrl` - Person optional string
+- `organizationUrl` - Organization optional string
+
+---
+
+## 5. Konfiguracja i możliwości wyboru
+
+### SEO - Kolekcja główna:
+
+- **Wymagane**: title, description, keywords
+- **Opcjonalne**: wszystkie pozostałe pola i komponenty
+- **Powtarzalne**: authors, keywords
+- **Unikalne**: robots, openGraph, twitter, alternates, verification
+- **Draft & Publish**: włączone
+
+### JSON-LD - Kolekcja główna:
+
+- **Wymagane**: brak (tylko dynamiczone type)
+- **Dynamiczone**: type (możliwość wyboru jednego lub więcej typów)
+- **Dostępne typy**: Article, Product, Person, Organization, Event, Recipe
+- **Komponenty pomocnicze**: OrganizationData, PersonData, Publisher, GeoCoordinates
+- **Context**: zarządzany na poziomie aplikacji (brak pola context w komponentach)
+- **Draft & Publish**: włączone
+
+### Walidacja:
+
+- **URLs**: automatyczna walidacja format HTTP/HTTPS
+- **Emails**: walidacja formatu email
+- **Języki**: kody ISO (np. "pl", "en-US")
+- **Długość tekstów**: automatyczne ograniczenia (title: 60, description: 50-160)
+
+### Media:
+
+- **Obrazy**: automatyczne generowanie wariantów (thumbnail, small, medium)
+- **Formaty**: obsługa PNG, JPG, WebP
+- **Metadata**: automatyczne wyodrębnianie wymiarów, mime-type, alternative text
+
+---
+
+## 6. Najważniejsze uwagi implementacyjne
+
+1. **Wymagane pola** - zawsze sprawdzaj obecność przed zapisem
+2. **Walidacja URL** - używaj regex pattern z schema
+3. **Długość tekstów** - respektuj limity znaków dla SEO
+4. **JSON-LD context** - context ("https://schema.org") musi być dodawany przez aplikację podczas generowania JSON-LD
+5. **Media handling** - obsługuj multiple formats dla różnych platform
+6. **Lokalizacja** - używaj poprawnych kodów języków
+7. **Social Media** - każda platforma ma swoje wymagania (OG, Twitter)
+8. **GraphQL aliasy** - używaj aliasów dla rozwiązania konfliktów typów
+
+## ✅ **WSZYSTKIE BŁĘDY POPRAWIONE + GRAPHQL**
+
+### **Wprowadzone zmiany:**
+
+1. **Article.type** ✅ - Zmieniono na enumeration z opcjami: Article, BlogPosting, NewsArticle
+2. **Product.offers** ✅ - Pozostawiono opcjonalne z min: 1
+3. **Organization.logo** ✅ - Zmieniono na media type
+4. **Organization.url** ✅ - Zmieniono na opcjonalne (rozwiązanie konfliktów GraphQL)
+5. **Organization** ✅ - Usunięto nieprawidłowe komponenty (event, person, recipe)
+6. **Location** ✅ - Dodano pola address i geo dla Schema.org Place
+7. **OpenGraph.type** ✅ - Zawiera opcje: website, article, product
+8. **GeoCoordinates** ✅ - Utworzono nowy komponent dla współrzędnych
+9. **GraphQL conflicts** ✅ - Rozwiązano przez aliasy typów i URL
+
+### **Właściwości obrazów - WYMAGANE MINIMUM**
+
+```typescript
+// OpenGraph images (wymagane)
+images { url }
+
+// OpenGraph videos (wymagane)
+videos { url, width, height }
+
+// OpenGraph audio (wymagane)
+audio { url }
+
+// JSON-LD images (wymagane minimum)
+image { url, alternativeText }
+```
+
+---
+
+Schemat jest teraz w 100% zgodny z Schema.org i standards web. GraphQL query rozwiązuje wszystkie konflikty typów przez aliasy. Mapowanie 1:1 będzie generować prawidłowe JSON-LD dla wszystkich typów structured data.
+
+---
+
+## 7. API Endpoints
+
+### SEO API:
+
+- **GET** `/api/seos` - pobranie wszystkich rekordów SEO
+- **GET** `/api/seos/:id` - pobranie pojedynczego rekordu SEO
+- **POST** `/api/seos` - utworzenie nowego rekordu SEO
+- **PUT** `/api/seos/:id` - aktualizacja rekordu SEO
+- **DELETE** `/api/seos/:id` - usunięcie rekordu SEO
+
+### JSON-LD API:
+
+- **GET** `/api/json-lds` - pobranie wszystkich rekordów JSON-LD
+- **GET** `/api/json-lds/:id` - pobranie pojedynczego rekordu JSON-LD
+- **POST** `/api/json-lds` - utworzenie nowego rekordu JSON-LD
+- **PUT** `/api/json-lds/:id` - aktualizacja rekordu JSON-LD
+- **DELETE** `/api/json-lds/:id` - usunięcie rekordu JSON-LD
+
+**Uwagi**:
+
+- Wszystkie endpointy obsługują standardowe parametry Strapi (populate, filters, sort, pagination)
+- Draft & Publish jest włączone dla obu kolekcji
+- Dostępne są standardowe Strapi kontrolery, serwisy i routy
