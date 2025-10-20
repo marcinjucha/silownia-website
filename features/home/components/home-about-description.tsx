@@ -1,5 +1,6 @@
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
+import Link from "next/link"
 
 export default function HomeAboutDescription() {
   return (
@@ -15,18 +16,21 @@ export default function HomeAboutDescription() {
       </div>
 
       <div className="flex h-auto w-full flex-col items-center justify-center p-5 text-center md:w-1/2">
+        <p className="text-primary text-xl font-bold">Więcej niż siłownia</p>
         <p className="text-lg leading-relaxed">
-          Lorem ipsum dolor sit amet, consectetur adipisicing elit. Ut vero aut provident error,
-          earum harum numquam labore accusamus officiis ex! Ab architecto necessitatibus id illo
-          obcaecati alias reprehenderit quod, repellendus aut possimus repudiandae magnam eum nisi
-          rerum tempora similique aperiam soluta aliquam eos unde consequuntur laudantium, quasi
-          nesciunt
+          Progress Gym to nie tylko miejsce do ćwiczeń – to przestrzeń, w której możesz zadbać o
+          zdrowie i regenerację. Do dyspozycji są przestronne szatnie, toalety przystosowane dla
+          osób z niepełnosprawnościami, a także nowoczesna kawiarnia, gdzie można napić się świeżo
+          parzonej kawy, świeżo wyciskanych soków i spróbować fit przekąsek, sałatek czy kanapek.
+          Jeśli szukasz miejsca, które łączy najwyższej jakości sprzęt, profesjonalne warunki do
+          treningu i świetną atmosferę, Progress Gym to najlepszy wybór. Dołącz do nas i trenuj na
+          własnych zasadach!
         </p>
-        <p>
-          już dzisiaj. Dołącz do nas i ciesz się wszystkimi korzyściami, które daje Ci nasz klub!
-        </p>
+
         <Button className="my-2 font-extrabold" variant="outline">
-          Kup Karnet
+          <Link href="https://progressgymelitead-wroclaw.cms.efitness.com.pl/kalendarz-zajec?day=2025-06-03">
+            Kup Karnet
+          </Link>
         </Button>
       </div>
     </section>

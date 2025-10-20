@@ -11,8 +11,8 @@ export default async function Home() {
         <HomeAboutDescription />
       </TitleDescriptionSection>
       <TitleDescriptionSection
-        title="Zobacz naszą ofertę"
-        description="Lorem ipsum dolor sit amet, consectetur adipisicing elit. Deserunt quis nemo placeat architecto earum magni esse harum repellat nostrum cum, iure error quos hic provident. Neque eaque asperiores sequi fugit?"
+        title="Progress Gym – Nowy Wymiar Treningu we Wrocławiu"
+        description="Progress Gym to nowoczesny obiekt sportowy, który powstał z myślą o osobach szukających miejsca do kompleksowego i profesjonalnego treningu. Położony w północnej części Wrocławia, tuż przy autostradowej obwodnicy, zapewnia wygodny dojazd oraz duży, bezpłatny parking. To przestrzeń dla pasjonatów sportów walki, akrobatyki powietrznej, fitnessu, pole dance, crossfitu i siłowni – wszystko w jednym miejscu, na imponującej powierzchni 2500 m²."
       >
         <HomeOfferCardList />
       </TitleDescriptionSection>

@@ -206,7 +206,7 @@ export default function SliderSection({ title, items }: Props) {
 
   return (
     <section className="relative w-full overflow-hidden bg-white py-10">
-      <div className="mb-6 text-center">
+      <div className="text-background mb-6 text-center">
         <TextControl {...mapToTextProps(title)} />
       </div>
 
@@ -222,9 +222,12 @@ export default function SliderSection({ title, items }: Props) {
               href={item.link}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex h-20 min-w-[150px] items-center justify-center transition hover:opacity-80"
+              className="flex h-20 min-w-[150px] shrink-0 items-center justify-center transition hover:opacity-80"
             >
-              <ImageControl {...mapToImageProps(item.image)} />
+              {/* wrapper o stałej wysokości */}
+              <div className="slider-logo h-full">
+                <ImageControl {...mapToImageProps(item.image)} />
+              </div>
             </a>
           ))}
         </div>

@@ -2,48 +2,52 @@ import { Facebook, Twitter, Instagram } from "lucide-react"
 const contactInformation = [
   {
     title: "Recepcja",
-    phone: "+48 444 555 666",
-    href: "tel:+48444555666",
+    phone: "+48 792 378 000",
+    href: "tel:+48792378000",
   },
-  {
-    title: "Meneger siłowni",
-    phone: "+48 333 444 999",
-    href: "tel:+48333444999",
-  },
-  {
-    title: "Strefa spa",
-    phone: "+48 222 111 777",
-    href: "tel:+48222111777",
-  },
+  // {
+  //   title: "Meneger siłowni",
+  //   phone: "+48 333 444 999",
+  //   href: "tel:+48333444999",
+  // },
+  // {
+  //   title: "Strefa spa",
+  //   phone: "+48 222 111 777",
+  //   href: "tel:+48222111777",
+  // },
 ]
 
 const socialMedia = [
   {
-    href: "https://facebook.com",
+    href: "https://www.facebook.com/p/Progress-Gym-Wroc%C5%82aw-61575134423295/",
     icon: <Facebook size={24} color="currentColor" />,
   },
+  // {
+  //   href: "https://twitter.com",
+  //   icon: <Twitter size={24} color="currentColor" />,
+  // },
   {
-    href: "https://twitter.com",
-    icon: <Twitter size={24} color="currentColor" />,
-  },
-  {
-    href: "https://instagram.com",
+    href: "https://www.instagram.com/progress_gym_wroclaw/",
     icon: <Instagram size={24} color="currentColor" />,
   },
 ]
 
 const businessPartners = [
   {
-    name: "Fundacja Sportu",
-    href: "https://cnn.com/",
+    name: "Pretorian Team",
+    href: "https://pretorianteam.pl/",
   },
   {
-    name: "Centrum lekkoatletyczne",
-    href: "https://cnn.com/",
+    name: "Hotel Jasek",
+    href: "https://www.hoteljasek.com.pl/",
   },
   {
-    name: "Grupa XYZ",
-    href: "https://cnn.com/",
+    name: "7 NUTRITION",
+    href: "www.7-nutrition.com",
+  },
+  {
+    name: "MTS Holistic Therapy",
+    href: "https://mtsholistictherapy.pl/",
   },
 ]
 
@@ -75,10 +79,10 @@ export default function SectionContact() {
           <h3 className="text-foreground mt-2 mb-1 text-2xl">Kontakt:</h3>
           <p className="text-base">
             <a
-              href="mailto:progressacademy@progress.pl"
+              href="mailto:progress.gym@icloud.com"
               className="text-muted hover:text-primary no-underline transition-colors duration-300"
             >
-              progressacademy@progress.pl
+              progress.gym@icloud.com
             </a>
           </p>
           {contactInformation.map((contact, index) => (
