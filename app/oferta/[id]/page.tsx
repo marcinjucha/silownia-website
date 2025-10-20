@@ -40,7 +40,11 @@ export default async function OfferDetailsPage({ params }: { params: Promise<{ i
         </div>
       </div>
 
-      <ImageWithButton buttonLabel="Kup karnet" image={details.offerImage} linkUrl="/kup-karnet" />
+      <ImageWithButton
+        buttonLabel="Kup karnet"
+        image={details.offerImage}
+        linkUrl="https://progressgymelitead-wroclaw.cms.efitness.com.pl/kalendarz-zajec?day=2025-06-03"
+      />
 
       {details.imageGallery && (
         <div className="container mx-auto">

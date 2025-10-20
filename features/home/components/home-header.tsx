@@ -4,7 +4,7 @@ import Image from "next/image"
 export default function HomeHeader() {
   return (
     <header className="relative h-screen w-full overflow-hidden">
-      <h1 className="text-background absolute top-1/4 left-1/2 z-10 -translate-x-1/2 -translate-y-1/2 text-2xl">
+      <h1 className="text-background absolute top-1/2 left-1/2 z-10 -translate-x-1/2 -translate-y-1/2 text-2xl">
         <Link href="/">
           <Image
             src="/images/logo_zlote.svg"
@@ -22,7 +22,8 @@ export default function HomeHeader() {
         loop
         aria-label="Promocyjny film z siłowni"
       >
-        <source src="/filmikprzykladowy.mov" type="video/mp4" />
+        {/* <source src="/filmikprzykladowy.mov" type="video/mp4" /> */}
+        <source src="/Progressgym.mp4" type="video/mp4" />
       </video>
     </header>
   )

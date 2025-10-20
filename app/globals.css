@@ -160,3 +160,17 @@
 .slide-in-left {
   animation: slideInLeft 0.7s ease-out forwards;
 }
+
+.slider-logo img {
+  height: 100%;
+  width: auto;
+  object-fit: contain;
+  display: block;
+}
+
+.slider-logo picture,
+.slider-logo span {
+  height: 100%;
+  width: auto;
+  display: inline-block;
+}

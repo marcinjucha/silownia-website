@@ -13,7 +13,10 @@ export default function Navigation() {
   const menuItems = [
     { name: "O nas", link: "/" },
     { name: "Oferta", link: "/oferta" },
-    { name: "Kup karnet", link: "/kup-karnet" },
+    {
+      name: "Kup karnet",
+      link: "https://progressgymelitead-wroclaw.cms.efitness.com.pl/kalendarz-zajec?day=2025-06-03",
+    },
   ]
 
   return (
