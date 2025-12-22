@@ -43,7 +43,7 @@ export default async function OfferDetailsPage({ params }: { params: Promise<{ i
       <ImageWithButton
         buttonLabel="Kup karnet"
         image={details.offerImage}
-        linkUrl="https://progressgymelitead-wroclaw.cms.efitness.com.pl/kalendarz-zajec?day=2025-06-03"
+        linkUrl="https://progressgymelitead-wroclaw.cms.efitness.com.pl/kup-karnet#stepsanchor"
       />
 
       {details.imageGallery && (

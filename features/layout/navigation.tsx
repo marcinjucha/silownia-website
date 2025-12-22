@@ -15,7 +15,7 @@ export default function Navigation() {
     { name: "Oferta", link: "/oferta" },
     {
       name: "Kup karnet",
-      link: "https://progressgymelitead-wroclaw.cms.efitness.com.pl/kalendarz-zajec?day=2025-06-03",
+      link: "https://progressgymelitead-wroclaw.cms.efitness.com.pl/kup-karnet#stepsanchor",
     },
   ]
 
