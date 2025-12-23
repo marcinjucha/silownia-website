@@ -1,3 +1,5 @@
+import { cacheLife, cacheTag } from "next/cache"
+import { gql } from "@apollo/client"
 import { ImageControlDTO, ImageControlFields } from "@/components/controls/image"
 import { TextControlDTO, TextControlFields } from "@/components/controls/text"
 import { imageDTO, ImageResponse } from "@/features/common/common-repos"
@@ -5,7 +7,7 @@ import {
   OfferDetailsDTO,
   OfferDetailsTrainerDTO,
 } from "@/features/offer-details/logic/offer-details-type"
-import client, { gql } from "@/lib/graph-ql/client"
+import { graphqlFetch } from "@/lib/graph-ql/fetch-client"
 import { IMAGE_FIELDS } from "@/lib/graph-ql/fragment-defs"
 
 export type OfferDetailsQueryResponse = {
@@ -75,13 +77,15 @@ const detailsQuery = gql`
 `
 
 export async function fetchOfferDetailsFromCMS(offerId: string) {
-  const { data } = await client.query<{ offers: OfferDetailsQueryResponse[] }>({
-    query: detailsQuery,
-    variables: {
-      filters: {
-        offerId: {
-          eq: offerId,
-        },
+  "use cache"
+  cacheLife("days") // 24h
+  cacheTag("offers")
+  cacheTag(`offer-${offerId}`)
+
+  const data = await graphqlFetch<{ offers: OfferDetailsQueryResponse[] }>(detailsQuery, {
+    filters: {
+      offerId: {
+        eq: offerId,
       },
     },
   })

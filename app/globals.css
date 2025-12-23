@@ -174,3 +174,15 @@
   width: auto;
   display: inline-block;
 }
+
+@layer base {
+  button,
+  [role="button"],
+  .btn {
+    @apply cursor-pointer;
+  }
+
+  button:disabled {
+    @apply cursor-not-allowed;
+  }
+}

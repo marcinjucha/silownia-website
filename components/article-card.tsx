@@ -11,8 +11,8 @@ import TextControl, {
   TextProps,
   mapToTextProps,
 } from "@/components/controls/text"
-import { cn } from "@/lib/utils"
 import { gql } from "@apollo/client"
+import { cn } from "@/lib/utils"
 import { Card } from "./ui/card"
 
 export const ArticleCardFields = gql`
@@ -29,7 +29,6 @@ export const ArticleCardFields = gql`
     }
   }
   ${ImageControlFields}
-
   ${TextControlFields}
 `
 

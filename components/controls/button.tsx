@@ -19,6 +19,7 @@ export const ButtonControlFields = gql`
       ...ImageControlFields
     }
   }
+  ${ImageControlFields}
 `
 
 export type ButtonVariant = "destructive" | "default" | "outline" | "secondary" | "ghost" | "link"

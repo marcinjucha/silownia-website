@@ -43,11 +43,15 @@ const businessPartners = [
   },
   {
     name: "7 NUTRITION",
-    href: "www.7-nutrition.com",
+    href: "https://7-nutrition.com/",
   },
   {
     name: "MTS Holistic Therapy",
     href: "https://mtsholistictherapy.pl/",
+  },
+  {
+    name: "KMP",
+    href: "https://www.kmp.net.pl/",
   },
 ]
 
@@ -55,7 +59,7 @@ export default function SectionContact() {
   return (
     <div
       className="text-background relative w-full bg-cover bg-center text-center"
-      style={{ backgroundImage: 'url("/silownia przyklad.jpeg")' }}
+      style={{ backgroundImage: 'url("/silownia..jpg")' }}
     >
       <div className="bg-muted absolute inset-0 z-10 opacity-70 mix-blend-multiply"></div>
 

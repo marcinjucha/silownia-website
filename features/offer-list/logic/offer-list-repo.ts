@@ -1,6 +1,8 @@
+import { cacheLife, cacheTag } from "next/cache"
+import { gql } from "@apollo/client"
 import { imageDTO, ImageResponse } from "@/features/common/common-repos"
 import { OfferDTO } from "@/features/offer-list/logic/offer-list-type"
-import client, { gql } from "@/lib/graph-ql/client"
+import { graphqlFetch } from "@/lib/graph-ql/fetch-client"
 import { IMAGE_FIELDS } from "@/lib/graph-ql/fragment-defs"
 
 export type OfferListResponse = {
@@ -32,7 +34,12 @@ const listQuery = gql`
 `
 
 export async function fetchOfferListFromCMS() {
-  const { data } = await client.query<{ offers: OfferResponse[] }>({ query: listQuery })
+  "use cache"
+  cacheLife("days") // 24h
+  cacheTag("offers")
+  cacheTag("offer-list")
+
+  const data = await graphqlFetch<{ offers: OfferResponse[] }>(listQuery)
 
   const result: OfferDTO[] = data.offers.map(
     offer =>

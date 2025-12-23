@@ -1,6 +1,7 @@
+import { cacheLife, cacheTag } from "next/cache"
+import { gql } from "@apollo/client"
 import { TextControlDTO, TextControlFields } from "@/components/controls/text"
-import client, { gql } from "@/lib/graph-ql/client"
-import { handleGraphQLQuery } from "@/lib/graph-ql/graphql-utils"
+import { graphqlFetch } from "@/lib/graph-ql/fetch-client"
 import { ImageControlDTO, ImageControlFields } from "@/components/controls/image"
 import { SliderDTO } from "./slider-type"
 
@@ -33,15 +34,16 @@ type SliderResponse = {
 }
 
 export async function fetchSliderFromCms(): Promise<SliderDTO> {
-  const result = await client.query<SliderResponse>({
-    query: sliderQuery,
-  })
+  "use cache"
+  cacheLife("days") // 24h
+  cacheTag("slider")
+  cacheTag("layout")
 
-  const data = handleGraphQLQuery(result).slider
+  const data = await graphqlFetch<SliderResponse>(sliderQuery)
 
   return {
-    title: data.title,
-    sliderItem: data.sliderItem.map(item => ({
+    title: data.slider.title,
+    sliderItem: data.slider.sliderItem.map(item => ({
       link: item.link,
       image: item.image,
     })),

@@ -8,8 +8,8 @@ export default function HomeAboutDescription() {
       <div className="relative h-64 w-full md:h-96 md:w-1/2">
         <Image
           className="rounded-lg object-cover shadow-lg"
-          src="/images/zdjecieD.jpeg"
-          alt="To jest obrazek przykładowy kota"
+          src="/images/dawid2.jpg"
+          alt="Dawid Kareciński"
           fill
           sizes="(max-width: 767px) 100vw, 50vw"
         />
@@ -28,7 +28,7 @@ export default function HomeAboutDescription() {
         </p>
 
         <Button className="my-2 font-extrabold" variant="outline">
-          <Link href="https://progressgymelitead-wroclaw.cms.efitness.com.pl/kalendarz-zajec?day=2025-06-03">
+          <Link href="https://progressgymelitead-wroclaw.cms.efitness.com.pl/kup-karnet#stepsanchor">
             Kup Karnet
           </Link>
         </Button>
