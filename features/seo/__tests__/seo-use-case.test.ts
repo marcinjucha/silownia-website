@@ -1,14 +1,14 @@
 import { describe, it, expect, vi } from "vitest"
 import { fetchSEOMetadataUseCase } from "../logic/seo-use-case"
 import { fetchSeoFromCMS } from "../logic/seo-repo" // REAL repository function
-import client from "@/lib/graph-ql/client" // Already mocked globally
+import { graphqlFetch } from "@/lib/graph-ql/fetch-client" // Already mocked globally
 import { createMockSeoGraphQLResponse, createMockEmptySeoGraphQLResponse } from "./seo-test-utils"
 
 describe("SEO Use Cases", () => {
   describe("fetchSEOMetadataUseCase", () => {
     it("should process SEO data successfully and return ClientResult", async () => {
       // Arrange
-      vi.mocked(client.query).mockResolvedValue(createMockSeoGraphQLResponse())
+      vi.mocked(graphqlFetch).mockResolvedValue(createMockSeoGraphQLResponse())
 
       const context = {
         fetch: fetchSeoFromCMS, // REAL repository function
@@ -27,12 +27,12 @@ describe("SEO Use Cases", () => {
         expect(result.value.openGraph?.title).toBe("OG Test Title")
         expect(result.value.metadataBase).toBeInstanceOf(URL)
       }
-      expect(client.query).toHaveBeenCalledTimes(1)
+      expect(graphqlFetch).toHaveBeenCalledTimes(1)
     })
 
     it("should handle external API failures and return ClientResult error", async () => {
       // Arrange - Mock GraphQL error
-      vi.mocked(client.query).mockRejectedValue(new Error("GraphQL failed"))
+      vi.mocked(graphqlFetch).mockRejectedValue(new Error("GraphQL failed"))
 
       const context = {
         fetch: fetchSeoFromCMS, // REAL repository function
@@ -46,12 +46,12 @@ describe("SEO Use Cases", () => {
       if (result.isFailure) {
         expect(result.error).toBe("Failed to fetch SEO metadata from CMS")
       }
-      expect(client.query).toHaveBeenCalledTimes(1)
+      expect(graphqlFetch).toHaveBeenCalledTimes(1)
     })
 
     it("should handle missing SEO data from CMS", async () => {
       // Arrange
-      vi.mocked(client.query).mockResolvedValue(createMockEmptySeoGraphQLResponse())
+      vi.mocked(graphqlFetch).mockResolvedValue(createMockEmptySeoGraphQLResponse())
 
       const context = {
         fetch: fetchSeoFromCMS, // REAL repository function
@@ -65,7 +65,7 @@ describe("SEO Use Cases", () => {
       if (result.isFailure) {
         expect(result.error).toBe("Failed to fetch SEO metadata from CMS")
       }
-      expect(client.query).toHaveBeenCalledTimes(1)
+      expect(graphqlFetch).toHaveBeenCalledTimes(1)
     })
   })
 })

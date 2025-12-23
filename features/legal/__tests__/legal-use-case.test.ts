@@ -1,10 +1,9 @@
-import client from "@/lib/graph-ql/client"
+import { graphqlFetch } from "@/lib/graph-ql/fetch-client"
 import { clientError, clientValue } from "@/lib/error-handling"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { fetchPrivacyTermsFromCMS, fetchRegulaminFromCMS } from "../logic/legal-repo"
 import { LegalDTO } from "../logic/legal-type"
 import { fetchPrivacyTermsUseCase, fetchRegulaminUseCase } from "../logic/legal-use-case"
-import { createApolloResponse } from "@/features/__tests__/test-utils"
 
 describe("Legal Use Cases", () => {
   const mockLegalData: LegalDTO = {
@@ -52,7 +51,7 @@ describe("Legal Use Cases", () => {
       expect(mockFetch).toHaveBeenCalledTimes(1)
     })
 
-    it("should integrate with legal repo and Apollo Client correctly", async () => {
+    it("should integrate with legal repo and GraphQL fetch correctly", async () => {
       // Arrange
       const mockGraphQLResponse = {
         legalContents: [
@@ -74,14 +73,14 @@ describe("Legal Use Cases", () => {
         ],
       }
 
-      vi.mocked(client.query).mockResolvedValue(createApolloResponse(mockGraphQLResponse))
+      vi.mocked(graphqlFetch).mockResolvedValue(mockGraphQLResponse)
 
       // Act
       const result = await fetchRegulaminUseCase({ fetch: fetchRegulaminFromCMS })
 
       // Assert
       expect(result).toEqual(clientValue(mockLegalData))
-      expect(client.query).toHaveBeenCalledTimes(1)
+      expect(graphqlFetch).toHaveBeenCalledTimes(1)
     })
   })
 
@@ -110,7 +109,7 @@ describe("Legal Use Cases", () => {
       expect(mockFetch).toHaveBeenCalledTimes(1)
     })
 
-    it("should integrate with legal repo and Apollo Client correctly", async () => {
+    it("should integrate with legal repo and GraphQL fetch correctly", async () => {
       // Arrange
       const mockGraphQLResponse = {
         legalContents: [
@@ -132,14 +131,14 @@ describe("Legal Use Cases", () => {
         ],
       }
 
-      vi.mocked(client.query).mockResolvedValue(createApolloResponse(mockGraphQLResponse))
+      vi.mocked(graphqlFetch).mockResolvedValue(mockGraphQLResponse)
 
       // Act
       const result = await fetchPrivacyTermsUseCase({ fetch: fetchPrivacyTermsFromCMS })
 
       // Assert
       expect(result).toEqual(clientValue(mockLegalData))
-      expect(client.query).toHaveBeenCalledTimes(1)
+      expect(graphqlFetch).toHaveBeenCalledTimes(1)
     })
   })
 })

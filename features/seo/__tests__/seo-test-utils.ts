@@ -1,4 +1,3 @@
-import { createApolloResponse } from "@/features/__tests__/test-utils"
 import { SeoResponse } from "@/features/seo/logic/seo-repo"
 import { SEOMetadataDTO } from "@/features/seo/logic/seo-type"
 
@@ -107,15 +106,13 @@ export const createMockSeoResponse = (override?: Partial<SeoResponse>): SeoRespo
   ...override,
 })
 
-export const createMockSeoGraphQLResponse = (seoData?: Partial<SeoResponse>) =>
-  createApolloResponse({
-    seos: [createMockSeoResponse(seoData)],
-  })
+export const createMockSeoGraphQLResponse = (seoData?: Partial<SeoResponse>) => ({
+  seos: [createMockSeoResponse(seoData)],
+})
 
-export const createMockEmptySeoGraphQLResponse = () =>
-  createApolloResponse({
-    seos: [],
-  })
+export const createMockEmptySeoGraphQLResponse = () => ({
+  seos: [],
+})
 
 export const createMockMinimalSeoResponse = (): SeoResponse => ({
   title: "Minimal Title",
@@ -123,10 +120,9 @@ export const createMockMinimalSeoResponse = (): SeoResponse => ({
   keywords: [{ text: "minimal" }],
 })
 
-export const createMockMinimalSeoGraphQLResponse = () =>
-  createApolloResponse({
-    seos: [createMockMinimalSeoResponse()],
-  })
+export const createMockMinimalSeoGraphQLResponse = () => ({
+  seos: [createMockMinimalSeoResponse()],
+})
 
 export const createMockComplexSeoResponse = (): SeoResponse => ({
   title: "Complex SEO Title",
@@ -224,10 +220,9 @@ export const createMockComplexSeoResponse = (): SeoResponse => ({
   },
 })
 
-export const createMockComplexSeoGraphQLResponse = () =>
-  createApolloResponse({
-    seos: [createMockComplexSeoResponse()],
-  })
+export const createMockComplexSeoGraphQLResponse = () => ({
+  seos: [createMockComplexSeoResponse()],
+})
 
 // JSON-LD Test Utilities
 import {
@@ -779,29 +774,26 @@ export const createMockJsonLdGraphQLResponse = (
       | JsonLdRecipeResponse
     >
   }>,
-) =>
-  createApolloResponse({
-    jsonLds: jsonLdData || [
-      {
-        type: [createMockJsonLdArticleResponse()],
-      },
-    ],
-  })
+) => ({
+  jsonLds: jsonLdData || [
+    {
+      type: [createMockJsonLdArticleResponse()],
+    },
+  ],
+})
 
-export const createMockEmptyJsonLdGraphQLResponse = () =>
-  createApolloResponse({
-    jsonLds: [],
-  })
+export const createMockEmptyJsonLdGraphQLResponse = () => ({
+  jsonLds: [],
+})
 
-export const createMockMixedJsonLdGraphQLResponse = () =>
-  createApolloResponse({
-    jsonLds: [
-      {
-        type: [
-          createMockJsonLdArticleResponse(),
-          createMockJsonLdProductResponse(),
-          createMockJsonLdPersonResponse(),
-        ],
-      },
-    ],
-  })
+export const createMockMixedJsonLdGraphQLResponse = () => ({
+  jsonLds: [
+    {
+      type: [
+        createMockJsonLdArticleResponse(),
+        createMockJsonLdProductResponse(),
+        createMockJsonLdPersonResponse(),
+      ],
+    },
+  ],
+})

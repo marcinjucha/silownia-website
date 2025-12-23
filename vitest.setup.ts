@@ -22,14 +22,23 @@ vi.mock("next/navigation", () => ({
   notFound: vi.fn(),
 }))
 
-// Mock GraphQL client
-vi.mock("@/lib/graph-ql/client", () => {
+// Mock GraphQL fetch client
+vi.mock("@/lib/graph-ql/fetch-client", () => ({
+  graphqlFetch: vi.fn(),
+  GraphQLError: class GraphQLError extends Error {
+    constructor(errors: any[]) {
+      super(errors.map(err => err.message).join("\n"))
+    }
+  },
+}))
+
+// Mock Next.js cache functions
+vi.mock("next/cache", async () => {
+  const actual = await vi.importActual<typeof import("next/cache")>("next/cache")
   return {
-    default: {
-      query: vi.fn(),
-      mutate: vi.fn(),
-    },
-    gql: vi.fn(),
+    ...actual,
+    cacheLife: vi.fn(),
+    cacheTag: vi.fn(),
   }
 })
 

@@ -1,13 +1,12 @@
 import { beforeEach, describe, expect, it, vi, afterEach } from "vitest"
-import client from "@/lib/graph-ql/client"
+import { graphqlFetch } from "@/lib/graph-ql/fetch-client"
 import { clientError, clientValue } from "@/lib/error-handling"
-import { createApolloResponse } from "@/features/__tests__/test-utils"
 import { getSliderUseCase } from "../logic/slider-use-case"
 import { fetchSliderFromCms as getSlider } from "../logic/slider-repo"
 import { SliderDTO } from "../logic/slider-type"
 
 describe("getSliderUseCase", () => {
-  const mockApolloResponse = createApolloResponse({
+  const mockGraphQLResponse = {
     slider: {
       title: {
         text: "Partnerzy",
@@ -40,7 +39,7 @@ describe("getSliderUseCase", () => {
         },
       ],
     },
-  })
+  }
   beforeEach(() => {
     vi.clearAllMocks()
   })
@@ -52,7 +51,7 @@ describe("getSliderUseCase", () => {
   it("should provide valid data", async () => {
     // Arrange
 
-    vi.mocked(client.query).mockResolvedValue(mockApolloResponse)
+    vi.mocked(graphqlFetch).mockResolvedValue(mockGraphQLResponse)
 
     //   Act
     const result = await getSliderUseCase({ getSlider })
@@ -101,7 +100,7 @@ describe("getSliderUseCase", () => {
 
     const mockError = new Error("fetching failed")
 
-    vi.mocked(client.query).mockRejectedValue(mockError)
+    vi.mocked(graphqlFetch).mockRejectedValue(mockError)
 
     // Act
 
