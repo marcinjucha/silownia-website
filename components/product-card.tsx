@@ -24,8 +24,8 @@ import TextControl, {
   TextProps,
   mapToTextProps,
 } from "@/components/controls/text"
-import { cn } from "@/lib/utils"
 import { gql } from "@apollo/client"
+import { cn } from "@/lib/utils"
 
 export const ProductCardComponentFields = gql`
   fragment ProductCardComponentFields on ComponentComponentsProductCard {

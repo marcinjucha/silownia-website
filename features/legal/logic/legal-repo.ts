@@ -1,6 +1,6 @@
-import client from "@/lib/graph-ql/client"
-import { handleGraphQLQuery } from "@/lib/graph-ql/graphql-utils"
+import { cacheLife, cacheTag } from "next/cache"
 import { gql } from "@apollo/client"
+import { graphqlFetch } from "@/lib/graph-ql/fetch-client"
 import { LegalDTO } from "./legal-type"
 import { RichTextControlContentDTO } from "@/components/controls/rich-text-repo"
 
@@ -21,18 +21,20 @@ export type LegalResponse = {
 }
 
 export async function fetchRegulaminFromCMS(): Promise<LegalDTO> {
-  const result = await client.query<{ legalContents: LegalResponse[] }>({
-    query: legalQuery,
-    variables: {
-      filters: {
-        legalID: {
-          eq: "regulamin",
-        },
+  "use cache"
+  cacheLife("days") // 24h
+  cacheTag("legal")
+  cacheTag("regulamin")
+
+  const result = await graphqlFetch<{ legalContents: LegalResponse[] }>(legalQuery, {
+    filters: {
+      legalID: {
+        eq: "regulamin",
       },
     },
   })
 
-  const data = handleGraphQLQuery(result).legalContents[0]
+  const data = result.legalContents[0]
 
   return {
     title: data.title,
@@ -42,18 +44,20 @@ export async function fetchRegulaminFromCMS(): Promise<LegalDTO> {
 }
 
 export async function fetchPrivacyTermsFromCMS(): Promise<LegalDTO> {
-  const result = await client.query<{ legalContents: LegalResponse[] }>({
-    query: legalQuery,
-    variables: {
-      filters: {
-        legalID: {
-          eq: "polityka",
-        },
+  "use cache"
+  cacheLife("days") // 24h
+  cacheTag("legal")
+  cacheTag("privacy")
+
+  const result = await graphqlFetch<{ legalContents: LegalResponse[] }>(legalQuery, {
+    filters: {
+      legalID: {
+        eq: "polityka",
       },
     },
   })
 
-  const data = handleGraphQLQuery(result).legalContents[0]
+  const data = result.legalContents[0]
 
   return {
     title: data.title,

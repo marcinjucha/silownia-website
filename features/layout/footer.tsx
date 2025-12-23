@@ -1,7 +1,16 @@
+"use client"
+
 import Link from "next/link"
+import { useEffect, useState } from "react"
 
 export default function Footer() {
-  const currentYear = new Date().getFullYear()
+  // Initialize with 2024, will update to current year on client
+  const [currentYear, setCurrentYear] = useState<number>(2024)
+
+  useEffect(() => {
+    setCurrentYear(new Date().getFullYear())
+  }, [])
+
   return (
     <footer className="bg-background text-foreground py-6">
       <div className="text-muted container mx-auto text-center">

@@ -1,5 +1,7 @@
 "use server"
 
+import { cacheLife, cacheTag } from "next/cache"
+import { gql } from "@apollo/client"
 import { makeAssetUrl } from "@/features/common/common-repos"
 import {
   SEOMetadataDTO,
@@ -10,8 +12,7 @@ import {
   SEORobotsDTO,
   SEOTwitterCard,
 } from "@/features/seo/logic/seo-type"
-import client, { gql } from "@/lib/graph-ql/client"
-import { handleGraphQLQuery } from "@/lib/graph-ql/graphql-utils"
+import { graphqlFetch } from "@/lib/graph-ql/fetch-client"
 
 // GraphQL Response Types (based on actual CMS schema from seo-scheme.md)
 
@@ -122,7 +123,7 @@ export type SeoResponse = {
   verification?: VerificationResponse // weryfikacja wyszukiwarek
 }
 
-const listQuery = gql`
+const listQuery = `
   fragment ComponentMetadataVerificationFragment on ComponentMetadataVerification {
     bing {
       text
@@ -430,13 +431,13 @@ function mapSeoResponseToDTO(seoResponse: SeoResponse): SEOMetadataDTO {
 }
 
 export async function fetchSeoFromCMS(): Promise<SEOMetadataDTO> {
-  const result = await client.query<{ seos: SeoResponse[] }>({ query: listQuery })
+  const result = await graphqlFetch<{ seos: SeoResponse[] }>(listQuery)
 
-  if (!result.data?.seos || result.data.seos.length === 0) {
+  if (!result?.seos || result.seos.length === 0) {
     throw new Error("No SEO data found in CMS response")
   }
 
-  const seoData = handleGraphQLQuery(result).seos[0]
+  const seoData = result.seos[0]
   const mappedResult = mapSeoResponseToDTO(seoData)
 
   return mappedResult

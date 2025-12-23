@@ -1,12 +1,22 @@
+import { Suspense } from "react"
 import TextControl from "@/components/controls/text"
 import ImageCarousel from "@/components/image-carousel"
 import ImageText from "@/components/image-text"
 import ImageWithButton from "@/components/image-with-button"
+import LoadingSpinner from "@/components/loading-spinner"
 import { fetchOfferDetails } from "@/features/offer-details/actions/fetch-offer-details"
+import { fetchOfferListForStaticParams } from "@/features/offer-list/actions/fetch-offer-list-for-static-params"
 import TrainerCard from "@/features/offer-details/components/trainer-card"
 
-export default async function OfferDetailsPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params
+// Pre-renderuj wszystkie oferty w build time
+export async function generateStaticParams() {
+  const offers = await fetchOfferListForStaticParams()
+  return offers.map(offer => ({
+    id: offer.offerId,
+  }))
+}
+
+async function OfferDetailsContent({ id }: { id: string }) {
   const details = await fetchOfferDetails(id)
 
   return (
@@ -52,5 +62,15 @@ export default async function OfferDetailsPage({ params }: { params: Promise<{ i
         </div>
       )}
     </>
+  )
+}
+
+export default async function OfferDetailsPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
+
+  return (
+    <Suspense fallback={<LoadingSpinner message="Ładowanie szczegółów oferty..." />}>
+      <OfferDetailsContent id={id} />
+    </Suspense>
   )
 }

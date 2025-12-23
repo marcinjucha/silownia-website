@@ -1,5 +1,6 @@
 import { MetadataRoute } from "next"
-import { fetchOfferList } from "@/features/offer-list/actions/fetch-offer-list-action"
+import { fetchOfferListFromCMS } from "@/features/offer-list/logic/offer-list-repo"
+import { fetchOfferListUseCase } from "@/features/offer-list/logic/offer-list-use-case"
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = process.env.HOST_URL || "https://progressgymacademy.pl"
@@ -38,19 +39,20 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
   ]
 
-  try {
-    const offers = await fetchOfferList()
+  // Fetch offers without throwing errors
+  const result = await fetchOfferListUseCase({ fetch: fetchOfferListFromCMS })
 
-    const offerUrls: MetadataRoute.Sitemap = offers.map(offer => ({
-      url: `${baseUrl}/oferta/${offer.offerId}`,
-      lastModified: new Date(),
-      changeFrequency: "monthly",
-      priority: 0.8,
-    }))
-
-    return [...staticUrls, ...offerUrls]
-  } catch (error) {
-    console.error("Error generating sitemap:", error)
+  if (!result.success) {
+    console.error("Error generating sitemap:", result.error)
     return staticUrls
   }
+
+  const offerUrls: MetadataRoute.Sitemap = result.value.map(offer => ({
+    url: `${baseUrl}/oferta/${offer.offerId}`,
+    lastModified: new Date(),
+    changeFrequency: "monthly",
+    priority: 0.8,
+  }))
+
+  return [...staticUrls, ...offerUrls]
 }

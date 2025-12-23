@@ -1,9 +1,10 @@
 "use server"
 
+import { cacheLife, cacheTag } from "next/cache"
+import { gql } from "@apollo/client"
 import { makeAssetUrl } from "@/features/common/common-repos"
 import { JsonLdDTO } from "@/features/seo/logic/json-ld-type"
-import client, { gql } from "@/lib/graph-ql/client"
-import { handleGraphQLQuery } from "@/lib/graph-ql/graphql-utils"
+import { graphqlFetch } from "@/lib/graph-ql/fetch-client"
 
 // GraphQL fragments aligned with the documented JSON-LD schema
 const listQuery = gql`
@@ -713,12 +714,18 @@ function mapCMSItemToJsonLd(item: JsonLdCMSItem): JsonLdDTO[] {
 }
 
 export async function fetchJsonLdFromCMS(): Promise<JsonLdDTO[]> {
-  const result = await client.query<{ jsonLds: JsonLdCMSItem[] }>({ query: listQuery })
+  "use cache"
+  cacheLife("hours") // 1h
+  cacheTag("seo")
+  cacheTag("json-ld")
 
-  const data = handleGraphQLQuery(result).jsonLds
+  const result = await graphqlFetch<{ jsonLds: JsonLdCMSItem[] }>(listQuery)
+
+  const data = result.jsonLds
 
   if (!data || data.length === 0) {
-    throw new Error("No JSON-LD data found in CMS response")
+    console.warn("No JSON-LD data found in CMS response")
+    return []
   }
 
   const mapped = data
@@ -728,7 +735,7 @@ export async function fetchJsonLdFromCMS(): Promise<JsonLdDTO[]> {
 
   if (mapped.length === 0) {
     console.warn("All JSON-LD items failed validation - no valid structured data found")
-    throw new Error("No valid JSON-LD data after validation")
+    return []
   }
 
   return mapped

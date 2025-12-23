@@ -5,6 +5,10 @@ const placeholdURL = new URL("https://placehold.co")
 const cmsURL = new URL(process.env.CMS_BASE_URL || "http://localhost:1337")
 
 module.exports = {
+  // Włącz Cache Components
+  // Uwaga: W dev można wyłączyć ustawiając DISABLE_CACHE=true przed `yarn dev`
+  cacheComponents: true,
+
   logging: {
     fetches: {
       fullUrl: true,
