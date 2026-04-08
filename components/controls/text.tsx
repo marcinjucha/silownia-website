@@ -54,8 +54,8 @@ export function mapToTextProps(dto: TextControlDTO): Omit<TextProps, "className"
 }
 
 export default function TextControl({ text, style, className }: TextProps) {
-  const fixedFontWeight = style.fontWeight?.replace(/_/g, "-") as FontWeight | undefined
-  const fixedFontSize = style.fontSize?.replace(/_/g, "-") as FontSize | undefined
+  const fixedFontWeight = style?.fontWeight?.replace(/_/g, "-") as FontWeight | undefined
+  const fixedFontSize = style?.fontSize?.replace(/_/g, "-") as FontSize | undefined
   const Element = fixedFontSize ? fontSizeToElement[fixedFontSize] : "p"
 
   return <Element className={cn(fixedFontSize, fixedFontWeight, className)}>{text}</Element>
