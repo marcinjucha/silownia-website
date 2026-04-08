@@ -20,7 +20,7 @@ export type LegalResponse = {
   content: RichTextControlContentDTO
 }
 
-export async function fetchRegulaminFromCMS(): Promise<LegalDTO> {
+export async function fetchRegulaminFromCMS(): Promise<LegalDTO | null> {
   "use cache"
   cacheLife("days") // 24h
   cacheTag("legal")
@@ -34,7 +34,8 @@ export async function fetchRegulaminFromCMS(): Promise<LegalDTO> {
     },
   })
 
-  const data = result.legalContents[0]
+  const data = result.legalContents?.[0]
+  if (!data) return null
 
   return {
     title: data.title,
@@ -43,7 +44,7 @@ export async function fetchRegulaminFromCMS(): Promise<LegalDTO> {
   } satisfies LegalDTO
 }
 
-export async function fetchPrivacyTermsFromCMS(): Promise<LegalDTO> {
+export async function fetchPrivacyTermsFromCMS(): Promise<LegalDTO | null> {
   "use cache"
   cacheLife("days") // 24h
   cacheTag("legal")
@@ -57,7 +58,8 @@ export async function fetchPrivacyTermsFromCMS(): Promise<LegalDTO> {
     },
   })
 
-  const data = result.legalContents[0]
+  const data = result.legalContents?.[0]
+  if (!data) return null
 
   return {
     title: data.title,

@@ -8,8 +8,6 @@ import { fetchOfferDetails } from "@/features/offer-details/actions/fetch-offer-
 import { fetchOfferListForStaticParams } from "@/features/offer-list/actions/fetch-offer-list-for-static-params"
 import TrainerCard from "@/features/offer-details/components/trainer-card"
 
-export const dynamicParams = true
-
 // Pre-renderuj wszystkie oferty w build time
 export async function generateStaticParams() {
   try {

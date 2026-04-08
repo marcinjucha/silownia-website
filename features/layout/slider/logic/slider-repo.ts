@@ -33,13 +33,17 @@ type SliderResponse = {
   }
 }
 
-export async function fetchSliderFromCms(): Promise<SliderDTO> {
+export async function fetchSliderFromCms(): Promise<SliderDTO | null> {
   "use cache"
   cacheLife("days") // 24h
   cacheTag("slider")
   cacheTag("layout")
 
   const data = await graphqlFetch<SliderResponse>(sliderQuery)
+
+  if (!data?.slider) {
+    return null
+  }
 
   return {
     title: data.slider.title,

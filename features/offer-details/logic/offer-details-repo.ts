@@ -90,7 +90,8 @@ export async function fetchOfferDetailsFromCMS(offerId: string) {
     },
   })
 
-  const offer = data.offers[0].offerDetails
+  const offer = data.offers?.[0]?.offerDetails
+  if (!offer) return null
 
   const result = {
     offerImage: imageDTO(offer.offerImage),
