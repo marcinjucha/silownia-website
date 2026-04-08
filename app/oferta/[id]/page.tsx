@@ -8,12 +8,21 @@ import { fetchOfferDetails } from "@/features/offer-details/actions/fetch-offer-
 import { fetchOfferListForStaticParams } from "@/features/offer-list/actions/fetch-offer-list-for-static-params"
 import TrainerCard from "@/features/offer-details/components/trainer-card"
 
+export const dynamicParams = true
+
 // Pre-renderuj wszystkie oferty w build time
 export async function generateStaticParams() {
-  const offers = await fetchOfferListForStaticParams()
-  return offers.map(offer => ({
-    id: offer.offerId,
-  }))
+  try {
+    const offers = await fetchOfferListForStaticParams()
+    if (offers.length === 0) {
+      return [{ id: "_placeholder" }]
+    }
+    return offers.map(offer => ({
+      id: offer.offerId,
+    }))
+  } catch {
+    return [{ id: "_placeholder" }]
+  }
 }
 
 async function OfferDetailsContent({ id }: { id: string }) {
